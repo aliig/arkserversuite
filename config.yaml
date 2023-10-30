@@ -1,0 +1,24 @@
+steamcmd:
+  path: "C:\\gameservers\\SteamCMD\\steamcmd.exe"
+  install_path: "C:\\gameservers\\ark_survival_ascended"
+  app_id: 2430930
+  username: "anonymous"
+
+server:
+  ip_address: "192.168.1.42"
+  binary_path: "C:\\gameservers\\ark_survival_ascended\\ShooterGame\\Binaries\\Win64"
+  port: 7777
+  query_port: 27015
+  players: 26
+  password: "hello"
+
+rcon:
+  path: ".\\rcon.exe"
+  port: 32330
+
+intervals:
+  restart: 24 # hours
+  update_check: 0.5 # hours
+  warnings:
+    - time: 10 # minutes
+    - time: 1 # minutes
