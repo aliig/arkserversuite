@@ -146,19 +146,44 @@ class ArkServer:
         )
 
     def run(self) -> None:
-        """Run the Ark server management loop."""
+        """
+        The main loop for managing the Ark server. It checks for required updates,
+        sends warnings for upcoming restarts, and ensures that the server is running.
+        """
         RESTART_INTERVAL = self.config["intervals"]["restart"] * 60 * 60
         UPDATE_CHECK_INTERVAL = self.config["intervals"]["update_check"] * 60 * 60
-        self.start()
+
+        self.start()  # Start the server initially.
 
         while True:
+            # Check if the server is running
+            if not self.is_running():
+                print("Server is not running. Attempting to restart...")
+                if not self.start():  # Try to start the server.
+                    print("Failed to restart the server. Exiting...")
+                    exit(1)  # Exit the program with an error code.
+
             elapsed_time = time.time() - self.last_restart_time
             update_detected = self.needs_update()
 
-            self._broadcast_restart_warnings(elapsed_time, RESTART_INTERVAL)
+            for warning in self.config["intervals"]["warnings"]:
+                if elapsed_time >= RESTART_INTERVAL - warning["time"] * 60:
+                    message = f"Server will restart in {warning['time']} minute(s)."
+                    self.send_message(message)
 
             if elapsed_time >= RESTART_INTERVAL or update_detected:
-                self._handle_restart(update_detected)
+                # Close the server
+                print("Closing the Ark server...")
+                self.stop()
+
+                # If it's an update, update the server
+                if update_detected:
+                    print("Update available. Updating the server...")
+                    self.update_ark()
+
+                # Restart server
+                print("Restarting the Ark server...")
+                self.start()
                 self.last_restart_time = time.time()
 
             time.sleep(UPDATE_CHECK_INTERVAL)
