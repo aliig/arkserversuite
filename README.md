@@ -1,6 +1,6 @@
-# Ark Server Management Tool
+# ASA Server Management Tool
 
-A Python-based tool designed to automate and manage an ARK: Survival Evolved server instance.
+A basic Python-based tool designed to automate and manage an ARK: Survival Ascended server instance.
 
 ## Features
 
