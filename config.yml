@@ -16,12 +16,13 @@ rcon:
   path: ".\\rcon.exe"
   port: 32330
 
-intervals:
-  restart: 24 # hours
-  update_check: 0.5 # hours
-  warnings:
-    - time: 10 # minutes
-    - time: 1 # minutes
+restart:
+  scheduled:
+    interval: 24 # hours
+    time: 0300 # in 24 hour format
+  update:
+    interval: 12 # hours
+  warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
 
 announcement:
   interval: 3  # hours

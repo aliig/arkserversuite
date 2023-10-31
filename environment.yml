@@ -1,0 +1,7 @@
+name: ark
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+    - pyyaml
+    - pytz
