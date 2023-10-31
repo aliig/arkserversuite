@@ -15,6 +15,11 @@ class ArkServer:
             self.config = yaml.safe_load(stream)
         self.server_process = None
         self.last_restart_time = time.time()
+        self.announcement_interval = (
+            self.config["announcement"]["interval"] * 60 * 60
+        )  # Convert to seconds
+        self.announcement_message = self.config["announcement"]["message"]
+        self.last_announcement_time = time.time()
 
     def _execute(self, cmd_list: list[str]) -> subprocess.CompletedProcess:
         """
@@ -170,6 +175,11 @@ class ArkServer:
                 if elapsed_time >= RESTART_INTERVAL - warning["time"] * 60:
                     message = f"Server will restart in {warning['time']} minute(s)."
                     self.send_message(message)
+
+            # Handle server announcement
+            if time.time() - self.last_announcement_time >= self.announcement_interval:
+                self.send_message(self.announcement_message)
+                self.last_announcement_time = time.time()
 
             if elapsed_time >= RESTART_INTERVAL or update_detected:
                 # Close the server

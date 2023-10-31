@@ -22,3 +22,7 @@ intervals:
   warnings:
     - time: 10 # minutes
     - time: 1 # minutes
+
+announcement:
+  interval: 3  # hours
+  message: "Thanks for playing on Brohana. Server is still WIP and adjustments may be made here and there. Please message me on Discord (user Gleed) if you have any questions/concerns/feedback"
