@@ -25,6 +25,10 @@ class ArkServer:
             self.config["restart"]["update_check"]["interval"] * 60 * 60
         )
         self.announcement_interval = self.config["announcement"]["interval"] * 60 * 60
+        self.destroywilddinos_interval = (
+            self.config["destroywilddinos"]["interval"] * 60 * 60
+        )
+
         self.sleep_interval = self.get_shortest_interval()
 
     def _execute(self, cmd_list: list[str]) -> subprocess.CompletedProcess:
@@ -75,7 +79,7 @@ class ArkServer:
     def rcon_cmd(self, command: str) -> str:
         logging.info(f"Executing RCON command: {command}")
         base_cmd = [
-            self.config["rcon"]["path"],
+            f"{self.config['rcon']['path']}//rcon.exe",
             "-a",
             f"{self.config['server']['ip_address']}:{self.config['rcon']['port']}",
             "-p",
@@ -159,7 +163,7 @@ class ArkServer:
         logging.info("Checking for Ark server updates...")
         result = self._execute(
             [
-                self.config["steamcmd"]["path"],
+                f"{self.config['steamcmd']['path']}\\steamcmd.exe",
                 "+login",
                 self.config["steamcmd"]["username"],
                 "+app_info_print",

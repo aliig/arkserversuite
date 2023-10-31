@@ -1,5 +1,5 @@
 steamcmd:
-  path: "C:\\gameservers\\SteamCMD\\steamcmd.exe"
+  path: "C:\\gameservers\\SteamCMD"
   app_id: 2430930
   username: "anonymous"
 
@@ -10,19 +10,20 @@ server:
   query_port: 27015
   players: 26
   password: "hello"
+  map: "TheIsland_WP"
 
 rcon:
-  path: ".\\rcon.exe"
+  path: "C:\\gameservers\\rcon-0.10.3-win64"
   port: 32330
 
 restart:
   scheduled:
     interval: 24 #
-    blackout_times: [05:00, 02:00] # range of times to NOT perform a scheduled reset from beginning to end
+    blackout_times: [07:00, 02:00] # range of times to NOT perform a scheduled reset from beginning to end
   update_check:
     interval: 1 # hours
   warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
 
 announcement:
   interval: 3  # hours
-  message: "Thanks for playing on Brohana. Server is still WIP and adjustments may be made here and there. Please message me on Discord (user Gleed) if you have any questions/concerns/feedback"
+  message: "Thanks for playing on Brohana. Server is still WIP and adjustments may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
