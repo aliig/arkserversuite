@@ -1,7 +1,6 @@
 import subprocess
 import time
 import datetime
-import pytz
 import yaml
 import logging
 
@@ -13,48 +12,45 @@ class ArkServer:
     def __init__(self, config_path: str = "config.yaml"):
         with open(config_path, "r") as stream:
             self.config = yaml.safe_load(stream)
-        self.server_process = None
         self.last_restart_time = time.time()
-        self.announcement_message = self.config["announcement"]["message"]
+        self.routine_announcement_message = self.config["announcement"]["message"]
         self.last_announcement_time = time.time()
-        self.sent_warnings = set()
+        self.last_update_time = time.time()
+        self.update_queued = False
+
+        self.restart_interval = (
+            self.config["restart"]["scheduled"]["interval"] * 60 * 60
+        )
+        self.update_check_interval = (
+            self.config["restart"]["update_check"]["interval"] * 60 * 60
+        )
+        self.announcement_interval = self.config["announcement"]["interval"] * 60 * 60
+        self.sleep_interval = self.get_shortest_interval()
 
     def _execute(self, cmd_list: list[str]) -> subprocess.CompletedProcess:
         return subprocess.run(cmd_list, capture_output=True, text=True)
 
-    def _broadcast_restart_warnings(
-        self, elapsed_time: float, RESTART_INTERVAL: float
-    ) -> None:
-        for warning in self.config["restart"]["warnings"]:
-            minutes_left = int(warning)
-            if RESTART_INTERVAL - elapsed_time <= warning * 60:
-                if minutes_left not in self.sent_warnings:
-                    reason = (
-                        "an update" if self.needs_update() else "regular maintenance"
-                    )
-                    message = f"Server will restart in {minutes_left} minute{'s' if minutes_left > 1 else ''} due to {reason}. Expected restart time: {self.get_next_restart_time_in_et()} ET."
-                    self.send_message(message)
-                    self.sent_warnings.add(minutes_left)
-
-    def get_next_restart_time_in_et(self) -> str:
-        local_time = datetime.datetime.now()
-        seconds_until_next_restart = self.restart_interval - (
-            time.time() - self.last_restart_time
+    def wait_for_warnings(self) -> None:
+        warning_times = sorted(
+            list(map(int, self.config["restart"]["warnings"])), reverse=True
         )
-        next_restart_time_local = local_time + datetime.timedelta(
-            seconds=seconds_until_next_restart
+        reason = (
+            "an update"
+            if self.update_queued or self.needs_update()
+            else "regular maintenance"
         )
+        anticipated_restart_time = (
+            datetime.datetime.now() + datetime.timedelta(minutes=warning_times[0])
+        ).strftime("%H:%M %p")
 
-        # Convert to Eastern Time
-        local_time_zone = pytz.timezone(
-            "UTC"
-        )  # Assuming server is in UTC, change if different
-        eastern_time_zone = pytz.timezone("US/Eastern")
-        next_restart_time_et = next_restart_time_local.astimezone(
-            local_time_zone
-        ).astimezone(eastern_time_zone)
-
-        return next_restart_time_et.strftime("%H:%M %p")
+        for i, warning_time in enumerate(warning_times):
+            self.send_message(
+                f"Server will restart in {warning_time} minutes, at approximately {anticipated_restart_time}, for {reason}. Please prepare to log off."
+            )
+            if i < len(warning_times) - 1:
+                time.sleep((warning_time - warning_times[i + 1]) * 60)
+            else:
+                time.sleep(warning_time * 60)
 
     def is_blackout_time(self) -> bool:
         blackout_start, blackout_end = self.config["restart"]["scheduled"][
@@ -63,9 +59,7 @@ class ArkServer:
         h_start, m_start = map(int, blackout_start.split(":"))
         h_end, m_end = map(int, blackout_end.split(":"))
 
-        current_time = (
-            datetime.datetime.now().astimezone(pytz.timezone("US/Eastern")).time()
-        )
+        current_time = datetime.datetime.now()
         blackout_start_time = datetime.time(h_start, m_start)
         blackout_end_time = datetime.time(h_end, m_end)
 
@@ -77,15 +71,14 @@ class ArkServer:
             return blackout_start_time <= current_time <= blackout_end_time
 
     def get_shortest_interval(self) -> float:
-        smallest_warning = (
-            min(self.config["restart"]["warnings"]) * 60
-        )  # Convert to seconds
+        smallest_warning = min(self.config["restart"]["warnings"]) * 60
         update_interval = self.config["restart"]["update_check"]["interval"] * 60 * 60
         announcement_interval = self.config["announcement"]["interval"] * 60 * 60
 
         return min(smallest_warning, update_interval, announcement_interval)
 
     def rcon_cmd(self, command: str) -> str:
+        logging.info(f"Executing RCON command: {command}")
         base_cmd = [
             self.config["rcon"]["path"],
             "-a",
@@ -95,20 +88,38 @@ class ArkServer:
         ]
         return self._execute(base_cmd + command.split()).stdout
 
-    def send_message(self, message: str) -> None:
-        self.rcon_cmd(f"serverchat {message}")
+    def save_world(self) -> bool:
+        logging.info("Saving world data...")
+        res = self.rcon_cmd("saveworld")
+        if "World Saved" in res:
+            logging.info("World saved successfully!")
+            return True
+        logging.error("Failed to save the world. Please check for issues.")
+        return False
+
+    def send_message(self, message: str) -> str:
+        logging.info(f"Sending server message: {message}")
+        return self.rcon_cmd(f"serverchat {message}")
 
     def is_running(self) -> bool:
-        result = self._execute(
-            ["tasklist", "/FI", "IMAGENAME eq ArkAscendedServer.exe"]
-        )
-        return "ArkAscendedServer.exe" in result.stdout
+        try:
+            result = self._execute(
+                ["tasklist", "/FI", "IMAGENAME eq ArkAscendedServer.exe"]
+            )
+            return "ArkAscendedServer.exe" in result.stdout
+        except Exception as e:
+            logging.error(f"Error checking if server is running: {e}")
+            return False
 
     def start(self) -> None:
+        logging.info("Starting the Ark server...")
         if not self.is_running():
             args = self._generate_server_args()
             self.server_process = subprocess.Popen(args)
             self.last_restart_time = time.time()
+            logging.info("Ark server started")
+        else:
+            logging.info("Ark server is already running")
 
     def _generate_server_args(self):
         """Generates the command-line arguments for starting the Ark server."""
@@ -135,12 +146,23 @@ class ArkServer:
         ]
         return base_args + options
 
-    def stop(self) -> None:
+    def stop(self) -> bool:
+        logging.info("Stopping the Ark server...")
+        self.save_world()
         if self.is_running():
-            self.send_message("Saving world data...")
-            subprocess.run(["taskkill", "/IM", "ArkAscendedServer.exe", "/F"])
+            res = subprocess.run(["taskkill", "/IM", "ArkAscendedServer.exe", "/F"])
+            if res.returncode == 0:
+                logging.info("Ark server stopped")
+            else:
+                logging.error("Failed to stop the Ark server")
+                return False
+        else:
+            logging.info("Ark server is not running")
+        time.sleep(5)
+        return True
 
     def needs_update(self) -> bool:
+        logging.info("Checking for Ark server updates...")
         result = self._execute(
             [
                 self.config["steamcmd"]["path"],
@@ -151,9 +173,15 @@ class ArkServer:
                 "+quit",
             ]
         )
-        return '"state" "eStateUpdateRequired"' in result.stdout
+        res = '"state" "eStateUpdateRequired"' in result.stdout
+        if res:
+            logging.info("Update available")
+        self.update_queued = res
+        return res
 
     def update(self) -> None:
+        logging.info("Updating the Ark server...")
+        self.last_update_time = time.time()
         self._execute(
             [
                 self.config["steamcmd"]["path"],
@@ -166,78 +194,50 @@ class ArkServer:
                 "+quit",
             ]
         )
+        self.update_queued = False
 
-    def restart_server(self, reason="scheduled restart"):
-        """Handle the server restart process."""
+    def restart_server(self, reason="scheduled restart") -> bool:
+        self.wait_for_warnings()
         logging.info(f"Closing the Ark server for {reason}...")
+        self.send_message(f"Server is restarting for {reason}.")
         self.stop()
-
-        logging.info(f"Restarting the Ark server...")
-        self.start()
+        if self.update_queued or self.needs_update():
+            self.update()
+        res = self.start()
         self.last_restart_time = time.time()
-        self.sent_warnings.clear()  # Reset sent warnings
+        return res
 
     def run(self) -> None:
-        RESTART_INTERVAL = self.config["restart"]["scheduled"]["interval"] * 60 * 60
-        UPDATE_CHECK_INTERVAL = (
-            self.config["restart"]["update_check"]["interval"] * 60 * 60
-        )
-        ANNOUNCEMENT_INTERVAL = self.config["announcement"]["interval"] * 60 * 60
-        SLEEP_INTERVAL = self.get_shortest_interval()
-
         self.start()  # Start the server initially.
 
         while True:
             # Check if the server is running
             if not self.is_running():
                 print("Server is not running. Attempting to restart...")
-                if not self.start():  # Try to start the server.
+                if not self.restart_server():  # Try to start the server.
                     print("Failed to restart the server. Exiting...")
                     exit(1)  # Exit the program with an error code.
 
-            elapsed_time = time.time() - self.last_restart_time
-            update_detected = self.needs_update()
-
-            if not self.is_blackout_time():
-                self._broadcast_restart_warnings(elapsed_time, RESTART_INTERVAL)
-
-            # Routine announcement check
-            if time.time() - self.last_announcement_time >= ANNOUNCEMENT_INTERVAL:
+            # if routine announcement needed
+            if time.time() - self.last_announcement_time >= self.announcement_interval:
                 # Use the function to get the expected restart time
-                self.send_message(self.announcement_message)
+                self.send_message(self.routine_announcement_message)
                 self.last_announcement_time = time.time()
 
-            # Routine restart check
-            if elapsed_time >= RESTART_INTERVAL:
-                if self.is_blackout_time():
-                    print("Blackout time detected. Skipping scheduled restart.")
-                else:
-                    # Close the server
-                    print("Closing the Ark server for scheduled restart...")
-                    self.stop()
+            # if update needed
+            if self.update_queued or (
+                time.time() - self.last_update_time >= self.update_check_interval
+                and self.needs_update()
+            ):
+                self.restart_server("server update")
 
-                    # Restart server
-                    print("Restarting the Ark server...")
-                    self.start()
-                    self.last_restart_time = time.time()
-                    self.sent_warnings.clear()  # Reset sent warnings
+            # if routine restart needed
+            if (
+                time.time() - self.last_restart_time >= self.restart_interval
+            ) and not self.is_blackout_time():
+                self.restart_server("routine restart")
 
-            # Update check
-            elif update_detected:  # Handle updates separately
-                # Close the server
-                print("Update available. Closing the Ark server for update...")
-                self.stop()
-
-                # Update the server
-                print("Updating the Ark server...")
-                self.update()
-
-                # Restart server
-                print("Restarting the Ark server after update...")
-                self.start()
-                self.last_restart_time = time.time()
-
-            time.sleep(SLEEP_INTERVAL)
+            time.sleep(self.sleep_interval)
 
 
 if __name__ == "__main__":
