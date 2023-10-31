@@ -4,4 +4,3 @@ dependencies:
   - pip
   - pip:
     - pyyaml
-    - pytz

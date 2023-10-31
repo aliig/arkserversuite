@@ -1,12 +1,11 @@
 steamcmd:
   path: "C:\\gameservers\\SteamCMD\\steamcmd.exe"
-  install_path: "C:\\gameservers\\ark_survival_ascended"
   app_id: 2430930
   username: "anonymous"
 
 server:
   ip_address: "192.168.1.42"
-  binary_path: "C:\\gameservers\\ark_survival_ascended\\ShooterGame\\Binaries\\Win64"
+  install_path: "C:\\gameservers\\ark_survival_ascended"
   port: 7777
   query_port: 27015
   players: 26
@@ -18,10 +17,10 @@ rcon:
 
 restart:
   scheduled:
-    interval: 24 # hours
-    time: 0300 # in 24 hour format
-  update:
-    interval: 12 # hours
+    interval: 24 #
+    blackout_times: [05:00, 02:00] # range of times to NOT perform a scheduled reset from beginning to end
+  update_check:
+    interval: 1 # hours
   warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
 
 announcement:

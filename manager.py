@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
 
 
 class ArkServer:
-    def __init__(self, config_path: str = "config.yaml"):
+    def __init__(self, config_path: str = "config.yml"):
         with open(config_path, "r") as stream:
             self.config = yaml.safe_load(stream)
         self.last_restart_time = time.time()
@@ -30,14 +30,9 @@ class ArkServer:
     def _execute(self, cmd_list: list[str]) -> subprocess.CompletedProcess:
         return subprocess.run(cmd_list, capture_output=True, text=True)
 
-    def wait_for_warnings(self) -> None:
+    def wait_for_warnings(self, reason: str = "routine maintenance") -> None:
         warning_times = sorted(
             list(map(int, self.config["restart"]["warnings"])), reverse=True
-        )
-        reason = (
-            "an update"
-            if self.update_queued or self.needs_update()
-            else "regular maintenance"
         )
         anticipated_restart_time = (
             datetime.datetime.now() + datetime.timedelta(minutes=warning_times[0])
@@ -124,8 +119,8 @@ class ArkServer:
     def _generate_server_args(self):
         """Generates the command-line arguments for starting the Ark server."""
         base_args = [
-            f"{self.config['server']['binary_path']}\\ArkAscendedServer.exe",
-            "TheIsland_WP",
+            f"{self.config['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe",
+            self.config["server"]["map"],
         ]
         options = [
             f"?Port={self.config['server']['port']}",
@@ -147,9 +142,9 @@ class ArkServer:
         return base_args + options
 
     def stop(self) -> bool:
-        logging.info("Stopping the Ark server...")
-        self.save_world()
         if self.is_running():
+            logging.info("Stopping the Ark server...")
+            self.save_world()
             res = subprocess.run(["taskkill", "/IM", "ArkAscendedServer.exe", "/F"])
             if res.returncode == 0:
                 logging.info("Ark server stopped")
@@ -158,7 +153,6 @@ class ArkServer:
                 return False
         else:
             logging.info("Ark server is not running")
-        time.sleep(5)
         return True
 
     def needs_update(self) -> bool:
@@ -186,7 +180,7 @@ class ArkServer:
             [
                 self.config["steamcmd"]["path"],
                 "+force_install_dir",
-                self.config["steamcmd"]["install_path"],
+                self.config["ark"]["install_path"],
                 "+login",
                 self.config["steamcmd"]["username"],
                 "+app_update",
@@ -196,9 +190,11 @@ class ArkServer:
         )
         self.update_queued = False
 
-    def restart_server(self, reason="scheduled restart") -> bool:
-        self.wait_for_warnings()
-        logging.info(f"Closing the Ark server for {reason}...")
+    def restart_server(
+        self, reason: str = "scheduled restart", skip_warnings: bool = False
+    ) -> bool:
+        if not skip_warnings:
+            self.wait_for_warnings(reason)
         self.send_message(f"Server is restarting for {reason}.")
         self.stop()
         if self.update_queued or self.needs_update():
