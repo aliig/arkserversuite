@@ -1,7 +1,6 @@
 steamcmd:
   path: "C:\\gameservers\\SteamCMD"
   app_id: 2430930
-  username: "anonymous"
 
 server:
   name: "[US East] Brohana 4xH/XP,8xT,16xB"

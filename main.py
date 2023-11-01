@@ -8,6 +8,8 @@ import sys
 import threading
 import requests
 
+from config import DEFAULT_CONFIG
+
 # Setting up logging
 logging.basicConfig(
     level=logging.INFO,
@@ -35,27 +37,8 @@ sys.stdout = LoggerToFile(logging.getLogger(), logging.INFO)
 sys.stderr = LoggerToFile(logging.getLogger(), logging.ERROR)
 
 
-def run_with_timeout(func, condition, timeout):
-    result_container = [None]
-
-    def target():
-        result_container[0] = func()
-
-    thread = threading.Thread(target=target)
-
-    thread.start()
-    thread.join(timeout)
-    if thread.is_alive():
-        return False
-    return condition(result_container[0])
-
-
 class ArkServer:
-    def __init__(self, config_path: str = "config.yml"):
-        # Load the configuration
-        with open(config_path, "r") as stream:
-            self.config = yaml.safe_load(stream)
-
+    def __init__(self):
         # Time-related initializations
         self.last_restart_time = time.time()
         self.last_announcement_time = time.time()
@@ -84,44 +67,12 @@ class ArkServer:
         self.welcome_message_sent = False
         self.discord_webhook = self.config["discord"]["webhook"]
 
-    @staticmethod
-    def _execute(
-        cmd: str, suppress_output: bool = False
-    ) -> subprocess.CompletedProcess:
-        process = subprocess.run(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
-        )
+    def get_shortest_interval(self) -> float:
+        smallest_warning = min(self.config["restart"]["warnings"]) * 60
+        update_interval = self.config["restart"]["update_check"]["interval"] * 60 * 60
+        announcement_interval = self.config["announcement"]["interval"] * 60 * 60
 
-        # Print stdout and stderr to the console
-        if not suppress_output:
-            if process.stdout:
-                print(process.stdout)
-            if process.stderr:
-                print(process.stderr, file=sys.stderr)
-
-        return process
-
-    def rcon_cmd(self, command: str) -> str:
-        cmd_str = f"{self.config['rcon']['path']}//rcon.exe -a {self.config['server']['ip_address']}:{self.config['rcon']['port']} -p {self.config['server']['password']} \"{command}\""
-        logging.info(f"Executing RCON command: {cmd_str}")
-        return self._execute(cmd_str, suppress_output=False).stdout
-
-    def wait_for_warnings(self, reason: str = "routine maintenance") -> None:
-        warning_times = sorted(
-            list(map(int, self.config["restart"]["warnings"])), reverse=True
-        )
-        anticipated_restart_time = (
-            datetime.datetime.now() + datetime.timedelta(minutes=warning_times[0])
-        ).strftime("%H:%M %p")
-
-        for i, warning_time in enumerate(warning_times):
-            self.send_message(
-                f"Server will restart in {warning_time} minutes, at approximately {anticipated_restart_time}, for {reason}. Please prepare to log off."
-            )
-            if i < len(warning_times) - 1:
-                time.sleep((warning_time - warning_times[i + 1]) * 60)
-            else:
-                time.sleep(warning_time * 60)
+        return min(smallest_warning, update_interval, announcement_interval)
 
     def is_blackout_time(self) -> bool:
         blackout_start, blackout_end = self.config["restart"]["scheduled"][
@@ -141,67 +92,8 @@ class ArkServer:
         else:
             return blackout_start_time <= current_time <= blackout_end_time
 
-    def get_shortest_interval(self) -> float:
-        smallest_warning = min(self.config["restart"]["warnings"]) * 60
-        update_interval = self.config["restart"]["update_check"]["interval"] * 60 * 60
-        announcement_interval = self.config["announcement"]["interval"] * 60 * 60
-
-        return min(smallest_warning, update_interval, announcement_interval)
-
-    def save_world(self) -> bool:
-        logging.info("Saving world data...")
-        res = self.rcon_cmd("saveworld")
-        if "World Saved" in res:
-            logging.info("World saved successfully!")
-            return True
-        logging.error("Failed to save the world. Please check for issues.")
-        return False
-
-    def count_active_players(self) -> int:
-        response = self.rcon_cmd("ListPlayers")
-
-        # Check for the "No Players Connected" response
-        if "No Players Connected" in response:
-            return 0
-
-        # Split the response by lines and count them to get the number of players
-        players = response.strip().split("\n")
-
-        return len(players)
-
-    def send_to_discord(self, content: str) -> bool:
-        """Sends a message to Discord via a webhook."""
-        data = {"content": content}
-        response = requests.post(self.discord_webhook, json=data)
-        return response.status_code == 204
-
-    def send_message(self, message: str) -> str:
-        logging.info(f"Sending server message: {message}")
-        if self.discord_webhook:
-            if not self.send_to_discord(message):
-                logging.error(f"Failed to send message to Discord: {message}")
-        return self.rcon_cmd(f"serverchat {message}")
-
-    def is_running(self) -> bool:
-        try:
-            cmd_str = 'tasklist /FI "IMAGENAME eq ArkAscendedServer.exe"'
-            result = self._execute(cmd_str, suppress_output=True)
-            return "ArkAscendedServer.exe" in result.stdout
-        except Exception as e:
-            logging.error(f"Error checking if server is running: {e}")
-            return False
-
-    def _generate_batch_file(self):
-        cmd_string = self._generate_server_args()
-        batch_content = f'@echo off\nstart "" {cmd_string}'
-
-        with open(".start_server.bat", "w") as batch_file:
-            batch_file.write(batch_content)
-
-        return ".start_server.bat"
-
-    def start(self) -> bool:
-        if not self.is_running():
+    def start() -> bool:
+        if not is_server_running():
             if self.update_queued or self.needs_update():
                 self.update()
 
@@ -221,39 +113,6 @@ class ArkServer:
             logging.info("Ark server is already running")
         return True
 
-    def _generate_server_args(self):
-        """Generates the command-line arguments for starting the Ark server."""
-        base_arg = f"{self.config['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe"
-
-        options = "?".join(
-            [
-                self.config["server"]["map"],
-                f"SessionName=\"{self.config['server']['name']}\"",
-                f"Port={self.config['server']['port']}",
-                f"QueryPort={self.config['server']['query_port']}",
-                f"Password={self.config['server']['password']}",
-                f"MaxPlayers={self.config['server']['players']}",
-                f"WinLiveMaxPlayers={self.config['server']['players']}",
-                "AllowCrateSpawnsOnTopOfStructures=True",
-                "RCONEnabled=True",
-            ]
-        )
-
-        spaced_options = " ".join(
-            [
-                "-EnableIdlePlayerKick",
-                "-NoBattlEye",
-                "-servergamelog",
-                "-servergamelogincludetribelogs",
-                "-ServerRCONOutputTribeLogs",
-                "-nosteamclient",
-                "-game",
-                "-server",
-                "-log",
-                f"-mods={','.join(map(str, self.config['mods']))}",
-            ]
-        )
-
         # Combining everything into one single string
         return f"{base_arg} {options} {spaced_options}"
 
@@ -270,26 +129,6 @@ class ArkServer:
         else:
             logging.info("Ark server is not running")
         return True
-
-    def needs_update(self) -> bool:
-        logging.info("Checking for Ark server updates...")
-        self.last_update_check = time.time()
-        cmd_str = f"{self.config['steamcmd']['path']}\\steamcmd.exe +login anonymous +app_info_print {self.config['steamcmd']['app_id']} +quit"
-        result = self._execute(cmd_str)
-        res = '"state" "eStateUpdateRequired"' in result.stdout
-        if res:
-            logging.info("Update available")
-        self.update_queued = res
-        return res
-
-    def update(self) -> None:
-        logging.info("Updating the Ark server...")
-        cmd_str = (
-            f"{self.config['steamcmd']['path']} +force_install_dir {self.config['server']['install_path']} +login anonymous "
-            f"+app_update {self.config['steamcmd']['app_id']} +quit"
-        )
-        self._execute(cmd_str)
-        self.update_queued = False
 
     def restart_server(
         self, reason: str = "scheduled restart", skip_warnings: bool = False

@@ -1,0 +1,82 @@
+import subprocess
+from config import DEFAULT_CONFIG
+
+
+def run_shell_cmd(
+    cmd: str, suppress_output: bool = False
+) -> subprocess.CompletedProcess:
+    process = subprocess.run(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
+    )
+
+    # Print stdout and stderr to the console
+    if not suppress_output:
+        if process.stdout:
+            print(process.stdout)
+        if process.stderr:
+            print(process.stderr, file=sys.stderr)
+
+    return process
+
+
+def is_server_running() -> bool:
+    try:
+        cmd_str = 'tasklist /FI "IMAGENAME eq ArkAscendedServer.exe"'
+        result = run_shell_cmd(cmd_str, suppress_output=True)
+        return "ArkAscendedServer.exe" in result.stdout
+    except Exception as e:
+        print(f"Error checking if server is running: {e}")
+        return False
+
+
+def generate_batch_file(self) -> str:
+    base_arg = f"{DEFAULT_CONFIG['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe"
+    options = "?".join(
+        [
+            DEFAULT_CONFIG["server"]["map"],
+            f"SessionName=\"{DEFAULT_CONFIG['server']['name']}\"",
+            f"Port={DEFAULT_CONFIG['server']['port']}",
+            f"QueryPort={DEFAULT_CONFIG['server']['query_port']}",
+            f"Password={DEFAULT_CONFIG['server']['password']}",
+            f"MaxPlayers={DEFAULT_CONFIG['server']['players']}",
+            f"WinLiveMaxPlayers={DEFAULT_CONFIG['server']['players']}",
+            "AllowCrateSpawnsOnTopOfStructures=True",
+            "RCONEnabled=True",
+        ]
+    )
+    spaced_options = " ".join(
+        [
+            "-EnableIdlePlayerKick",
+            "-NoBattlEye",
+            "-servergamelog",
+            "-servergamelogincludetribelogs",
+            "-ServerRCONOutputTribeLogs",
+            "-nosteamclient",
+            "-game",
+            "-server",
+            "-log",
+            f"-mods={','.join(map(str, DEFAULT_CONFIG['mods']))}",
+        ]
+    )
+
+    cmd_string = f"{base_arg} {options} {spaced_options}"
+    batch_content = f'@echo off\nstart "" {cmd_string}'
+
+    with open(".start_server.bat", "w") as batch_file:
+        batch_file.write(batch_content)
+
+    return ".start_server.bat"
+
+
+def does_server_need_update() -> bool:
+    cmd_str = f"{DEFAULT_CONFIG['steamcmd']['path']}\\steamcmd.exe +login anonymous +app_info_print {DEFAULT_CONFIG['steamcmd']['app_id']} +quit"
+    result = run_shell_cmd(cmd_str)
+    return '"state" "eStateUpdateRequired"' in result.stdout
+
+
+def update_server() -> None:
+    cmd_str = (
+        f"{DEFAULT_CONFIG['steamcmd']['path']} +force_install_dir {DEFAULT_CONFIG['server']['install_path']} +login "
+        f"anonymous +app_update {DEFAULT_CONFIG['steamcmd']['app_id']} +quit"
+    )
+    run_shell_cmd(cmd_str)
