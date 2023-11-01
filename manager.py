@@ -48,14 +48,12 @@ class ArkServer:
 
     def _execute(self, cmd_list: list[str]) -> subprocess.CompletedProcess:
         process = subprocess.run(
-            cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            cmd_list, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True
         )
 
-        # Print stdout and stderr to the console
+        # Print stdout to the console
         if process.stdout:
             print(process.stdout)
-        if process.stderr:
-            print(process.stderr, file=sys.stderr)
 
         return process
 
