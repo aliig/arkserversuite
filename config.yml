@@ -26,7 +26,7 @@ restart:
   warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
 
 announcement:
-  interval: 2  # hours
+  interval: 1  # hours
   message: "Thanks for playing on Brohana. Server is still WIP and adjustments/mods may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
 
 stale:
