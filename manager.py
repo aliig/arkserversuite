@@ -108,9 +108,9 @@ class ArkServer:
             return False
 
     def start(self) -> None:
-        logging.info("Starting the Ark server...")
         if not self.is_running():
             args = self._generate_server_args()
+            logging.info(f"Starting Ark server with args: {args}")
             self.server_process = subprocess.Popen(args)
             self.last_restart_time = time.time()
             logging.info("Ark server started")
