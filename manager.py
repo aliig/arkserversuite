@@ -67,6 +67,11 @@ class ArkServer:
         )
         self.announcement_interval = self.config["announcement"]["interval"] * 60 * 60
 
+        self.last_stale_check = time.time()
+        self.stale_check_interval = self.config["stale"]["interval"] * 60
+        self.stale_restart_threshold = self.config["stale"]["threshold"] * 60 * 60
+        self.first_empty_server_time = None
+
         self.sleep_interval = self.get_shortest_interval()
 
     def _execute(
@@ -147,6 +152,18 @@ class ArkServer:
         logging.error("Failed to save the world. Please check for issues.")
         return False
 
+    def count_active_players(self) -> int:
+        response = self.rcon_cmd("ListPlayers")
+
+        # Check for the "No Players Connected" response
+        if "No Players Connected" in response:
+            return 0
+
+        # Split the response by lines and count them to get the number of players
+        players = response.strip().split("\n")
+
+        return len(players)
+
     def send_message(self, message: str) -> str:
         logging.info(f"Sending server message: {message}")
         return self.rcon_cmd(f"serverchat {message}")
@@ -219,7 +236,7 @@ class ArkServer:
                 "-game",
                 "-server",
                 "-log",
-                "-mods=928988",
+                f"-mods={','.join(map(str, self.config['mods']))}",
             ]
         )
 
@@ -284,6 +301,7 @@ class ArkServer:
         self.stop()
         res = self.start()
         self.last_restart_time = time.time()
+        self.first_empty_server_time = None
         return res
 
     def run(self) -> None:
@@ -305,7 +323,22 @@ class ArkServer:
                 self.send_message(self.routine_announcement_message)
                 self.last_announcement_time = time.time()
 
-            # if update needed
+            # periodically restart an empty server
+            if time.time() - self.last_stale_check >= self.stale_check_interval:
+                if self.count_active_players() == 0:
+                    if self.first_empty_server_time == None:
+                        self.first_empty_server_time = time.time()
+                    else:
+                        if (
+                            time.time() - self.first_empty_server_time
+                            >= self.stale_restart_threshold
+                        ):
+                            self.restart_server("stale server", skip_warnings=True)
+                else:
+                    self.first_empty_server_time = None
+                self.last_stale_check = time.time()
+
+            # check for updates
             if self.update_queued or (
                 time.time() - self.last_update_check >= self.update_check_interval
                 and self.needs_update()
