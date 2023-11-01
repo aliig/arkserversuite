@@ -4,6 +4,7 @@ steamcmd:
   username: "anonymous"
 
 server:
+  name: "brohana test server"
   ip_address: "192.168.1.42"
   install_path: "C:\\gameservers\\ark_survival_ascended"
   port: 7777

@@ -121,15 +121,15 @@ class ArkServer:
         """Generates the command-line arguments for starting the Ark server."""
         base_args = [
             f"{self.config['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe",
-            self.config["server"]["map"],
         ]
         options = [
-            f"?SessionName='brohana test server'",
+            self.config["server"]["map"],
+            f"?SessionName={self.config['server']['name']}",
             f"?Port={self.config['server']['port']}",
             f"?QueryPort={self.config['server']['query_port']}",
             f"?Password={self.config['server']['password']}",
             f"?MaxPlayers={self.config['server']['players']}",
-            f"WinLiveMaxPlayers={self.config['server']['players']}",
+            f"?WinLiveMaxPlayers={self.config['server']['players']}",
             "?AllowCrateSpawnsOnTopOfStructures=True",
             "?RCONEnabled=True",
             "-EnableIdlePlayerKick",
@@ -161,7 +161,6 @@ class ArkServer:
             concatenated_options.append(temp_option)
 
         return base_args + concatenated_options
-
 
     def stop(self) -> bool:
         if self.is_running():
