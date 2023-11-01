@@ -200,11 +200,12 @@ class ArkServer:
             subprocess.Popen(cmd, shell=True)
             self.last_restart_time = time.time()
             self.welcome_message_sent = False
-            logging.info("Ark server started")
             res = run_with_timeout(self.is_running, lambda x: x, 20)
             if not res:
                 logging.error("Failed to start the Ark server")
                 return False
+            else:
+                logging.info("Ark server started")
         else:
             logging.info("Ark server is already running")
         return True
