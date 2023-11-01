@@ -265,7 +265,9 @@ class ArkServer:
             # Check if the server is running
             if not run_with_timeout(self.is_running, lambda x: x, 5):
                 print("Server is not running. Attempting to restart...")
-                if not self.restart_server():  # Try to start the server.
+                if not self.restart_server(
+                    skip_warnings=True
+                ):  # Try to start the server.
                     print("Failed to restart the server. Exiting...")
                     exit(1)  # Exit the program with an error code.
 

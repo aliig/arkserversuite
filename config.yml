@@ -10,7 +10,7 @@ server:
   port: 7777
   query_port: 27015
   players: 26
-  password: "hello"
+  password: ""
   map: "TheIsland_WP"
 
 rcon:
@@ -26,5 +26,5 @@ restart:
   warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
 
 announcement:
-  interval: 3  # hours
+  interval: 1  # hours
   message: "Thanks for playing on Brohana. Server is still WIP and adjustments may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
