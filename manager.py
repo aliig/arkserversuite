@@ -148,7 +148,7 @@ class ArkServer:
 
         return batch_file_path
 
-    def start(self) -> None:
+    def start(self) -> bool:
         if not self.is_running():
             if self.update_queued or self.needs_update():
                 self.update()
@@ -159,8 +159,13 @@ class ArkServer:
             subprocess.Popen(cmd, shell=True)
             self.last_restart_time = time.time()
             logging.info("Ark server started")
+            res = run_with_timeout(self.is_running, lambda x: x, 20)
+            if not res:
+                logging.error("Failed to start the Ark server")
+                return False
         else:
             logging.info("Ark server is already running")
+        return True
 
     def _generate_server_args(self):
         """Generates the command-line arguments for starting the Ark server."""
@@ -263,7 +268,7 @@ class ArkServer:
 
         while True:
             # Check if the server is running
-            if not run_with_timeout(self.is_running, lambda x: x, 20):
+            if not self.is_running():
                 print("Server is not running. Attempting to restart...")
                 if not self.restart_server(
                     skip_warnings=True
