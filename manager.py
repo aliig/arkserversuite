@@ -25,9 +25,6 @@ class ArkServer:
             self.config["restart"]["update_check"]["interval"] * 60 * 60
         )
         self.announcement_interval = self.config["announcement"]["interval"] * 60 * 60
-        self.destroywilddinos_interval = (
-            self.config["destroywilddinos"]["interval"] * 60 * 60
-        )
 
         self.sleep_interval = self.get_shortest_interval()
 
@@ -127,10 +124,12 @@ class ArkServer:
             self.config["server"]["map"],
         ]
         options = [
+            f"?SessionName='brohana test server'",
             f"?Port={self.config['server']['port']}",
             f"?QueryPort={self.config['server']['query_port']}",
-            f"?MaxPlayers={self.config['server']['players']}",
             f"?Password={self.config['server']['password']}",
+            f"?MaxPlayers={self.config['server']['players']}",
+            f"WinLiveMaxPlayers={self.config['server']['players']}",
             "?AllowCrateSpawnsOnTopOfStructures=True",
             "?RCONEnabled=True",
             "-EnableIdlePlayerKick",
@@ -143,7 +142,26 @@ class ArkServer:
             "-server",
             "-log",
         ]
-        return base_args + options
+
+        concatenated_options = []
+        temp_option = ""
+
+        for option in options:
+            if option.startswith("?"):
+                temp_option += option  # Append without space
+            else:
+                # If we have a previous option that was being constructed, we add it to the final list
+                if temp_option:
+                    concatenated_options.append(temp_option)
+                    temp_option = ""
+                concatenated_options.append(option)
+
+        # Append any trailing option
+        if temp_option:
+            concatenated_options.append(temp_option)
+
+        return base_args + concatenated_options
+
 
     def stop(self) -> bool:
         if self.is_running():
