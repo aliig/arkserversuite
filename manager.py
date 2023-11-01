@@ -4,9 +4,25 @@ import datetime
 import yaml
 import logging
 import os
+import threading
 
 # Setting up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
+
+
+def run_with_timeout(func, condition, timeout):
+    result_container = [None]
+
+    def target():
+        result_container[0] = func()
+
+    thread = threading.Thread(target=target)
+
+    thread.start()
+    thread.join(timeout)
+    if thread.is_alive():
+        return False
+    return condition(result_container[0])
 
 
 class ArkServer:
@@ -235,7 +251,7 @@ class ArkServer:
 
         while True:
             # Check if the server is running
-            if not self.is_running():
+            if not run_with_timeout(self.is_running, lambda x: x, 5):
                 print("Server is not running. Attempting to restart...")
                 if not self.restart_server():  # Try to start the server.
                     print("Failed to restart the server. Exiting...")
