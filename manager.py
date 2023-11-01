@@ -125,7 +125,7 @@ class ArkServer:
         options = "?".join(
             [
                 self.config["server"]["map"],
-                f"SessionName={self.config['server']['name']}",
+                f"SessionName=\"{self.config['server']['name']}\"",
                 f"Port={self.config['server']['port']}",
                 f"QueryPort={self.config['server']['query_port']}",
                 f"Password={self.config['server']['password']}",
