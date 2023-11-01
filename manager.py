@@ -3,6 +3,7 @@ import time
 import datetime
 import yaml
 import logging
+import os
 
 # Setting up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
@@ -107,10 +108,23 @@ class ArkServer:
             logging.error(f"Error checking if server is running: {e}")
             return False
 
+    def _generate_batch_file(self):
+        cmd_string = self._generate_server_args()
+        batch_content = f'@echo off\nstart "" {cmd_string}'
+
+        batch_file_path = os.path.join(
+            self.config["server"]["install_path"], "start_server.bat"
+        )
+
+        with open(batch_file_path, "w") as batch_file:
+            batch_file.write(batch_content)
+
+        return batch_file_path
+
     def start(self) -> None:
         if not self.is_running():
-            args_string = self._generate_server_args()
-            cmd = ["cmd", "/c", "start", '""', args_string]
+            batch_file_path = self._generate_batch_file()
+            cmd = ["cmd", "/c", batch_file_path]
             logging.info(f"Starting Ark server with cmd: {cmd}")
             subprocess.Popen(cmd, shell=True)
             self.last_restart_time = time.time()
