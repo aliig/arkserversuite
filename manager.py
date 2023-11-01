@@ -56,7 +56,7 @@ class ArkServer:
         self.last_restart_time = time.time()
         self.routine_announcement_message = self.config["announcement"]["message"]
         self.last_announcement_time = time.time()
-        self.last_update_time = time.time()
+        self.last_update_check = time.time()
         self.update_queued = False
 
         self.restart_interval = (
@@ -242,6 +242,7 @@ class ArkServer:
 
     def needs_update(self) -> bool:
         logging.info("Checking for Ark server updates...")
+        self.last_update_check = time.time()
         result = self._execute(
             [
                 f"{self.config['steamcmd']['path']}\\steamcmd.exe",
@@ -260,7 +261,6 @@ class ArkServer:
 
     def update(self) -> None:
         logging.info("Updating the Ark server...")
-        self.last_update_time = time.time()
         self._execute(
             [
                 self.config["steamcmd"]["path"],
@@ -307,7 +307,7 @@ class ArkServer:
 
             # if update needed
             if self.update_queued or (
-                time.time() - self.last_update_time >= self.update_check_interval
+                time.time() - self.last_update_check >= self.update_check_interval
                 and self.needs_update()
             ):
                 self.restart_server("server update")
