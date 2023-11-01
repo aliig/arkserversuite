@@ -122,16 +122,20 @@ class ArkServer:
         base_args = [
             f"{self.config['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe",
         ]
-        options = [
-            self.config["server"]["map"],
-            f"?SessionName={self.config['server']['name']}",
-            f"?Port={self.config['server']['port']}",
-            f"?QueryPort={self.config['server']['query_port']}",
-            f"?Password={self.config['server']['password']}",
-            f"?MaxPlayers={self.config['server']['players']}",
-            f"?WinLiveMaxPlayers={self.config['server']['players']}",
-            "?AllowCrateSpawnsOnTopOfStructures=True",
-            "?RCONEnabled=True",
+        options = "?".join(
+            [
+                self.config["server"]["map"],
+                f"SessionName={self.config['server']['name']}",
+                f"Port={self.config['server']['port']}",
+                f"QueryPort={self.config['server']['query_port']}",
+                f"Password={self.config['server']['password']}",
+                f"MaxPlayers={self.config['server']['players']}",
+                f"WinLiveMaxPlayers={self.config['server']['players']}",
+                "AllowCrateSpawnsOnTopOfStructures=True",
+                "RCONEnabled=True",
+            ]
+        )
+        spaced_options = [
             "-EnableIdlePlayerKick",
             "-NoBattlEye",
             "-servergamelog",
@@ -142,25 +146,7 @@ class ArkServer:
             "-server",
             "-log",
         ]
-
-        concatenated_options = []
-        temp_option = ""
-
-        for option in options:
-            if option.startswith("?"):
-                temp_option += option  # Append without space
-            else:
-                # If we have a previous option that was being constructed, we add it to the final list
-                if temp_option:
-                    concatenated_options.append(temp_option)
-                    temp_option = ""
-                concatenated_options.append(option)
-
-        # Append any trailing option
-        if temp_option:
-            concatenated_options.append(temp_option)
-
-        return base_args + concatenated_options
+        return base_args + [options] + spaced_options
 
     def stop(self) -> bool:
         if self.is_running():
