@@ -110,8 +110,9 @@ class ArkServer:
     def start(self) -> None:
         if not self.is_running():
             args = self._generate_server_args()
-            logging.info(f"Starting Ark server with args: {args}")
-            self.server_process = subprocess.Popen(args)
+            cmd = ["cmd", "/c", "start", '""', args]
+            logging.info(f"Starting Ark server with cmd: {cmd}")
+            subprocess.Popen(cmd, shell=True)
             self.last_restart_time = time.time()
             logging.info("Ark server started")
         else:
@@ -147,7 +148,7 @@ class ArkServer:
             "-log",
             "-mods=928988",
         ]
-        return ["cmd", "/c", "start", '""'] + base_args + [options] + spaced_options
+        return base_args + [options] + spaced_options
 
     def stop(self) -> bool:
         if self.is_running():
