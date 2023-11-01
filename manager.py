@@ -80,11 +80,14 @@ class ArkServer:
         # Determine shortest interval for sleep period
         self.sleep_interval = self.get_shortest_interval()
 
+        self.welcome_message_sent = False
+
+    @staticmethod
     def _execute(
-        self, cmd_list: list[str], suppress_output: bool = False
+        cmd: str, suppress_output: bool = False
     ) -> subprocess.CompletedProcess:
         process = subprocess.run(
-            cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
         )
 
         # Print stdout and stderr to the console
@@ -95,6 +98,11 @@ class ArkServer:
                 print(process.stderr, file=sys.stderr)
 
         return process
+
+    def rcon_cmd(self, command: str) -> str:
+        logging.info(f"Executing RCON command: {command}")
+        cmd_str = f"{self.config['rcon']['path']}//rcon.exe -a {self.config['server']['ip_address']}:{self.config['rcon']['port']} -p {self.config['server']['password']} \"{command}\""
+        return self._execute(cmd_str, suppress_output=True).stdout
 
     def wait_for_warnings(self, reason: str = "routine maintenance") -> None:
         warning_times = sorted(
@@ -138,17 +146,6 @@ class ArkServer:
 
         return min(smallest_warning, update_interval, announcement_interval)
 
-    def rcon_cmd(self, command: str) -> str:
-        logging.info(f"Executing RCON command: {command}")
-        base_cmd = [
-            f"{self.config['rcon']['path']}//rcon.exe",
-            "-a",
-            f"{self.config['server']['ip_address']}:{self.config['rcon']['port']}",
-            "-p",
-            self.config["server"]["password"],
-        ]
-        return self._execute(base_cmd + command.split(), suppress_output=True).stdout
-
     def save_world(self) -> bool:
         logging.info("Saving world data...")
         res = self.rcon_cmd("saveworld")
@@ -176,10 +173,8 @@ class ArkServer:
 
     def is_running(self) -> bool:
         try:
-            result = self._execute(
-                ["tasklist", "/FI", "IMAGENAME eq ArkAscendedServer.exe"],
-                suppress_output=True,
-            )
+            cmd_str = 'tasklist /FI "IMAGENAME eq ArkAscendedServer.exe"'
+            result = self._execute(cmd_str, suppress_output=True)
             return "ArkAscendedServer.exe" in result.stdout
         except Exception as e:
             logging.error(f"Error checking if server is running: {e}")
@@ -204,6 +199,7 @@ class ArkServer:
             logging.info(f"Starting Ark server with cmd: {cmd}")
             subprocess.Popen(cmd, shell=True)
             self.last_restart_time = time.time()
+            self.welcome_message_sent = False
             logging.info("Ark server started")
             res = run_with_timeout(self.is_running, lambda x: x, 20)
             if not res:
@@ -266,16 +262,8 @@ class ArkServer:
     def needs_update(self) -> bool:
         logging.info("Checking for Ark server updates...")
         self.last_update_check = time.time()
-        result = self._execute(
-            [
-                f"{self.config['steamcmd']['path']}\\steamcmd.exe",
-                "+login",
-                self.config["steamcmd"]["username"],
-                "+app_info_print",
-                str(self.config["steamcmd"]["app_id"]),
-                "+quit",
-            ]
-        )
+        cmd_str = f"{self.config['steamcmd']['path']}\\steamcmd.exe +login {self.config['steamcmd']['username']} +app_info_print {self.config['steamcmd']['app_id']} +quit"
+        result = self._execute(cmd_str)
         res = '"state" "eStateUpdateRequired"' in result.stdout
         if res:
             logging.info("Update available")
@@ -284,18 +272,11 @@ class ArkServer:
 
     def update(self) -> None:
         logging.info("Updating the Ark server...")
-        self._execute(
-            [
-                self.config["steamcmd"]["path"],
-                "+force_install_dir",
-                self.config["ark"]["install_path"],
-                "+login",
-                self.config["steamcmd"]["username"],
-                "+app_update",
-                str(self.config["steamcmd"]["app_id"]),
-                "+quit",
-            ]
+        cmd_str = (
+            f"{self.config['steamcmd']['path']} +force_install_dir {self.config['server']['install_path']} +login "
+            f"{self.config['steamcmd']['username']} +app_update {self.config['steamcmd']['app_id']} +quit"
         )
+        self._execute(cmd_str)
         self.update_queued = False
 
     def restart_server(
@@ -306,7 +287,6 @@ class ArkServer:
         self.send_message(f"Server is restarting for {reason}.")
         self.stop()
         res = self.start()
-        self.last_restart_time = time.time()
         self.first_empty_server_time = None
         return res
 
@@ -322,6 +302,14 @@ class ArkServer:
                 ):  # Try to start the server.
                     print("Failed to restart the server. Exiting...")
                     exit(1)  # Exit the program with an error code.
+
+            # if first announcement needed on server start
+            if (
+                time.time() - self.last_restart_time >= 2 * 60
+                and not self.welcome_message_sent
+            ):
+                self.send_message(self.routine_announcement_message)
+                self.welcome_message_sent = True
 
             # if routine announcement needed
             if time.time() - self.last_announcement_time >= self.announcement_interval:
