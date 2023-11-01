@@ -4,6 +4,7 @@ import datetime
 import yaml
 import logging
 import os
+import sys
 import threading
 
 # Setting up logging
@@ -46,7 +47,17 @@ class ArkServer:
         self.sleep_interval = self.get_shortest_interval()
 
     def _execute(self, cmd_list: list[str]) -> subprocess.CompletedProcess:
-        return subprocess.run(cmd_list, capture_output=True, text=True)
+        process = subprocess.run(
+            cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+        )
+
+        # Print stdout and stderr to the console
+        if process.stdout:
+            print(process.stdout)
+        if process.stderr:
+            print(process.stderr, file=sys.stderr)
+
+        return process
 
     def wait_for_warnings(self, reason: str = "routine maintenance") -> None:
         warning_times = sorted(
@@ -139,6 +150,9 @@ class ArkServer:
 
     def start(self) -> None:
         if not self.is_running():
+            if self.update_queued or self.needs_update():
+                self.update()
+
             batch_file_path = self._generate_batch_file()
             cmd = ["cmd", "/c", batch_file_path]
             logging.info(f"Starting Ark server with cmd: {cmd}")
@@ -240,8 +254,6 @@ class ArkServer:
             self.wait_for_warnings(reason)
         self.send_message(f"Server is restarting for {reason}.")
         self.stop()
-        if self.update_queued or self.needs_update():
-            self.update()
         res = self.start()
         self.last_restart_time = time.time()
         return res
