@@ -145,8 +145,9 @@ class ArkServer:
             "-game",
             "-server",
             "-log",
+            "-mods=928988",
         ]
-        return base_args + [options] + spaced_options
+        return ["start", '""'] + base_args + [options] + spaced_options
 
     def stop(self) -> bool:
         if self.is_running():
