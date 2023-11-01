@@ -8,7 +8,30 @@ import sys
 import threading
 
 # Setting up logging
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s]: %(message)s",
+    handlers=[logging.FileHandler("log.txt"), logging.StreamHandler()],
+)
+
+
+# Custom class to redirect stdout and stderr to logger
+class LoggerToFile:
+    def __init__(self, logger, level):
+        self.logger = logger
+        self.level = level
+
+    def write(self, message):
+        # Eliminate extra newlines in logger output
+        if message != "\n":
+            self.logger.log(self.level, message)
+
+    def flush(self):
+        pass  # Leave it empty to satisfy the stream interface
+
+
+sys.stdout = LoggerToFile(logging.getLogger(), logging.INFO)
+sys.stderr = LoggerToFile(logging.getLogger(), logging.ERROR)
 
 
 def run_with_timeout(func, condition, timeout):
@@ -46,16 +69,19 @@ class ArkServer:
 
         self.sleep_interval = self.get_shortest_interval()
 
-    def _execute(self, cmd_list: list[str]) -> subprocess.CompletedProcess:
+    def _execute(
+        self, cmd_list: list[str], suppress_output: bool = False
+    ) -> subprocess.CompletedProcess:
         process = subprocess.run(
             cmd_list, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
         )
 
         # Print stdout and stderr to the console
-        if process.stdout:
-            print(process.stdout)
-        if process.stderr:
-            print(process.stderr, file=sys.stderr)
+        if not suppress_output:
+            if process.stdout:
+                print(process.stdout)
+            if process.stderr:
+                print(process.stderr, file=sys.stderr)
 
         return process
 
@@ -110,7 +136,7 @@ class ArkServer:
             "-p",
             self.config["server"]["password"],
         ]
-        return self._execute(base_cmd + command.split()).stdout
+        return self._execute(base_cmd + command.split(), suppress_output=True).stdout
 
     def save_world(self) -> bool:
         logging.info("Saving world data...")
@@ -128,7 +154,8 @@ class ArkServer:
     def is_running(self) -> bool:
         try:
             result = self._execute(
-                ["tasklist", "/FI", "IMAGENAME eq ArkAscendedServer.exe"]
+                ["tasklist", "/FI", "IMAGENAME eq ArkAscendedServer.exe"],
+                suppress_output=True,
             )
             return "ArkAscendedServer.exe" in result.stdout
         except Exception as e:
