@@ -139,14 +139,10 @@ class ArkServer:
         cmd_string = self._generate_server_args()
         batch_content = f'@echo off\nstart "" {cmd_string}'
 
-        batch_file_path = os.path.join(
-            self.config["server"]["install_path"], "start_server.bat"
-        )
-
-        with open(batch_file_path, "w") as batch_file:
+        with open(".start_server.bat", "w") as batch_file:
             batch_file.write(batch_content)
 
-        return batch_file_path
+        return ".start_server.bat"
 
     def start(self) -> bool:
         if not self.is_running():
