@@ -109,8 +109,8 @@ class ArkServer:
 
     def start(self) -> None:
         if not self.is_running():
-            args = self._generate_server_args()
-            cmd = ["cmd", "/c", "start", '""', args]
+            args_string = self._generate_server_args()
+            cmd = ["cmd", "/c", "start", '""', args_string]
             logging.info(f"Starting Ark server with cmd: {cmd}")
             subprocess.Popen(cmd, shell=True)
             self.last_restart_time = time.time()
@@ -120,9 +120,8 @@ class ArkServer:
 
     def _generate_server_args(self):
         """Generates the command-line arguments for starting the Ark server."""
-        base_args = [
-            f"{self.config['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe",
-        ]
+        base_arg = f"{self.config['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe"
+
         options = "?".join(
             [
                 self.config["server"]["map"],
@@ -136,19 +135,24 @@ class ArkServer:
                 "RCONEnabled=True",
             ]
         )
-        spaced_options = [
-            "-EnableIdlePlayerKick",
-            "-NoBattlEye",
-            "-servergamelog",
-            "-servergamelogincludetribelogs",
-            "-ServerRCONOutputTribeLogs",
-            "-nosteamclient",
-            "-game",
-            "-server",
-            "-log",
-            "-mods=928988",
-        ]
-        return base_args + [options] + spaced_options
+
+        spaced_options = " ".join(
+            [
+                "-EnableIdlePlayerKick",
+                "-NoBattlEye",
+                "-servergamelog",
+                "-servergamelogincludetribelogs",
+                "-ServerRCONOutputTribeLogs",
+                "-nosteamclient",
+                "-game",
+                "-server",
+                "-log",
+                "-mods=928988",
+            ]
+        )
+
+        # Combining everything into one single string
+        return f"{base_arg} {options} {spaced_options}"
 
     def stop(self) -> bool:
         if self.is_running():
