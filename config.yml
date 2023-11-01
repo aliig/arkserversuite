@@ -30,7 +30,7 @@ announcement:
   message: "Thanks for playing on Brohana. Server is still WIP and adjustments may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
 
 stale:
-  interval: 30 # interval to check for a stale server in minutes
+  interval: 0.5 # interval to check for a stale server in hours
   threshold: 2 # once a server is stale for this many hours, it will be restarted
 
 mods:

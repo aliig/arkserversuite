@@ -51,14 +51,17 @@ def run_with_timeout(func, condition, timeout):
 
 class ArkServer:
     def __init__(self, config_path: str = "config.yml"):
+        # Load the configuration
         with open(config_path, "r") as stream:
             self.config = yaml.safe_load(stream)
+
+        # Time-related initializations
         self.last_restart_time = time.time()
-        self.routine_announcement_message = self.config["announcement"]["message"]
         self.last_announcement_time = time.time()
         self.last_update_check = time.time()
-        self.update_queued = False
+        self.last_stale_check = time.time()
 
+        # Intervals and thresholds setup from config
         self.restart_interval = (
             self.config["restart"]["scheduled"]["interval"] * 60 * 60
         )
@@ -66,12 +69,15 @@ class ArkServer:
             self.config["restart"]["update_check"]["interval"] * 60 * 60
         )
         self.announcement_interval = self.config["announcement"]["interval"] * 60 * 60
-
-        self.last_stale_check = time.time()
-        self.stale_check_interval = self.config["stale"]["interval"] * 60
+        self.stale_check_interval = self.config["stale"]["interval"] * 60 * 60
         self.stale_restart_threshold = self.config["stale"]["threshold"] * 60 * 60
+
+        # Announcement and update flags/settings
+        self.routine_announcement_message = self.config["announcement"]["message"]
+        self.update_queued = False
         self.first_empty_server_time = None
 
+        # Determine shortest interval for sleep period
         self.sleep_interval = self.get_shortest_interval()
 
     def _execute(
@@ -327,15 +333,21 @@ class ArkServer:
             if time.time() - self.last_stale_check >= self.stale_check_interval:
                 if self.count_active_players() == 0:
                     if self.first_empty_server_time == None:
+                        logging.info("Server is empty, starting stale check timer...")
                         self.first_empty_server_time = time.time()
                     else:
                         if (
                             time.time() - self.first_empty_server_time
                             >= self.stale_restart_threshold
                         ):
+                            logging.info("Server is stale, restarting...")
                             self.restart_server("stale server", skip_warnings=True)
                 else:
-                    self.first_empty_server_time = None
+                    if self.first_empty_server_time is not None:
+                        logging.info(
+                            "Server is no longer empty, resetting stale check timer..."
+                        )
+                        self.first_empty_server_time = None
                 self.last_stale_check = time.time()
 
             # check for updates
