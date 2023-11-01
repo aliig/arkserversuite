@@ -6,6 +6,7 @@ import logging
 import os
 import sys
 import threading
+import requests
 
 # Setting up logging
 logging.basicConfig(
@@ -81,6 +82,7 @@ class ArkServer:
         self.sleep_interval = self.get_shortest_interval()
 
         self.welcome_message_sent = False
+        self.discord_webhook = self.config["discord"]["webhook"]
 
     @staticmethod
     def _execute(
@@ -100,9 +102,9 @@ class ArkServer:
         return process
 
     def rcon_cmd(self, command: str) -> str:
-        logging.info(f"Executing RCON command: {command}")
         cmd_str = f"{self.config['rcon']['path']}//rcon.exe -a {self.config['server']['ip_address']}:{self.config['rcon']['port']} -p {self.config['server']['password']} \"{command}\""
-        return self._execute(cmd_str, suppress_output=True).stdout
+        logging.info(f"Executing RCON command: {cmd_str}")
+        return self._execute(cmd_str, suppress_output=False).stdout
 
     def wait_for_warnings(self, reason: str = "routine maintenance") -> None:
         warning_times = sorted(
@@ -167,8 +169,17 @@ class ArkServer:
 
         return len(players)
 
+    def send_to_discord(self, content: str) -> bool:
+        """Sends a message to Discord via a webhook."""
+        data = {"content": content}
+        response = requests.post(self.discord_webhook, json=data)
+        return response.status_code == 204
+
     def send_message(self, message: str) -> str:
         logging.info(f"Sending server message: {message}")
+        if self.discord_webhook:
+            if not self.send_to_discord(message):
+                logging.error(f"Failed to send message to Discord: {message}")
         return self.rcon_cmd(f"serverchat {message}")
 
     def is_running(self) -> bool:
