@@ -1,22 +1,38 @@
 import yaml
 import os
+from functools import cached_property
 
-def load_config(default_config_path: str = "config/config.yml", custom_config_path: str = "config/custom.yml") -> dict:
-    # Load default config
-    if not os.path.exists(default_config_path):
-        raise FileNotFoundError(f"Default config file '{default_config_path}' not found.")
-    with open(default_config_path, "r") as stream:
-        config = yaml.safe_load(stream)
 
-    # Load and override with custom config if it exists
-    if os.path.exists(custom_config_path):
-        with open(custom_config_path, "r") as stream:
-            custom_config = yaml.safe_load(stream)
-            # Override or update values with those from the custom config
-            config.update(custom_config)
+class ConfigLoader:
+    def __init__(
+        self,
+        default_config_path: str = "config/config.yml",
+        custom_config_path: str = "config/custom.yml",
+    ):
+        self.default_config_path = default_config_path
+        self.custom_config_path = custom_config_path
 
-    print(config)
-    return config
+    @cached_property
+    def default_config(self):
+        if not os.path.exists(self.default_config_path):
+            raise FileNotFoundError(
+                f"Default config file '{self.default_config_path}' not found."
+            )
+        with open(self.default_config_path, "r") as stream:
+            return yaml.safe_load(stream)
 
-# Load the merged config (default with custom overrides) on import
-DEFAULT_CONFIG = load_config()
+    @cached_property
+    def custom_config(self):
+        if os.path.exists(self.custom_config_path):
+            with open(self.custom_config_path, "r") as stream:
+                return yaml.safe_load(stream)
+        return {}
+
+    @cached_property
+    def merged_config(self):
+        config = self.default_config.copy()
+        config.update(self.custom_config)
+        return config
+
+
+DEFAULT_CONFIG = ConfigLoader().merged_config

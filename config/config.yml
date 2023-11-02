@@ -14,24 +14,26 @@ server:
   map: "TheIsland_WP"
   admin_password: "hello"
 
-restart:
-  scheduled:
-    interval: 24 # hours
-    blackout_times: [07:00, 02:00] # range of times to NOT perform a scheduled reset from beginning to end
-  update_check:
-    interval: 1 # hours
-  warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
-
-announcement:
-  interval: 1  # hours
-  message: "Thanks for playing on Brohana. Server is still WIP and adjustments/mods may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
-
-stale:
-  interval: 0.5 # interval to check for a stale server in hours
-  threshold: 2 # once a server is stale for this many hours, it will be restarted
-
 mods:
   - 928988
 
 discord:
   webhook: "https://discord.com/api/webhooks/1169356449873412116/7NaksFrGxSfnxEbk2hAL7hqYMdKIxbskqJ6D1gr-OKdxKW4Gegb4KP70O25cDQzkaaSW"
+
+tasks:
+  restart:
+    interval: 24 # hours
+    blackout_times: [07:00, 02:00] # range of times to NOT perform a scheduled reset from beginning to end in 24hr time
+    warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
+  update:
+    interval: 1
+  destroy_wild_dinos:
+    interval: 72
+    blackout_times: [07:00, 02:00]
+    warnings: [60, 30, 10, 1]
+  announcement:
+    interval: 1
+    message: "Thanks for playing on Brohana. Server is still WIP and adjustments/mods may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
+  stale:
+    interval: 0.5 # interval to check for a stale server in hours
+    threshold: 5 # once a server is stale for this many hours, it will be restarted

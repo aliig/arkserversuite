@@ -1,5 +1,4 @@
 import time
-import datetime
 from config import DEFAULT_CONFIG
 from shell_operations import (
     is_server_running,
@@ -12,8 +11,16 @@ from utils import wait_until
 from server_operations import (
     save_world,
     send_message,
-    get_active_players,
-    warn_and_wait,
+)
+
+from tasks import (
+    CheckServerRunningAndRestart,
+    SendAnnouncement,
+    HandleEmptyServerRestart,
+    CheckForUpdatesAndRestart,
+    PerformRoutineRestart,
+    DestroyWildDinos,
+    Task,
 )
 
 from logger import get_logger
@@ -21,7 +28,6 @@ from logger import get_logger
 logger = get_logger(__name__)
 
 SLEEP_TIME = 60  # seconds to sleep between server state checks
-FIRST_ANNOUNCEMENT_TIME = 120  # seconds to wait to send first server announcement
 
 
 class ArkServerStartError(Exception):
@@ -37,53 +43,25 @@ class ArkServer:
         # Time-related initializations
         self.reset_state()
 
-        # Intervals and thresholds setup from config
-        self.restart_interval = (
-            DEFAULT_CONFIG["restart"]["scheduled"]["interval"] * 60 * 60
-        )
-        self.update_check_interval = (
-            DEFAULT_CONFIG["restart"]["update_check"]["interval"] * 60 * 60
-        )
-        self.announcement_interval = (
-            DEFAULT_CONFIG["announcement"]["interval"] * 60 * 60
-        )
-        self.stale_check_interval = DEFAULT_CONFIG["stale"]["interval"] * 60 * 60
-        self.stale_restart_threshold = DEFAULT_CONFIG["stale"]["threshold"] * 60 * 60
-
-        # Announcement and update flags/settings
-        self.routine_announcement_message = DEFAULT_CONFIG["announcement"]["message"]
-        self.update_queued = False
+        self.tasks: list[Task] = [
+            CheckServerRunningAndRestart(self, time.time()),
+            SendAnnouncement(self, time.time()),
+            HandleEmptyServerRestart(self, time.time()),
+            CheckForUpdatesAndRestart(self, time.time()),
+            PerformRoutineRestart(self, time.time()),
+            DestroyWildDinos(self, time.time()),
+        ]
 
     def reset_state(self) -> None:
-        # Time-related initializations
-        self.last_restart_time = time.time()
-        self.last_announcement_time = time.time()
-        self.last_update_check = time.time()
-        self.last_stale_check = time.time()
+        current_time = time.time()
+        self.last = {
+            task_name: current_time for task_name in DEFAULT_CONFIG["tasks"].keys()
+        }
         self.first_empty_server_time = None
-        self.welcome_message_sent = False
-
-    def is_blackout_time(self) -> bool:
-        blackout_start, blackout_end = DEFAULT_CONFIG["restart"]["scheduled"][
-            "blackout_times"
-        ]
-        h_start, m_start = map(int, blackout_start.split(":"))
-        h_end, m_end = map(int, blackout_end.split(":"))
-
-        current_time = datetime.datetime.now()
-        blackout_start_time = datetime.time(h_start, m_start)
-        blackout_end_time = datetime.time(h_end, m_end)
-
-        if blackout_start_time > blackout_end_time:  # The time wraps to the next day
-            return (
-                current_time >= blackout_start_time or current_time <= blackout_end_time
-            )
-        else:
-            return blackout_start_time <= current_time <= blackout_end_time
 
     def start(self) -> bool:
-        self.reset_state()
         if not is_server_running():
+            self.reset_state()
             if does_server_need_update():
                 update_server()
 
@@ -123,12 +101,10 @@ class ArkServer:
             logger.info("Ark server is not running")
         return True
 
-    def restart(self, reason: str = "other", skip_warnings: bool = False) -> None:
-        if not skip_warnings:
-            warn_and_wait(reason)
+    def restart(self, reason: str = "other") -> None:
         if is_server_running():
             send_message(f"Server is restarting for {reason}.")
-            time.sleep(3)
+            time.sleep(5)
             self.stop()
         self.start()
 
@@ -137,61 +113,10 @@ class ArkServer:
 
         while True:
             current_time = time.time()
-            # If the server is not running, attempt to restart it
-            if not is_server_running():
-                logger.info("Server is not running. Attempting to restart...")
-                self.restart(skip_warnings=True)
-                continue
 
-            # if first announcement needed on server start
-            if (
-                current_time - self.last_restart_time >= FIRST_ANNOUNCEMENT_TIME
-                and not self.welcome_message_sent
-            ):
-                send_message(self.routine_announcement_message, discord_msg=False)
-                self.welcome_message_sent = True
-
-            # if routine periodic announcement needed
-            if current_time - self.last_announcement_time >= self.announcement_interval:
-                # Use the function to get the expected restart time
-                send_message(self.routine_announcement_message, discord_msg=False)
-                self.last_announcement_time = current_time
-
-            # periodically restart an empty server
-            if current_time - self.last_stale_check >= self.stale_check_interval:
-                if get_active_players() == 0:
-                    if self.first_empty_server_time == None:
-                        logger.info("Server is empty, starting stale check timer...")
-                        self.first_empty_server_time = current_time
-                    else:
-                        if (
-                            current_time - self.first_empty_server_time
-                            >= self.stale_restart_threshold
-                        ):
-                            logger.info("Server is stale, restarting...")
-                            self.restart("stale server", skip_warnings=True)
-                            continue
-                else:
-                    if self.first_empty_server_time is not None:
-                        logger.info(
-                            "Server is no longer empty, resetting stale check timer..."
-                        )
-                        self.first_empty_server_time = None
-                self.last_stale_check = current_time
-
-            # check for updates
-            if current_time - self.last_update_check >= self.update_check_interval:
-                self.last_update_check = current_time
-                if does_server_need_update():
-                    self.restart("server update")
-                    continue
-
-            # if routine restart needed
-            if (
-                current_time - self.last_restart_time >= self.restart_interval
-            ) and not self.is_blackout_time():
-                self.restart("routine restart")
-                continue
+            for task in self.tasks:
+                if task.execute(self, current_time):
+                    break
 
             time.sleep(SLEEP_TIME)
 
