@@ -2,6 +2,9 @@ import subprocess
 from config import DEFAULT_CONFIG
 import sys
 
+from logger import get_logger
+logger = get_logger(__name__)
+
 def run_shell_cmd(
     cmd: str, suppress_output: bool = False, use_popen: bool = False, use_shell: bool = True,
 ) -> subprocess.CompletedProcess:
@@ -84,6 +87,7 @@ def does_server_need_update() -> bool:
 
 
 def update_server() -> None:
+    logger.info("Updating the Ark server...")
     cmd_str = (
         f"{DEFAULT_CONFIG['steamcmd']['path']} +force_install_dir {DEFAULT_CONFIG['server']['install_path']} +login "
         f"anonymous +app_update {DEFAULT_CONFIG['steamcmd']['app_id']} +quit"

@@ -8,6 +8,9 @@ from typing import Callable, TypeVar
 
 from config import DEFAULT_CONFIG
 
+from logger import get_logger
+logger = get_logger(__name__)
+
 T = TypeVar("T")
 
 def time_as_string(time: datetime.datetime = None) -> str:
@@ -15,9 +18,6 @@ def time_as_string(time: datetime.datetime = None) -> str:
     if time is None:
         time = datetime.datetime.now()
     return time.strftime("%H:%M %p")
-
-
-
 
 def wait_until(func: Callable[[], T], is_success: Callable[[T], bool], timeout: float, sleep_interval: float = 0.05) -> tuple[T, bool]:
     start = time.time()
@@ -33,6 +33,7 @@ def send_to_discord(content: str) -> bool:
     """Sends a message to Discord via a webhook."""
     data = {"content": content}
     response = requests.post(DEFAULT_CONFIG["discord"]["webhook"], json=data)
+    logger.info(f"Sent message to Discord: {content}")
     return response.status_code == 204
 
 
@@ -88,13 +89,14 @@ def rcon_cmd(command) -> str | None:
             DEFAULT_CONFIG["server"]["rcon_port"],
             DEFAULT_CONFIG["server"]["admin_password"]
         )
+        logger.info(f"Sending RCON command: {command}")
         rcon = RCON(*args)
         rcon.connect()
         response = rcon.send(command)
         return response
     except Exception as e:
         # Logging or raising an exception might be better than print
-        print(f"RCON with args {args} and command {command} failed: {e}")
+        logger.error(f"RCON with args {args} and command {command} failed: {e}")
         return None
     finally:
         rcon.close()

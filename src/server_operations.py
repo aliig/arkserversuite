@@ -5,6 +5,9 @@ from config import DEFAULT_CONFIG
 import datetime
 import time
 
+from logger import get_logger
+logger = get_logger(__name__)
+
 
 def send_message(message: str, discord_msg: bool = True) -> str:
     if discord_msg:
@@ -27,9 +30,9 @@ def get_active_players() -> int:
         return 0
 
     # Split the response by lines and count them to get the number of players
-    players = response.strip().split("\n")
-
-    return len(players)
+    count = len(response.strip().split("\n"))
+    logger.info(f"Found {count} active players")
+    return len(count)
 
 
 def warn_and_wait(reason: str = "unknown") -> None:

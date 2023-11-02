@@ -1,11 +1,11 @@
 import time
 import datetime
 from config import DEFAULT_CONFIG
-from logger import get_logger
 from shell_operations import is_server_running, does_server_need_update, generate_batch_file, run_shell_cmd, update_server
 from utils import wait_until
 from server_operations import save_world, send_message, get_active_players, warn_and_wait
 
+from logger import get_logger
 logger = get_logger(__name__)
 
 SLEEP_TIME = 60 #seconds to sleep between server state checks
