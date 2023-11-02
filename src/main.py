@@ -65,6 +65,7 @@ class ArkServer:
             return blackout_start_time <= current_time <= blackout_end_time
 
     def start(self) -> bool:
+        self.reset_state()
         if not is_server_running():
             if does_server_need_update():
                 update_server()
@@ -73,7 +74,6 @@ class ArkServer:
             cmd = ["cmd", "/c", batch_file_path]
             logger.info(f"Starting Ark server with cmd: {cmd}")
             run_shell_cmd(cmd, use_shell=False, use_popen=True, suppress_output=True)
-            self.reset_state()
 
             _, success = wait_until(is_server_running, lambda x: x, timeout=20, sleep_interval=1)
             if not success:

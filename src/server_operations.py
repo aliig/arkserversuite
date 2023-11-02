@@ -32,7 +32,7 @@ def get_active_players() -> int:
     # Split the response by lines and count them to get the number of players
     count = len(response.strip().split("\n"))
     logger.info(f"Found {count} active players")
-    return len(count)
+    return count
 
 
 def warn_and_wait(reason: str = "unknown") -> None:
