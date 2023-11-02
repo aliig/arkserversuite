@@ -8,13 +8,11 @@ server:
   install_path: "C:\\gameservers\\ark_survival_ascended"
   port: 7777
   query_port: 27015
+  rcon_port: 32330
   players: 26
   password: ""
   map: "TheIsland_WP"
-
-rcon:
-  path: "C:\\gameservers\\rcon-0.10.3-win64"
-  port: 32330
+  admin_password: "hello"
 
 restart:
   scheduled:

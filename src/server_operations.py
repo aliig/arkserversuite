@@ -1,5 +1,4 @@
 from utils import rcon_cmd, send_to_discord, time_as_string
-from shell_operations import is_server_running
 from config import DEFAULT_CONFIG
 
 

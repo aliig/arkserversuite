@@ -1,13 +1,22 @@
 import subprocess
 from config import DEFAULT_CONFIG
-
+import sys
 
 def run_shell_cmd(
-    cmd: str, suppress_output: bool = False
+    cmd: str, suppress_output: bool = False, use_popen: bool = False, use_shell: bool = True,
 ) -> subprocess.CompletedProcess:
-    process = subprocess.run(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True
-    )
+
+    kwargs = {
+        'stdout': subprocess.PIPE,
+        'stderr': subprocess.PIPE,
+        'text': True,
+        'shell': use_shell
+    }
+
+    if use_popen:
+        process = subprocess.Popen(cmd, **kwargs)
+    else:
+        process = subprocess.run(cmd, **kwargs)
 
     # Print stdout and stderr to the console
     if not suppress_output:
@@ -29,7 +38,7 @@ def is_server_running() -> bool:
         return False
 
 
-def generate_batch_file(self) -> str:
+def generate_batch_file() -> str:
     base_arg = f"{DEFAULT_CONFIG['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe"
     options = "?".join(
         [
@@ -70,7 +79,7 @@ def generate_batch_file(self) -> str:
 
 def does_server_need_update() -> bool:
     cmd_str = f"{DEFAULT_CONFIG['steamcmd']['path']}\\steamcmd.exe +login anonymous +app_info_print {DEFAULT_CONFIG['steamcmd']['app_id']} +quit"
-    result = run_shell_cmd(cmd_str)
+    result = run_shell_cmd(cmd_str, suppress_output=True)
     return '"state" "eStateUpdateRequired"' in result.stdout
 
 

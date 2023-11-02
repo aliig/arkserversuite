@@ -1,13 +1,14 @@
 import socket
 import struct
 import threading
-import subprocess
-import sys
 import requests
 import datetime
+import time
+from typing import Callable, TypeVar
 
 from config import DEFAULT_CONFIG
 
+T = TypeVar("T")
 
 def time_as_string(time: datetime.datetime = None) -> str:
     # desire "%H:%M %p" format
@@ -16,19 +17,16 @@ def time_as_string(time: datetime.datetime = None) -> str:
     return time.strftime("%H:%M %p")
 
 
-def run_with_timeout(func, condition, timeout):
-    result_container = [None]
 
-    def target():
-        result_container[0] = func()
 
-    thread = threading.Thread(target=target)
-
-    thread.start()
-    thread.join(timeout)
-    if thread.is_alive():
-        return False
-    return condition(result_container[0])
+def wait_until(func: Callable[[], T], is_success: Callable[[T], bool], timeout: float, sleep_interval: float = 0.05) -> tuple[T, bool]:
+    start = time.time()
+    while (time.time() - start) < timeout:
+        res = func()
+        if is_success(res):
+            return res, True
+        time.sleep(sleep_interval)
+    return res, False
 
 
 def send_to_discord(content: str) -> bool:
@@ -83,13 +81,20 @@ class RCON:
         self.sock.close()
 
 
-def rcon_cmd(command):
-    rcon = RCON(
-        DEFAULT_CONFIG["server"]["ip_address"],
-        DEFAULT_CONFIG["rcon"]["port"],
-        DEFAULT_CONFIG["server"]["password"],
-    )
-    rcon.connect()
-    response = rcon.send(command)
-    rcon.close()
-    return response
+def rcon_cmd(command) -> str | None:
+    try:
+        args = (
+            DEFAULT_CONFIG["server"]["ip_address"],
+            DEFAULT_CONFIG["server"]["rcon_port"],
+            DEFAULT_CONFIG["server"]["admin_password"]
+        )
+        rcon = RCON(*args)
+        rcon.connect()
+        response = rcon.send(command)
+        return response
+    except Exception as e:
+        # Logging or raising an exception might be better than print
+        print(f"RCON with args {args} and command {command} failed: {e}")
+        return None
+    finally:
+        rcon.close()
