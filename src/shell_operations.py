@@ -81,6 +81,7 @@ def generate_batch_file() -> str:
 
 
 def does_server_need_update() -> bool:
+    logger.info("Checking if the Ark server needs to be updated...")
     cmd_str = f"{DEFAULT_CONFIG['steamcmd']['path']}\\steamcmd.exe +login anonymous +app_info_print {DEFAULT_CONFIG['steamcmd']['app_id']} +quit"
     result = run_shell_cmd(cmd_str, suppress_output=True)
     return '"state" "eStateUpdateRequired"' in result.stdout
