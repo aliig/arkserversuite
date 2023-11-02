@@ -1,21 +1,36 @@
 import time
 import datetime
 from config import DEFAULT_CONFIG
-from shell_operations import is_server_running, does_server_need_update, generate_batch_file, run_shell_cmd, update_server
+from shell_operations import (
+    is_server_running,
+    does_server_need_update,
+    generate_batch_file,
+    run_shell_cmd,
+    update_server,
+)
 from utils import wait_until
-from server_operations import save_world, send_message, get_active_players, warn_and_wait
+from server_operations import (
+    save_world,
+    send_message,
+    get_active_players,
+    warn_and_wait,
+)
 
 from logger import get_logger
+
 logger = get_logger(__name__)
 
-SLEEP_TIME = 60 #seconds to sleep between server state checks
-FIRST_ANNOUNCEMENT_TIME = 120 #seconds to wait to send first server announcement
+SLEEP_TIME = 60  # seconds to sleep between server state checks
+FIRST_ANNOUNCEMENT_TIME = 120  # seconds to wait to send first server announcement
+
 
 class ArkServerStartError(Exception):
     pass
 
+
 class ArkServerStopError(Exception):
     pass
+
 
 class ArkServer:
     def __init__(self):
@@ -29,7 +44,9 @@ class ArkServer:
         self.update_check_interval = (
             DEFAULT_CONFIG["restart"]["update_check"]["interval"] * 60 * 60
         )
-        self.announcement_interval = DEFAULT_CONFIG["announcement"]["interval"] * 60 * 60
+        self.announcement_interval = (
+            DEFAULT_CONFIG["announcement"]["interval"] * 60 * 60
+        )
         self.stale_check_interval = DEFAULT_CONFIG["stale"]["interval"] * 60 * 60
         self.stale_restart_threshold = DEFAULT_CONFIG["stale"]["threshold"] * 60 * 60
 
@@ -75,7 +92,9 @@ class ArkServer:
             logger.info(f"Starting Ark server with cmd: {cmd}")
             run_shell_cmd(cmd, use_shell=False, use_popen=True, suppress_output=True)
 
-            _, success = wait_until(is_server_running, lambda x: x, timeout=20, sleep_interval=1)
+            _, success = wait_until(
+                is_server_running, lambda x: x, timeout=20, sleep_interval=1
+            )
             if not success:
                 logger.error("Failed to start the Ark server")
                 raise ArkServerStartError("Failed to start the Ark server.")
@@ -91,7 +110,9 @@ class ArkServer:
             logger.info("Stopping the Ark server...")
             save_world()
             run_shell_cmd("taskkill /IM ArkAscendedServer.exe /F", suppress_output=True)
-            _, success = wait_until(is_server_running, lambda x: not x, timeout=20, sleep_interval=1)
+            _, success = wait_until(
+                is_server_running, lambda x: not x, timeout=20, sleep_interval=1
+            )
             if success:
                 logger.info("Ark server stopped")
             else:
@@ -102,9 +123,7 @@ class ArkServer:
             logger.info("Ark server is not running")
         return True
 
-    def restart(
-        self, reason: str = "other", skip_warnings: bool = False
-    ) -> None:
+    def restart(self, reason: str = "other", skip_warnings: bool = False) -> None:
         if not skip_warnings:
             warn_and_wait(reason)
         if is_server_running():
@@ -161,9 +180,11 @@ class ArkServer:
                 self.last_stale_check = current_time
 
             # check for updates
-            if current_time - self.last_update_check >= self.update_check_interval and does_server_need_update():
-                self.restart("server update")
-                continue
+            if current_time - self.last_update_check >= self.update_check_interval:
+                self.last_update_check = current_time
+                if does_server_need_update():
+                    self.restart("server update")
+                    continue
 
             # if routine restart needed
             if (
