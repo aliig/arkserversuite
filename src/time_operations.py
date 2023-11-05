@@ -1,19 +1,23 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+
 class TimeTracker:
-    def __init__(self, task_config, timestamp: float, timezone: str = 'EST'):
+    def __init__(self, task_config, timestamp: float, timezone: str = "EST"):
         self.timezone = ZoneInfo(timezone)
         self.task_config = task_config
         self.interval = task_config.get("interval", 60)  # default interval 60 seconds
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
-        self.last_time = None
+        self.current_time = 0
         self._reset_times(timestamp)
 
-    def _reset_times(self, timestamp: float):
+    def _reset_times(self):
+        self.last_time = self.current_time
         self.current_time = datetime.fromtimestamp(timestamp, tz=self.timezone)
         self.next_time = self.get_next_time(self.current_time.timestamp())
-        self.seconds_until_next = round((self.next_time - self.current_time).total_seconds())
+        self.seconds_until_next = round(
+            (self.next_time - self.current_time).total_seconds()
+        )
 
     def _get_blackout_times(self):
         """Convert blackout times to datetime.time objects."""
@@ -72,8 +76,7 @@ class TimeTracker:
 
         return next_time
 
-
-    def display(self, time: datetime, time_format: str = '%I:%M %p %Z') -> str:
+    def display(self, time: datetime, time_format: str = "%I:%M %p %Z") -> str:
         # Display the time in the specified format and timezone
         return time.strftime(time_format)
 

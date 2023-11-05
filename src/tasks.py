@@ -16,6 +16,7 @@ from time_operations import TimeTracker
 
 logger = logging.getLogger(__name__)
 
+
 class Task:
     def __init__(self, server: ArkServer):
         self.server = server
@@ -36,20 +37,29 @@ class Task:
         if not self.warning_times:
             return
 
-        minutes_until_task = self.time.seconds_until_next / 60  # Convert seconds to minutes
+        minutes_until_task = (
+            self.time.seconds_until_next / 60
+        )  # Convert seconds to minutes
 
         # Iterate over the warning times that have not been warned yet
         for warning_minute in self.warning_times.sort(reverse=True):
-            if minutes_until_task <= warning_minute and warning_minute not in self.warned_times:
+            if (
+                minutes_until_task <= warning_minute
+                and warning_minute not in self.warned_times
+            ):
                 self.warned_times.add(warning_minute)
-                send_message(f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display_next_time()}.")
+                send_message(
+                    f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display_next_time()}."
+                )
 
     def _warn_then_wait(self):
         warnings = self.warning_times.sort(reverse=True)
         for cnt, warning_minute in enumerate(warnings):
-            send_message(f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}.")
+            send_message(
+                f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}."
+            )
             if cnt == len(warnings) - 1:
-                time.sleep((warning_minute - warnings[cnt+1])*60)
+                time.sleep((warning_minute - warnings[cnt + 1]) * 60)
             else:
                 time.sleep(warning_minute * 60)
 
@@ -59,9 +69,7 @@ class Task:
 
     def _is_time_to_execute(self) -> bool:
         """Check if it's time to execute the task."""
-        return (
-            time.time() >= self.time.next_time
-        )
+        return time.time() >= self.time.next_time
 
     def _update_last_check(self):
         """Update the last check time after task execution."""
@@ -80,8 +88,6 @@ class Task:
     def run_task(self):
         """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
         raise NotImplementedError("Subclasses should implement this!")
-
-
 
 
 class CheckServerRunningAndRestart(Task):

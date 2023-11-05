@@ -111,10 +111,10 @@ class ArkServer:
 
     def run(self) -> None:
         self.start()
-
         while True:
+            current_time = time.time()
             for task in self.tasks:
-                if task.execute(self, time.time()):
+                if task.execute(self, current_time):
                     break
             time.sleep(60)  # Check every minute
 
