@@ -8,36 +8,32 @@ class TimeTracker:
         self.task_config = task_config
         self.interval = task_config.get("interval", 60)  # default interval 60 seconds
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
-        self.current_time = 0
-        self.reset_times(timestamp)
-
-        # last execution
 
         # current time
-
+        self.current_time = datetime.now()
         # next execution
+        self.set_next_time()
 
-
-    def reset_times(self):
-        self.last_time = self.current_time
-        self.current_time = datetime.fromtimestamp(timestamp, tz=self.timezone)
-        self.next_time = self.get_next_time(self.current_time.timestamp())
-        self.seconds_until_next = round(
-            (self.next_time - self.current_time).total_seconds()
-        )
+    def set_next_time(self):
+        self.next_time = self.get_next_time()
 
     def _get_blackout_times(self):
-        """Convert blackout times to datetime.time objects."""
+        """Convert blackout times to datetime.time objects, or return None if not configured."""
         blackout_times = self.task_config.get("blackout_times")
-        if not blackout_times or blackout_times == ("00:00", "00:00"):
+
+        # Handle cases where blackout_times are None or empty
+        if not blackout_times or blackout_times in [("00:00", "00:00"), (), []]:
             return None, None
 
         try:
             start_time = datetime.strptime(blackout_times[0], "%H:%M").time()
             end_time = datetime.strptime(blackout_times[1], "%H:%M").time()
+            # Make sure that the times are not equal, implying no blackout
+            if start_time == end_time:
+                return None, None
             return start_time, end_time
-        except ValueError:
-            # Consider adding logging here for the error condition
+        except (ValueError, IndexError):
+            # Log the error condition here if blackout_times are not parseable or indices are out of range
             return None, None
 
     def _is_blackout_time(self, time=None) -> bool:
@@ -72,8 +68,11 @@ class TimeTracker:
         expected_execution_dt += timedelta(seconds=self.interval)
         return expected_execution_dt
 
-    def get_next_time(self, current_time: float) -> datetime:
-        self.current_time = datetime.fromtimestamp(current_time, tz=self.timezone)
+    def is_time_to_execute(self) -> bool:
+        """Check if it's time to execute the task."""
+        return self.current_time >= self.next_time
+
+    def get_next_time(self) -> datetime:
         """Compute the next expected execution time for the task."""
         next_time = self.current_time + timedelta(seconds=self.interval)
 

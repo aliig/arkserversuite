@@ -26,11 +26,11 @@ class Task:
         self.description = self.task_config.get("description", "")
 
         # warning tracking
-        self.warning_times = self.task_config.get("warnings", [])
+        self.warning_times = sorted(self.task_config.get("warnings", []), reverse=True)
         self.warned_times = set()
 
         # time
-        self.time = TimeTracker(self.task_config, time.time())
+        self.time = TimeTracker(self.task_config)
 
     def _warn_before_task(self):
         """Send warnings if the time for a task is approaching."""
@@ -42,7 +42,7 @@ class Task:
         )  # Convert seconds to minutes
 
         # Iterate over the warning times that have not been warned yet
-        for warning_minute in self.warning_times.sort(reverse=True):
+        for warning_minute in self.warning_times:
             if (
                 minutes_until_task <= warning_minute
                 and warning_minute not in self.warned_times
@@ -53,13 +53,12 @@ class Task:
                 )
 
     def _warn_then_wait(self):
-        warnings = self.warning_times.sort(reverse=True)
-        for cnt, warning_minute in enumerate(warnings):
+        for cnt, warning_minute in enumerate(self.warning_times):
             send_message(
                 f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}."
             )
-            if cnt == len(warnings) - 1:
-                time.sleep((warning_minute - warnings[cnt + 1]) * 60)
+            if cnt < len(self.warning_times) - 1:
+                time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)
             else:
                 time.sleep(warning_minute * 60)
 
@@ -67,39 +66,36 @@ class Task:
         """Reset the warned times list after task execution."""
         self.warned_times = set()
 
-    def _is_time_to_execute(self) -> bool:
-        """Check if it's time to execute the task."""
-        return time.time() >= self.time.next_time
+    def _cleanup(self) -> None:
+        """Cleanup after task execution."""
+        self._reset_sent_warnings()
+        self.time.set_next_time()
 
-    def _update_last_check(self):
-        """Update the last check time after task execution."""
-        self.server.last[self.task_name] = self.current_time
-
-    def execute(self, time: float) -> bool:
+    def execute(self) -> bool:
         """Execute the task if it's time."""
-        self.time._reset_times(time)
-        if self._is_time_to_execute():
-            res = self.run_task()
-            self._reset_sent_warnings()
-            self._update_last_check()
+        self.time.current_time = datetime.now()
+        self._warn_before_task()
+        if self.time.is_time_to_execute():
+            res = self._run_task()
+            self._cleanup()
             return res
         return False
 
-    def run_task(self):
+    def _run_task(self):
         """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
         raise NotImplementedError("Subclasses should implement this!")
 
 
 class CheckServerRunningAndRestart(Task):
-    def run_task(self) -> bool:
+    def _run_task(self) -> bool:
         if not is_server_running():
             logger.info("Server is not running. Attempting to restart...")
             self.server.start()
             return True
         return False
 
-    def execute(self, time: float) -> bool:
-        return self.run_task()
+    def execute(self) -> bool:
+        return self._run_task()
 
 
 class SendAnnouncement(Task):
@@ -108,9 +104,8 @@ class SendAnnouncement(Task):
     def __init__(self, server: ArkServer, current_time):
         super().__init__(server, current_time)
 
-    def run_task(self) -> bool:
+    def _run_task(self) -> bool:
         send_message(self.description, discord_msg=False)
-        self._update_last_check()
         return False  # Always return False so that the other tasks run
 
 
@@ -121,7 +116,7 @@ class HandleEmptyServerRestart(Task):
         super().__init__(server, current_time)
         self.threshold = self.task_config.get("threshold", 0) * 60 * 60
 
-    def run_task(self) -> bool:
+    def _run_task(self) -> bool:
         if get_active_players() == 0:
             if self.server.first_empty_server_time is None:
                 logger.info("Server is empty, starting stale check timer...")
@@ -148,11 +143,21 @@ class CheckForUpdatesAndRestart(Task):
     def __init__(self, server: ArkServer, current_time):
         super().__init__(server, current_time)
 
-    def run_task(self) -> bool:
+    def _run_task(self) -> bool:
         self._update_last_check()
         if does_server_need_update():
             self.server.restart("server update")
             return True
+        return False
+
+    def execute(self) -> bool:
+        """Execute the task if it's time."""
+        self.time.current_time = datetime.now()
+        if self.time.is_time_to_execute():
+            self._warn_then_wait()
+            res = self._run_task()
+            self._cleanup()
+            return res
         return False
 
 
@@ -162,7 +167,7 @@ class PerformRoutineRestart(Task):
     def __init__(self, server: ArkServer, current_time):
         super().__init__(server, current_time)
 
-    def run_task(self) -> bool:
+    def _run_task(self) -> bool:
         self.server.restart("routine restart")
         self._update_last_check()
         return True
@@ -174,7 +179,7 @@ class DestroyWildDinos(Task):
     def __init__(self, server: ArkServer, current_time):
         super().__init__(server, current_time)
 
-    def run_task(self) -> bool:
+    def _run_task(self) -> bool:
         destroy_wild_dinos()
         self._update_last_check()
         return False

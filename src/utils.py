@@ -1,25 +1,32 @@
 import socket
 import struct
-import threading
 import requests
-import datetime
+from datetime import datetime
 import time
 from typing import Callable, TypeVar
 
 from config import DEFAULT_CONFIG
 
 from logger import get_logger
+
 logger = get_logger(__name__)
 
 T = TypeVar("T")
 
-def time_as_string(time: datetime.datetime = None) -> str:
+
+def time_as_string(time: datetime = None) -> str:
     # desire "%H:%M %p" format
     if time is None:
-        time = datetime.datetime.now()
+        time = datetime.now()
     return time.strftime("%H:%M %p")
 
-def wait_until(func: Callable[[], T], is_success: Callable[[T], bool], timeout: float, sleep_interval: float = 0.05) -> tuple[T, bool]:
+
+def wait_until(
+    func: Callable[[], T],
+    is_success: Callable[[T], bool],
+    timeout: float,
+    sleep_interval: float = 0.05,
+) -> tuple[T, bool]:
     start = time.time()
     while (time.time() - start) < timeout:
         res = func()
@@ -87,7 +94,7 @@ def rcon_cmd(command) -> str | None:
         args = (
             DEFAULT_CONFIG["server"]["ip_address"],
             DEFAULT_CONFIG["server"]["rcon_port"],
-            DEFAULT_CONFIG["server"]["admin_password"]
+            DEFAULT_CONFIG["server"]["admin_password"],
         )
         logger.info(f"Sending RCON command: {command}")
         rcon = RCON(*args)
