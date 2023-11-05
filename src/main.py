@@ -115,10 +115,11 @@ class ArkServer:
             current_time = time.time()
 
             for task in self.tasks:
+                task.send_warnings()
                 if task.execute(self, current_time):
                     break
 
-            time.sleep(SLEEP_TIME)
+            time.sleep(60)  # Check every minute
 
 
 if __name__ == "__main__":
