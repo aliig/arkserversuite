@@ -1,154 +1,75 @@
-from shell_operations import is_server_running, does_server_need_update
+from shell_operations import is_server_running
+from update import does_server_need_update
 from server_operations import send_message, get_active_players, destroy_wild_dinos
 import logging
 from config import DEFAULT_CONFIG
-import datetime
+from datetime import datetime, timedelta
 from utils import time_as_string
 from collections import deque
-
+import time
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from main import ArkServer
 
+from time_operations import TimeTracker
+
 logger = logging.getLogger(__name__)
 
-
-import datetime
-
-
 class Task:
-    def __init__(self, server: ArkServer, current_time: float):
+    def __init__(self, server: ArkServer):
         self.server = server
+
+        # config
         self.task_config = DEFAULT_CONFIG["tasks"][self.task_name]
+        self.description = self.task_config.get("description", "")
 
-        self.current_time = current_time
-        self.current_time_obj = datetime.datetime.fromtimestamp(current_time).time()
+        # warning tracking
+        self.warning_times = self.task_config.get("warnings", [])
+        self.warned_times = set()
 
-        self.interval = self.task_config.get("interval", 0) * 3600
-        self.warnings = self.task_config.get("warnings", [])
-        self.message = self.task_config.get("message", "")
-        self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
-        self.warning_times = deque(self.warnings)
+        # time
+        self.time = TimeTracker(self.task_config, time.time())
 
-        self.last_check = server.last.get(self.task_name, current_time)
-        self.expected_execution_time = self._compute_next_execution_time()
-        self.time_remaining = self.expected_execution_time - self.current_time_obj
-
-    def _get_blackout_times(self) -> tuple[datetime.time | None, datetime.time | None]:
-        """Convert blackout times to datetime.time objects."""
-        blackout_times = self.task_config.get("blackout_times")
-        if not blackout_times or blackout_times == ("00:00", "00:00"):
-            return None, None
-
-        try:
-            start_time = datetime.time(*map(int, blackout_times[0].split(":")))
-            end_time = datetime.time(*map(int, blackout_times[1].split(":")))
-            # No special handling here; simply return the times.
-            return start_time, end_time
-        except ValueError:
-            # Consider adding logging here for the error condition
-            return None, None
-
-    def _is_blackout_time(self, time=None) -> bool:
-        """Check if a given time is within the blackout period."""
-        time = time or self.current_time_obj
-        if not all((self.blackout_start_time, self.blackout_end_time)):
-            return False
-
-        return (
-            (self.blackout_start_time <= time <= self.blackout_end_time)
-            if self.blackout_start_time <= self.blackout_end_time
-            else (time >= self.blackout_start_time or time <= self.blackout_end_time)
-        )
-
-    def _compute_next_execution_time(self) -> datetime._Time:
-        """Compute the next expected execution time for the task."""
-        next_execution = datetime.datetime.fromtimestamp(
-            self.current_time + self._time_until_next_execution()
-        )
-
-        # If the expected execution time is during the blackout period, adjust it
-        while self._is_blackout_time(next_execution.time()):
-            next_execution = self._adjust_for_blackout(next_execution)
-
-        return next_execution.time()
-
-    def _adjust_for_blackout(
-        self, expected_execution_dt: datetime.datetime
-    ) -> datetime.datetime:
-        """Adjust the expected execution time to account for blackout period."""
-        # If blackout wraps to the next day and expected time is during the blackout
-        if (
-            self.blackout_start_time > self.blackout_end_time
-            and expected_execution_dt.time() >= self.blackout_start_time
-        ):
-            expected_execution_dt += datetime.timedelta(days=1)
-
-        expected_execution_dt = datetime.datetime.combine(
-            expected_execution_dt.date(), self.blackout_end_time
-        )
-        expected_execution_dt += datetime.timedelta(seconds=self.interval)
-        return expected_execution_dt
-
-    def send_warnings(self):
+    def _warn_before_task(self):
         """Send warnings if the time for a task is approaching."""
         if not self.warning_times:
             return
 
-        time_until_execution = self.expected_execution_time - self.current_time
+        minutes_until_task = self.time.seconds_until_next / 60  # Convert seconds to minutes
 
-        while (
-            self.warning_times
-            and time_until_execution.total_seconds() <= self.warning_times[0] * 60
-        ):
-            warning_time = self.warning_times.popleft()
-            print(f"Warning: Task will execute in {warning_time} minutes.")
+        # Iterate over the warning times that have not been warned yet
+        for warning_minute in self.warning_times.sort(reverse=True):
+            if minutes_until_task <= warning_minute and warning_minute not in self.warned_times:
+                self.warned_times.add(warning_minute)
+                send_message(f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display_next_time()}.")
 
-    def _get_current_datetime(self) -> datetime.datetime:
-        """Return current date and time as a datetime object."""
-        return datetime.datetime.combine(datetime.date.today(), self.current_time_obj)
+    def _warn_then_wait(self):
+        warnings = self.warning_times.sort(reverse=True)
+        for cnt, warning_minute in enumerate(warnings):
+            send_message(f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}.")
+            if cnt == len(warnings) - 1:
+                time.sleep((warning_minute - warnings[cnt+1])*60)
+            else:
+                time.sleep(warning_minute * 60)
 
-    def _get_datetime_with_expected_time(self) -> datetime.datetime:
-        """Return expected execution date and time as a datetime object."""
-        expected_time = self.expected_execution_time
-        expected_execution_dt = datetime.datetime.combine(
-            datetime.date.today(), expected_time
-        )
-        if expected_execution_dt < self._get_current_datetime():
-            expected_execution_dt += datetime.timedelta(days=1)
-        return expected_execution_dt
-
-    def _should_warn(self, time_remaining: int, warning_time: int) -> bool:
-        """Determine if a warning should be sent."""
-        warning_seconds = warning_time * 60
-        return (
-            time_remaining <= warning_seconds and warning_time not in self.warned_times
-        )
-
-    def _send_warning_message(
-        self, expected_execution_dt: datetime.datetime, warning_time: int
-    ):
-        """Send a warning message about the upcoming task execution."""
-        send_message(
-            f"Warning: Task '{self.task_name}' will execute in {warning_time} minutes at approximately {time_as_string(expected_execution_dt.time())}",
-            discord_msg=False,
-        )
-        self.warned_times.add(warning_time)
+    def _reset_sent_warnings(self) -> None:
+        """Reset the warned times list after task execution."""
+        self.warned_times = set()
 
     def _is_time_to_execute(self) -> bool:
         """Check if it's time to execute the task."""
         return (
-            self.current_time_obj >= self.expected_execution_time
-            and not self._is_blackout_time()
+            time.time() >= self.time.next_time
         )
 
     def _update_last_check(self):
         """Update the last check time after task execution."""
         self.server.last[self.task_name] = self.current_time
 
-    def execute(self) -> bool:
+    def execute(self, time: float) -> bool:
         """Execute the task if it's time."""
+        self.time._reset_times(time)
         if self._is_time_to_execute():
             res = self.run_task()
             self._reset_sent_warnings()
@@ -160,9 +81,7 @@ class Task:
         """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
         raise NotImplementedError("Subclasses should implement this!")
 
-    def _reset_sent_warnings(self) -> None:
-        """Reset the warned times list after task execution."""
-        self.warned_times = set()
+
 
 
 class CheckServerRunningAndRestart(Task):
@@ -173,7 +92,7 @@ class CheckServerRunningAndRestart(Task):
             return True
         return False
 
-    def execute(self):
+    def execute(self, time: float) -> bool:
         return self.run_task()
 
 
@@ -184,7 +103,7 @@ class SendAnnouncement(Task):
         super().__init__(server, current_time)
 
     def run_task(self) -> bool:
-        send_message(self.message, discord_msg=False)
+        send_message(self.description, discord_msg=False)
         self._update_last_check()
         return False  # Always return False so that the other tasks run
 

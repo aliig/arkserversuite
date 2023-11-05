@@ -2,11 +2,11 @@ import time
 from config import DEFAULT_CONFIG
 from shell_operations import (
     is_server_running,
-    does_server_need_update,
     generate_batch_file,
     run_shell_cmd,
     update_server,
 )
+from update import does_server_need_update
 from utils import wait_until
 from server_operations import (
     save_world,
@@ -106,19 +106,16 @@ class ArkServer:
             send_message(f"Server is restarting for {reason}.")
             time.sleep(5)
             self.stop()
+            time.sleep(5)
         self.start()
 
     def run(self) -> None:
-        self.start()  # Start the server initially.
+        self.start()
 
         while True:
-            current_time = time.time()
-
             for task in self.tasks:
-                task.send_warnings()
-                if task.execute(self, current_time):
+                if task.execute(self, time.time()):
                     break
-
             time.sleep(60)  # Check every minute
 
 

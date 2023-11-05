@@ -27,7 +27,8 @@ def save_world() -> bool:
 
 def destroy_wild_dinos() -> bool:
     res = rcon_cmd("destroywilddinos")
-    send_to_discord(f"Dinosaurs reset at {time_as_string()}")
+    if res == "All Wild Dinos Destroyed":
+        send_to_discord(f"Dinosaurs reset at {time_as_string()}")
     return res
 
 
