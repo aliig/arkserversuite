@@ -3,15 +3,22 @@ from zoneinfo import ZoneInfo
 
 
 class TimeTracker:
-    def __init__(self, task_config, timestamp: float, timezone: str = "EST"):
+    def __init__(self, task_config, timezone: str = "EST"):
         self.timezone = ZoneInfo(timezone)
         self.task_config = task_config
         self.interval = task_config.get("interval", 60)  # default interval 60 seconds
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.current_time = 0
-        self._reset_times(timestamp)
+        self.reset_times(timestamp)
 
-    def _reset_times(self):
+        # last execution
+
+        # current time
+
+        # next execution
+
+
+    def reset_times(self):
         self.last_time = self.current_time
         self.current_time = datetime.fromtimestamp(timestamp, tz=self.timezone)
         self.next_time = self.get_next_time(self.current_time.timestamp())
