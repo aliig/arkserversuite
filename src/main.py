@@ -4,6 +4,7 @@ from shell_operations import (
     is_server_running,
     generate_batch_file,
     run_shell_cmd,
+    kill_server,
     update_server,
 )
 from update import does_server_need_update
@@ -81,7 +82,8 @@ class ArkServer:
         if is_server_running():
             logger.info("Stopping the Ark server...")
             save_world()
-            run_shell_cmd("taskkill /IM ArkAscendedServer.exe /F", suppress_output=True)
+            time.sleep(5)
+            kill_server()
             _, success = wait_until(
                 is_server_running, lambda x: not x, timeout=20, sleep_interval=1
             )

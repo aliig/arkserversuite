@@ -1,11 +1,9 @@
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
 from config import DEFAULT_CONFIG
 
 
 class TimeTracker:
     def __init__(self, task_config):
-        self.timezone = ZoneInfo(DEFAULT_CONFIG["server"]["timezone"])
         self.task_config = task_config
         self.interval = task_config.get("interval", 4)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
@@ -85,15 +83,13 @@ class TimeTracker:
         return self.current_time >= self.next_time
 
     def display(self, time: datetime) -> str:
-        # Display the time in the specified format and timezone
-        timezone_time = time.astimezone(self.timezone)
         # if the time is on a future date, print out the date as well
-        if timezone_time.date() > datetime.now().astimezone(self.timezone).date():
-            time_format: str = "%a %b %d %I:%M %p %Z"
+        if time.date() > datetime.now().date():
+            time_format: str = "%a %b %d %I:%M %p"
         else:
-            time_format: str = "%I:%M %p %Z"
+            time_format: str = "%I:%M %p"
 
-        return timezone_time.strftime(time_format)
+        return f"{time.strftime(time_format)} {DEFAULT_CONFIG['server']['timezone']}"
 
     def display_next_time(self) -> str:
         return self.display(self.next_time)
