@@ -10,7 +10,7 @@ class TimeTracker:
         self.task_config = task_config
         self.interval = task_config.get("interval", 4)
         self.current_time = datetime.now()
-        self.blackout_start, self.blackout_end = self._get_blackout_times()
+        self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.time_until = None
         self.set_next_time()
 
