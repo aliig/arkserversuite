@@ -14,7 +14,7 @@ class TimeTracker:
         self.time_until = None
         self.set_next_time()
 
-    def _get_blackout_period(
+    def _get_blackout_times(
         self,
     ) -> tuple[datetime.time, datetime.time] | tuple[None, None]:
         blackout_times = self.task_config.get("blackout_times")
@@ -23,47 +23,59 @@ class TimeTracker:
             return None, None
 
         try:
-            # Get the current date
-            current_date = self.current_time.date()
-
-            # Parse the blackout start and end times
             start_time = datetime.strptime(blackout_times[0], "%H:%M").time()
             end_time = datetime.strptime(blackout_times[1], "%H:%M").time()
 
-            # Combine current date with blackout start and end times
-            start = datetime.combine(current_date, start_time)
-            end = datetime.combine(current_date, end_time)
-
-            # spans midnight
-            if start > end:
-                end = end + timedelta(days=1)
-            elif start == end:
+            if start_time == end_time:
                 return None, None
-            logger.info(f"Blackout period: {start} - {end}")
-            return start, end
+            return start_time, end_time
         except (ValueError, IndexError):
-            # Log the error condition here
             return None, None
 
-    def _is_blackout_time(self, time_to_check: datetime = None) -> bool:
-        """Check if a given time is within the blackout period."""
-        time_to_check = time_to_check or self.current_time
-
-        if not all((self.blackout_start, self.blackout_end)):
+    def _is_blackout_time(self, time_to_check: datetime) -> bool:
+        """Check if a given datetime is within the blackout period."""
+        if not all((self.blackout_start_time, self.blackout_end_time)):
             return False
 
-        return self.blackout_start < self.current_time < self.blackout_end
+        # Normalize dates by setting them to the same date
+        blackout_start = datetime.combine(
+            time_to_check.date(), self.blackout_start_time
+        )
+        blackout_end = datetime.combine(time_to_check.date(), self.blackout_end_time)
+
+        if self.blackout_start_time <= self.blackout_end_time:
+            return blackout_start <= time_to_check <= blackout_end
+        else:  # blackout period spans midnight
+            blackout_end += timedelta(
+                days=1
+            )  # Add a day to the end time if it's past midnight
+            return not (blackout_end <= time_to_check <= blackout_start)
+
+    def _adjust_for_blackout(self, expected_execution_dt: datetime) -> datetime:
+        """Adjust the expected execution time to account for the blackout period."""
+        if self._is_blackout_time(expected_execution_dt):
+            if self.blackout_start_time <= self.blackout_end_time:
+                # Blackout does not span midnight
+                return datetime.combine(
+                    expected_execution_dt.date(), self.blackout_end_time
+                )
+            else:
+                # Blackout spans midnight
+                if expected_execution_dt.time() >= self.blackout_start_time:
+                    next_day = expected_execution_dt.date() + timedelta(days=1)
+                    return datetime.combine(next_day, self.blackout_end_time)
+                else:
+                    return datetime.combine(
+                        expected_execution_dt.date(), self.blackout_end_time
+                    )
+        else:
+            return expected_execution_dt
 
     def set_next_time(self):
         """Compute the next expected execution time for the task."""
-        logger.info(f"Current time: {self.current_time}")
-        next_time = self.current_time + timedelta(hours=self.interval)
-
-        if self._is_blackout_time(next_time):
-            next_time = self.blackout_end
-
-        self.next_time = next_time
-        logger.info(f"Next time: {self.next_time}")
+        self.next_time = self._adjust_for_blackout(
+            self.current_time + timedelta(hours=self.interval)
+        )
         self.time_until = self.next_time - self.current_time
 
     def reset_next_time(self):
