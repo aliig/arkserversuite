@@ -81,6 +81,7 @@ class TimeTracker:
         self.next_time = self._adjust_for_blackout(
             self.current_time + timedelta(hours=self.interval)
         )
+        logger.info(f"Next {self.task_name} execution: {self.display_next_time()}")
         self.time_until = self.next_time - self.current_time
 
     def reset_next_time(self):
