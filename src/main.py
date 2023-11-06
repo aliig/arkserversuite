@@ -40,7 +40,6 @@ class ArkServerStopError(Exception):
 class ArkServer:
     def __init__(self):
         self.tasks: dict[str, Task] = self.initialize_tasks()
-        print(self.tasks)
 
     def initialize_tasks(self):
         tasks_init = {

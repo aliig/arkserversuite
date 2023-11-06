@@ -41,7 +41,7 @@ def is_server_running() -> bool:
         result = run_shell_cmd(cmd_str, suppress_output=True)
         return "ArkAscendedServer.exe" in result.stdout
     except Exception as e:
-        print(f"Error checking if server is running: {e}")
+        logger.error(f"Error checking if server is running: {e}")
         return False
 
 
