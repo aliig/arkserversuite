@@ -60,6 +60,7 @@ class TimeTracker:
             next_time = next_time + timedelta(hours=self.interval)
 
         self.next_time = next_time
+        print(f"Next time: {self.next_time}")
         self.time_until = self.next_time - self.current_time
 
     def reset_next_time(self):
