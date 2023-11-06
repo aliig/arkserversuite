@@ -50,10 +50,13 @@ class ArkServer:
             "restart": PerformRoutineRestart,
             "destroy_wild_dinos": DestroyWildDinos,
         }
-        return {
-            task_name: task_class(self, task_name)
-            for task_name, task_class in tasks_init.items()
-        }
+
+        tasks = {}
+        for task_name, task_class in tasks_init.items():
+            logger.info(f"Initializing {task_name}")
+            tasks[task_name] = task_class(self, task_name)
+
+        return tasks
 
     def start(self) -> bool:
         if not is_server_running():
