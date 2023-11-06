@@ -54,7 +54,7 @@ class TimeTracker:
 
     def set_next_time(self):
         """Compute the next expected execution time for the task."""
-        print(f"Current time: {self.next_time}")
+        print(f"Current time: {self.current_time}")
         next_time = self.current_time + timedelta(hours=self.interval)
 
         while self._is_blackout_time(next_time):
