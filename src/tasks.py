@@ -52,7 +52,7 @@ class Task:
     def _warn_then_wait(self):
         for cnt, warning_minute in enumerate(self.warning_times):
             send_message(
-                f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now(self.time.timezone) + timedelta(minutes=warning_minute))}."
+                f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}."
             )
             if cnt < len(self.warning_times) - 1:
                 time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)
@@ -64,7 +64,7 @@ class Task:
         self.warned_times = set()
 
     def _pre_run(self) -> None:
-        self.time.current_time = datetime.now(self.time.timezone)
+        self.time.current_time = datetime.now()
         self._warn_before_task()
 
     def _post_run(self) -> None:
@@ -139,7 +139,7 @@ class CheckForUpdatesAndRestart(Task):
 
     def execute(self) -> bool:
         """Execute the task if it's time."""
-        self.time.current_time = datetime.now(self.time.timezone)
+        self.time.current_time = datetime.now()
         if self.time.is_time_to_execute():
             res = self._run_task()
             self._post_run()

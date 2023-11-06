@@ -9,7 +9,7 @@ class TimeTracker:
         self.task_config = task_config
         self.interval = task_config.get("interval", 60 * 60)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
-        self.current_time = datetime.now(self.timezone)
+        self.current_time = datetime.now()
         self.time_until = None
         self.set_next_time()
 
@@ -77,7 +77,7 @@ class TimeTracker:
         self.time_until = self.next_time - self.current_time
 
     def reset_next_time(self):
-        self.current_time = datetime.now(self.timezone)
+        self.current_time = datetime.now()
         self.set_next_time()
 
     def is_time_to_execute(self) -> bool:
@@ -86,7 +86,8 @@ class TimeTracker:
 
     def display(self, time: datetime, time_format: str = "%I:%M %p %Z") -> str:
         # Display the time in the specified format and timezone
-        return time.strftime(time_format)
+        timezone_time = time.astimezone(self.timezone)
+        return timezone_time.strftime(time_format)
 
     def display_next_time(self) -> str:
         return self.display(self.next_time)
