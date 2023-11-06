@@ -35,6 +35,11 @@ def run_shell_cmd(
     return process
 
 
+def kill_server() -> None:
+    run_shell_cmd("taskkill /IM ArkAscendedServer.exe /F", suppress_output=True)
+    run_shell_cmd("taskkill /IM ShooterGameServer.exe /F", suppress_output=True)
+
+
 def is_server_running() -> bool:
     try:
         cmd_str = 'tasklist /FI "IMAGENAME eq ArkAscendedServer.exe"'
@@ -82,6 +87,7 @@ def generate_batch_file() -> str:
         batch_file.write(batch_content)
 
     return ".start_server.bat"
+
 
 def update_server() -> None:
     logger.info("Updating the Ark server...")
