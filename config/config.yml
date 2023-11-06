@@ -15,8 +15,21 @@ server:
   admin_password: "hello"
   timezone: "America/New_York"
 
-mods:
-  - 928988
+launch_options:
+  question_mark:
+    - AllowCrateSpawnsOnTopOfStructures=True
+  hyphen:
+    - EnableIdlePlayerKick
+    - NoBattlEye
+    - servergamelog
+    - servergamelogincludetribelogs
+    - ServerRCONOutputTribeLogs
+    - nosteamclient
+    - server
+    - log
+  mods:
+    - 928988
+
 
 discord:
   webhook: "https://discord.com/api/webhooks/1169356449873412116/7NaksFrGxSfnxEbk2hAL7hqYMdKIxbskqJ6D1gr-OKdxKW4Gegb4KP70O25cDQzkaaSW"

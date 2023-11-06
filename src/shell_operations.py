@@ -52,7 +52,7 @@ def is_server_running() -> bool:
 
 def generate_batch_file() -> str:
     base_arg = f"{DEFAULT_CONFIG['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe"
-    options = "?".join(
+    question_mark_options = "?".join(
         [
             DEFAULT_CONFIG["server"]["map"],
             f"SessionName=\"{DEFAULT_CONFIG['server']['name']}\"",
@@ -61,26 +61,18 @@ def generate_batch_file() -> str:
             f"Password={DEFAULT_CONFIG['server']['password']}",
             f"MaxPlayers={DEFAULT_CONFIG['server']['players']}",
             f"WinLiveMaxPlayers={DEFAULT_CONFIG['server']['players']}",
-            "AllowCrateSpawnsOnTopOfStructures=True",
             "RCONEnabled=True",
+            *DEFAULT_CONFIG["launch_options"]["question_mark"],
         ]
     )
-    spaced_options = " ".join(
+    hyphen_options = " ".join(
         [
-            "-EnableIdlePlayerKick",
-            "-NoBattlEye",
-            "-servergamelog",
-            "-servergamelogincludetribelogs",
-            "-ServerRCONOutputTribeLogs",
-            "-nosteamclient",
-            "-game",
-            "-server",
-            "-log",
-            f"-mods={','.join(map(str, DEFAULT_CONFIG['mods']))}",
+            *map(lambda opt: f"-{opt}", DEFAULT_CONFIG["launch_options"]["hyphen"]),
+            f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options']['mods']))}",
         ]
     )
 
-    cmd_string = f"{base_arg} {options} {spaced_options}"
+    cmd_string = f"{base_arg} {question_mark_options} {hyphen_options}"
     batch_content = f'@echo off\nstart "" {cmd_string}'
 
     with open(".start_server.bat", "w") as batch_file:
