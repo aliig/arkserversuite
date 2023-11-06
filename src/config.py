@@ -28,11 +28,18 @@ class ConfigLoader:
                 return yaml.safe_load(stream)
         return {}
 
+    @staticmethod
+    def recursive_update(d, u):
+        for k, v in u.items():
+            if isinstance(v, dict):
+                d[k] = ConfigLoader.recursive_update(d.get(k, {}), v)
+            else:
+                d[k] = v
+        return d
+
     @cached_property
     def merged_config(self):
-        config = self.default_config.copy()
-        config.update(self.custom_config)
-        return config
+        return self.recursive_update(self.default_config, self.custom_config)
 
 
 DEFAULT_CONFIG = ConfigLoader().merged_config
