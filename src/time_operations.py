@@ -7,7 +7,7 @@ class TimeTracker:
     def __init__(self, task_config):
         self.timezone = ZoneInfo(DEFAULT_CONFIG["server"]["timezone"])
         self.task_config = task_config
-        self.interval = task_config.get("interval", 60)  # default interval 60 seconds
+        self.interval = task_config.get("interval", 60 * 60)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.current_time = datetime.now(self.timezone)
         self.set_next_time()
@@ -73,6 +73,10 @@ class TimeTracker:
             next_time = self._adjust_for_blackout(next_time)
 
         self.next_time = next_time
+
+    def reset_next_time(self):
+        self.current_time = datetime.now(self.timezone)
+        self.set_next_time()
 
     def is_time_to_execute(self) -> bool:
         """Check if it's time to execute the task."""

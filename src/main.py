@@ -39,7 +39,7 @@ class ArkServerStopError(Exception):
 
 class ArkServer:
     def __init__(self):
-        self.tasks = self.initialize_tasks()
+        self.tasks: dict[str, Task] = self.initialize_tasks()
         print(self.tasks)
 
     def initialize_tasks(self):
@@ -99,6 +99,7 @@ class ArkServer:
     def restart(self, reason: str = "other") -> None:
         if is_server_running():
             send_message(f"Server is restarting for {reason}.")
+            self.tasks["restart"].time.reset_next_time()
             time.sleep(5)
             self.stop()
             time.sleep(5)

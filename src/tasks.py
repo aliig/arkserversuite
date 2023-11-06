@@ -97,6 +97,7 @@ class SendAnnouncement(Task):
         send_message(self.description, discord_msg=False)
         # announce next expected dino wipe
         next_wipe = self.server.tasks["destroy_wild_dinos"].time.display_next_time()
+        send_message(f"Next dino wipe: {next_wipe}", discord_msg=False)
 
         return False  # Always return False so that the other tasks run
 
