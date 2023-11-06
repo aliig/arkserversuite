@@ -131,7 +131,6 @@ class HandleEmptyServerRestart(Task):
             if self.server.first_empty_server_time is not None:
                 logger.info("Server is no longer empty, resetting stale check timer...")
                 self.server.first_empty_server_time = None
-        self._update_last_check()
         return False
 
 
@@ -163,7 +162,6 @@ class PerformRoutineRestart(Task):
 
     def _run_task(self) -> bool:
         self.server.restart("routine restart")
-        self._update_last_check()
         return True
 
 
@@ -173,5 +171,4 @@ class DestroyWildDinos(Task):
 
     def _run_task(self) -> bool:
         destroy_wild_dinos()
-        self._update_last_check()
         return False
