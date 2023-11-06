@@ -104,14 +104,15 @@ class HandleEmptyServerRestart(Task):
     def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)
         self.threshold = self.task_config.get("threshold", 0) * 60 * 60
+        self.first_empty_server_time = None
 
     def _run_task(self) -> bool:
         if get_active_players() == 0:
-            if self.server.first_empty_server_time is None:
+            if self.first_empty_server_time is None:
                 logger.info("Server is empty, starting stale check timer...")
-                self.server.first_empty_server_time = self.current_time
+                self.first_empty_server_time = self.current_time
             elif (
-                self.current_time - self.server.first_empty_server_time
+                self.current_time - self.first_empty_server_time
                 >= self.threshold
             ):
                 logger.info("Server is stale, restarting...")
@@ -119,9 +120,9 @@ class HandleEmptyServerRestart(Task):
                 self._update_last_check()
                 return True
         else:
-            if self.server.first_empty_server_time is not None:
+            if self.first_empty_server_time is not None:
                 logger.info("Server is no longer empty, resetting stale check timer...")
-                self.server.first_empty_server_time = None
+                self.first_empty_server_time = None
         return False
 
 

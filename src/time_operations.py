@@ -7,7 +7,7 @@ class TimeTracker:
     def __init__(self, task_config):
         self.timezone = ZoneInfo(DEFAULT_CONFIG["server"]["timezone"])
         self.task_config = task_config
-        self.interval = task_config.get("interval", 60 * 60)
+        self.interval = task_config.get("interval", 4)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.current_time = datetime.now()
         self.time_until = None
@@ -53,22 +53,22 @@ class TimeTracker:
             # Blackout does not span midnight
             return datetime.combine(
                 expected_execution_dt.date(), self.blackout_end_time
-            ) + timedelta(seconds=self.interval)
+            ) + timedelta(hours=self.interval)
         else:
             # Blackout spans midnight
             if expected_execution_dt.time() >= self.blackout_start_time:
                 next_day = expected_execution_dt.date() + timedelta(days=1)
                 return datetime.combine(next_day, self.blackout_end_time) + timedelta(
-                    seconds=self.interval
+                    hours=self.interval
                 )
             else:
                 return datetime.combine(
                     expected_execution_dt.date(), self.blackout_end_time
-                ) + timedelta(seconds=self.interval)
+                ) + timedelta(hours=self.interval)
 
     def set_next_time(self):
         """Compute the next expected execution time for the task."""
-        next_time = self.current_time + timedelta(seconds=self.interval)
+        next_time = self.current_time + timedelta(hours=self.interval)
 
         while self._is_blackout_time(next_time.time()):
             next_time = self._adjust_for_blackout(next_time)
