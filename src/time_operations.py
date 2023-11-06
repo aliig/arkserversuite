@@ -10,6 +10,7 @@ class TimeTracker:
         self.interval = task_config.get("interval", 60 * 60)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.current_time = datetime.now(self.timezone)
+        self.time_until = None
         self.set_next_time()
 
     def _get_blackout_times(
@@ -73,6 +74,7 @@ class TimeTracker:
             next_time = self._adjust_for_blackout(next_time)
 
         self.next_time = next_time
+        self.time_until = self.next_time - self.current_time
 
     def reset_next_time(self):
         self.current_time = datetime.now(self.timezone)

@@ -36,9 +36,7 @@ class Task:
         if not self.warning_times:
             return
 
-        minutes_until_task = (
-            self.time.seconds_until_next / 60
-        )  # Convert seconds to minutes
+        minutes_until_task = self.time.time_until.total_seconds() / 60
 
         # Iterate over the warning times that have not been warned yet
         for warning_minute in self.warning_times:
