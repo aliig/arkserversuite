@@ -25,6 +25,7 @@ class TimeTracker:
 
             if start_time == end_time:
                 return None, None
+            print(f"Blackout times: {start_time} - {end_time}")
             return start_time, end_time
         except (ValueError, IndexError):
             # Log the error condition here
