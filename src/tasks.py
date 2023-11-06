@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class Task:
-    def __init__(self, server: ArkServer, task_name: str):
+    def __init__(self, server, task_name: str):
         self.task_name = task_name
         self.server = server
 
