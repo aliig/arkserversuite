@@ -45,10 +45,10 @@ class ArkServer:
     def initialize_tasks(self):
         tasks_init = {
             "announcement": SendAnnouncement,
-            "stale": HandleEmptyServerRestart,
+            "destroy_wild_dinos": DestroyWildDinos,
             "update": CheckForUpdatesAndRestart,
             "restart": PerformRoutineRestart,
-            "destroy_wild_dinos": DestroyWildDinos,
+            "stale": HandleEmptyServerRestart,
         }
 
         tasks = {}
