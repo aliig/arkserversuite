@@ -88,20 +88,6 @@ class Task:
         raise NotImplementedError("Subclasses should implement this!")
 
 
-class CheckServerRunningAndRestart(Task):
-    task_name = None
-
-    def _run_task(self) -> bool:
-        if not is_server_running():
-            logger.info("Server is not running. Attempting to restart...")
-            self.server.start()
-            return True
-        return False
-
-    def execute(self) -> bool:
-        return self._run_task()
-
-
 class SendAnnouncement(Task):
     def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)

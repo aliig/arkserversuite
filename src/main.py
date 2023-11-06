@@ -14,7 +14,6 @@ from server_operations import (
 )
 
 from tasks import (
-    CheckServerRunningAndRestart,
     SendAnnouncement,
     HandleEmptyServerRestart,
     CheckForUpdatesAndRestart,
@@ -44,7 +43,6 @@ class ArkServer:
 
     def initialize_tasks(self):
         tasks_init = {
-            "check_running": CheckServerRunningAndRestart,
             "announcement": SendAnnouncement,
             "stale": HandleEmptyServerRestart,
             "update": CheckForUpdatesAndRestart,
@@ -108,6 +106,10 @@ class ArkServer:
     def run(self) -> None:
         self.start()
         while True:
+            if not is_server_running():
+                logger.info("Server is not running. Attempting to restart...")
+                self.start()
+
             for task in self.tasks:
                 if task.execute():
                     break
