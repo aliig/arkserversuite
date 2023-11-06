@@ -53,7 +53,7 @@ class ArkServer:
 
         tasks = {}
         for task_name, task_class in tasks_init.items():
-            logger.info(f"Initializing {task_name}")
+            logger.info(f"Initializing task: {task_name}")
             tasks[task_name] = task_class(self, task_name)
 
         return tasks

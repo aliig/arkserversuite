@@ -45,15 +45,14 @@ class TimeTracker:
             # Log the error condition here
             return None, None
 
-    def _is_blackout_time(self, time_to_check=None) -> bool:
+    def _is_blackout_time(self, time_to_check: datetime = None) -> bool:
         """Check if a given time is within the blackout period."""
         time_to_check = time_to_check or self.current_time
 
         if not all((self.blackout_start, self.blackout_end)):
             return False
 
-        if self.blackout_start < self.current_time < self.blackout_end:
-            return True
+        return self.blackout_start < self.current_time < self.blackout_end
 
     def set_next_time(self):
         """Compute the next expected execution time for the task."""
