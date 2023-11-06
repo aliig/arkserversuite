@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 class Task:
-    def __init__(self, server, task_name: str):
+    def __init__(self, server: "ArkServer", task_name: str):
         self.task_name = task_name
         self.server = server
 
@@ -101,7 +101,7 @@ class CheckServerRunningAndRestart(Task):
 
 
 class SendAnnouncement(Task):
-    def __init__(self, server: ArkServer, task_name: str):
+    def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
@@ -110,7 +110,7 @@ class SendAnnouncement(Task):
 
 
 class HandleEmptyServerRestart(Task):
-    def __init__(self, server: ArkServer, task_name: str):
+    def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)
         self.threshold = self.task_config.get("threshold", 0) * 60 * 60
 
@@ -135,7 +135,7 @@ class HandleEmptyServerRestart(Task):
 
 
 class CheckForUpdatesAndRestart(Task):
-    def __init__(self, server: ArkServer, task_name: str):
+    def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
@@ -157,7 +157,7 @@ class CheckForUpdatesAndRestart(Task):
 
 
 class PerformRoutineRestart(Task):
-    def __init__(self, server: ArkServer, task_name: str):
+    def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
@@ -166,7 +166,7 @@ class PerformRoutineRestart(Task):
 
 
 class DestroyWildDinos(Task):
-    def __init__(self, server: ArkServer, task_name: str):
+    def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
