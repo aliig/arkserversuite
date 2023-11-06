@@ -72,6 +72,10 @@ class Task:
         self._reset_sent_warnings()
         self.time.set_next_time()
 
+    def _run_task(self):
+        """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
+        raise NotImplementedError("Subclasses should implement this!")
+
     def execute(self) -> bool:
         """Execute the task if it's time."""
         self._pre_run()
@@ -80,10 +84,6 @@ class Task:
             self._post_run()
             return res
         return False
-
-    def _run_task(self):
-        """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
-        raise NotImplementedError("Subclasses should implement this!")
 
 
 class SendAnnouncement(Task):
@@ -114,7 +114,6 @@ class HandleEmptyServerRestart(Task):
             elif self.current_time - self.first_empty_server_time >= self.threshold:
                 logger.info("Server is stale, restarting...")
                 self.server.restart("stale server", skip_warnings=True)
-                self._update_last_check()
                 return True
         else:
             if self.first_empty_server_time is not None:
@@ -128,7 +127,6 @@ class CheckForUpdatesAndRestart(Task):
         super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
-        self._update_last_check()
         if does_server_need_update():
             self._warn_then_wait()
             self.server.restart("server update")

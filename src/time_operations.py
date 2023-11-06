@@ -14,10 +14,8 @@ class TimeTracker:
         self.task_config = task.task_config
         self.task_name = task.task_name
         self.interval = task.task_config.get("interval", 4)
-        self.current_time = datetime.now()
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
-        self.time_until = None
-        self.set_next_time()
+        self.reset()
 
     def _get_blackout_times(
         self,
@@ -84,7 +82,7 @@ class TimeTracker:
         logger.info(f"Next {self.task_name} execution: {self.display_next_time()}")
         self.time_until = self.next_time - self.current_time
 
-    def reset_next_time(self):
+    def reset(self):
         self.current_time = datetime.now()
         self.set_next_time()
 
