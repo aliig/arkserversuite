@@ -40,9 +40,6 @@ class ArkServerStopError(Exception):
 
 class ArkServer:
     def __init__(self):
-        # Time-related initializations
-        self.reset_state()
-
         self.tasks: list[Task] = [
             CheckServerRunningAndRestart(self, time.time()),
             SendAnnouncement(self, time.time()),
@@ -52,16 +49,8 @@ class ArkServer:
             DestroyWildDinos(self, time.time()),
         ]
 
-    def reset_state(self) -> None:
-        current_time = time.time()
-        self.last = {
-            task_name: current_time for task_name in DEFAULT_CONFIG["tasks"].keys()
-        }
-        self.first_empty_server_time = None
-
     def start(self) -> bool:
         if not is_server_running():
-            self.reset_state()
             if does_server_need_update():
                 update_server()
 
@@ -113,7 +102,7 @@ class ArkServer:
         self.start()
         while True:
             for task in self.tasks:
-                if task.execute(self):
+                if task.execute():
                     break
             time.sleep(SLEEP_TIME)  # Check every minute
 

@@ -4,8 +4,6 @@ from server_operations import send_message, get_active_players, destroy_wild_din
 import logging
 from config import DEFAULT_CONFIG
 from datetime import datetime, timedelta
-from utils import time_as_string
-from collections import deque
 import time
 from typing import TYPE_CHECKING
 
@@ -62,24 +60,31 @@ class Task:
             else:
                 time.sleep(warning_minute * 60)
 
-    def _cleanup(self) -> None:
-        """Cleanup after task execution."""
+    def _reset_sent_warnings(self) -> None:
+        """Reset the warned times list after task execution."""
         self.warned_times = set()
+
+    def _pre_run(self) -> None:
+        self.time.current_time = datetime.now()
+        self._warn_before_task()
+
+    def _post_run(self) -> None:
+        """Cleanup after task execution."""
+        self._reset_sent_warnings()
         self.time.set_next_time()
+
+    def execute(self) -> bool:
+        """Execute the task if it's time."""
+        self._pre_run()
+        if self.time.is_time_to_execute():
+            res = self._run_task()
+            self._post_run()
+            return res
+        return False
 
     def _run_task(self):
         """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
         raise NotImplementedError("Subclasses should implement this!")
-
-    def execute(self) -> bool:
-        """Execute the task if it's time."""
-        self.time.current_time = datetime.now()
-        self._warn_before_task()
-        if self.time.is_time_to_execute():
-            res = self._run_task()
-            self._cleanup()
-            return res
-        return False
 
 
 class CheckServerRunningAndRestart(Task):
@@ -152,7 +157,7 @@ class CheckForUpdatesAndRestart(Task):
         if self.time.is_time_to_execute():
             self._warn_then_wait()
             res = self._run_task()
-            self._cleanup()
+            self._post_run()
             return res
         return False
 
