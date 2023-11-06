@@ -1,17 +1,20 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
+from config import DEFAULT_CONFIG
 
 
 class TimeTracker:
-    def __init__(self, task_config, timezone: str = "America/New_York"):
-        self.timezone = ZoneInfo(timezone)
+    def __init__(self, task_config):
+        self.timezone = ZoneInfo(DEFAULT_CONFIG["server"]["timezone"])
         self.task_config = task_config
         self.interval = task_config.get("interval", 60)  # default interval 60 seconds
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.current_time = datetime.now(self.timezone)
         self.set_next_time()
 
-    def _get_blackout_times(self) -> tuple[datetime.time | None, datetime.time | None]:
+    def _get_blackout_times(
+        self,
+    ) -> tuple[datetime.time, datetime.time] | tuple[None, None]:
         blackout_times = self.task_config.get("blackout_times")
 
         if not blackout_times or blackout_times in [("00:00", "00:00"), (), []]:
