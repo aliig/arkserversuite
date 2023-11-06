@@ -40,14 +40,21 @@ class ArkServerStopError(Exception):
 
 class ArkServer:
     def __init__(self):
-        self.tasks: list[Task] = [
-            CheckServerRunningAndRestart(self, time.time()),
-            SendAnnouncement(self, time.time()),
-            HandleEmptyServerRestart(self, time.time()),
-            CheckForUpdatesAndRestart(self, time.time()),
-            PerformRoutineRestart(self, time.time()),
-            DestroyWildDinos(self, time.time()),
-        ]
+        self.tasks = self.initialize_tasks()
+
+    def initialize_tasks(self):
+        tasks_init = {
+            "check_running": CheckServerRunningAndRestart,
+            "announcement": SendAnnouncement,
+            "stale": HandleEmptyServerRestart,
+            "update": CheckForUpdatesAndRestart,
+            "restart": PerformRoutineRestart,
+            "destroy_wild_dinos": DestroyWildDinos,
+        }
+        return {
+            task_name: task_class(self, task_name)
+            for task_name, task_class in tasks_init.items()
+        }
 
     def start(self) -> bool:
         if not is_server_running():

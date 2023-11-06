@@ -13,6 +13,7 @@ server:
   password: ""
   map: "TheIsland_WP"
   admin_password: "hello"
+  timezone: "America/New_York"
 
 mods:
   - 928988

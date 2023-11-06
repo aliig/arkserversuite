@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 class Task:
-    def __init__(self, server: ArkServer):
+    def __init__(self, server: ArkServer, task_name: str):
+        self.task_name = task_name
         self.server = server
 
         # config
@@ -53,7 +54,7 @@ class Task:
     def _warn_then_wait(self):
         for cnt, warning_minute in enumerate(self.warning_times):
             send_message(
-                f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}."
+                f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now(self.timezone) + timedelta(minutes=warning_minute))}."
             )
             if cnt < len(self.warning_times) - 1:
                 time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)
@@ -65,7 +66,7 @@ class Task:
         self.warned_times = set()
 
     def _pre_run(self) -> None:
-        self.time.current_time = datetime.now()
+        self.time.current_time = datetime.now(self.timezone)
         self._warn_before_task()
 
     def _post_run(self) -> None:
@@ -100,10 +101,8 @@ class CheckServerRunningAndRestart(Task):
 
 
 class SendAnnouncement(Task):
-    task_name = "announcement"
-
-    def __init__(self, server: ArkServer, current_time):
-        super().__init__(server, current_time)
+    def __init__(self, server: ArkServer, task_name: str):
+        super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
         send_message(self.description, discord_msg=False)
@@ -111,10 +110,8 @@ class SendAnnouncement(Task):
 
 
 class HandleEmptyServerRestart(Task):
-    task_name = "stale"
-
-    def __init__(self, server: ArkServer, current_time):
-        super().__init__(server, current_time)
+    def __init__(self, server: ArkServer, task_name: str):
+        super().__init__(server, task_name)
         self.threshold = self.task_config.get("threshold", 0) * 60 * 60
 
     def _run_task(self) -> bool:
@@ -139,23 +136,21 @@ class HandleEmptyServerRestart(Task):
 
 
 class CheckForUpdatesAndRestart(Task):
-    task_name = "update"
-
-    def __init__(self, server: ArkServer, current_time):
-        super().__init__(server, current_time)
+    def __init__(self, server: ArkServer, task_name: str):
+        super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
         self._update_last_check()
         if does_server_need_update():
+            self._warn_then_wait()
             self.server.restart("server update")
             return True
         return False
 
     def execute(self) -> bool:
         """Execute the task if it's time."""
-        self.time.current_time = datetime.now()
+        self.time.current_time = datetime.now(self.timezone)
         if self.time.is_time_to_execute():
-            self._warn_then_wait()
             res = self._run_task()
             self._post_run()
             return res
@@ -163,10 +158,8 @@ class CheckForUpdatesAndRestart(Task):
 
 
 class PerformRoutineRestart(Task):
-    task_name = "restart"
-
-    def __init__(self, server: ArkServer, current_time):
-        super().__init__(server, current_time)
+    def __init__(self, server: ArkServer, task_name: str):
+        super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
         self.server.restart("routine restart")
@@ -175,10 +168,8 @@ class PerformRoutineRestart(Task):
 
 
 class DestroyWildDinos(Task):
-    task_name = "destroy_wild_dinos"
-
-    def __init__(self, server: ArkServer, current_time):
-        super().__init__(server, current_time)
+    def __init__(self, server: ArkServer, task_name: str):
+        super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
         destroy_wild_dinos()

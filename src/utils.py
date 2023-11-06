@@ -17,7 +17,7 @@ T = TypeVar("T")
 def time_as_string(time: datetime = None) -> str:
     # desire "%H:%M %p" format
     if time is None:
-        time = datetime.now()
+        time = datetime.now(DEFAULT_CONFIG["server"]["timezone"])
     return time.strftime("%H:%M %p")
 
 
