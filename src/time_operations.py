@@ -84,9 +84,15 @@ class TimeTracker:
         """Check if it's time to execute the task."""
         return self.current_time >= self.next_time
 
-    def display(self, time: datetime, time_format: str = "%I:%M %p %Z") -> str:
+    def display(self, time: datetime) -> str:
         # Display the time in the specified format and timezone
         timezone_time = time.astimezone(self.timezone)
+        # if the time is on a future date, print out the date as well
+        if timezone_time.date() > datetime.now().astimezone(self.timezone).date():
+            time_format: str = "%a %b %d %I:%M %p %Z"
+        else:
+            time_format: str = "%I:%M %p %Z"
+
         return timezone_time.strftime(time_format)
 
     def display_next_time(self) -> str:
