@@ -40,6 +40,7 @@ class ArkServerStopError(Exception):
 class ArkServer:
     def __init__(self):
         self.tasks = self.initialize_tasks()
+        print(self.tasks)
 
     def initialize_tasks(self):
         tasks_init = {
@@ -110,7 +111,7 @@ class ArkServer:
                 logger.info("Server is not running. Attempting to restart...")
                 self.start()
 
-            for task in self.tasks:
+            for _, task in self.tasks.items():
                 if task.execute():
                     break
             time.sleep(SLEEP_TIME)  # Check every minute
