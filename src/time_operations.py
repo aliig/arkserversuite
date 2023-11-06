@@ -60,6 +60,9 @@ class TimeTracker:
         next_time = self.current_time + timedelta(hours=self.interval)
 
         while self._is_blackout_time(next_time):
+            logger.info(
+                f"Adding {self.interval} hours to {next_time} is in blackout period"
+            )
             next_time = next_time + timedelta(hours=self.interval)
 
         self.next_time = next_time
