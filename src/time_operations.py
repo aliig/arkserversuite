@@ -8,14 +8,9 @@ class TimeTracker:
         self.task_config = task_config
         self.interval = task_config.get("interval", 60)  # default interval 60 seconds
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
-
-        # current time
         self.current_time = datetime.now()
-        # next execution
         self.set_next_time()
 
-    def set_next_time(self):
-        self.next_time = self.get_next_time()
 
     def _get_blackout_times(self):
         """Convert blackout times to datetime.time objects, or return None if not configured."""
@@ -68,11 +63,7 @@ class TimeTracker:
         expected_execution_dt += timedelta(seconds=self.interval)
         return expected_execution_dt
 
-    def is_time_to_execute(self) -> bool:
-        """Check if it's time to execute the task."""
-        return self.current_time >= self.next_time
-
-    def get_next_time(self) -> datetime:
+    def set_next_time(self):
         """Compute the next expected execution time for the task."""
         next_time = self.current_time + timedelta(seconds=self.interval)
 
@@ -80,7 +71,11 @@ class TimeTracker:
         while self._is_blackout_time(next_time.time()):
             next_time = self._adjust_for_blackout(next_time)
 
-        return next_time
+        self.set_next_time = next_time
+
+    def is_time_to_execute(self) -> bool:
+        """Check if it's time to execute the task."""
+        return self.current_time >= self.next_time
 
     def display(self, time: datetime, time_format: str = "%I:%M %p %Z") -> str:
         # Display the time in the specified format and timezone

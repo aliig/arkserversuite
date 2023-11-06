@@ -62,14 +62,14 @@ class Task:
             else:
                 time.sleep(warning_minute * 60)
 
-    def _reset_sent_warnings(self) -> None:
-        """Reset the warned times list after task execution."""
-        self.warned_times = set()
-
     def _cleanup(self) -> None:
         """Cleanup after task execution."""
-        self._reset_sent_warnings()
+        self.warned_times = set()
         self.time.set_next_time()
+
+    def _run_task(self):
+        """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
+        raise NotImplementedError("Subclasses should implement this!")
 
     def execute(self) -> bool:
         """Execute the task if it's time."""
@@ -80,10 +80,6 @@ class Task:
             self._cleanup()
             return res
         return False
-
-    def _run_task(self):
-        """Placeholder for the actual task to be executed. Should be overridden in subclasses."""
-        raise NotImplementedError("Subclasses should implement this!")
 
 
 class CheckServerRunningAndRestart(Task):
