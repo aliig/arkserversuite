@@ -29,7 +29,7 @@ class Task:
         self.warned_times = set()
 
         # time
-        self.time = TimeTracker(self.task_config)
+        self.time = TimeTracker(self)
 
     def _warn_before_task(self):
         """Send warnings if the time for a task is approaching."""

@@ -1,14 +1,19 @@
 from datetime import datetime, timedelta
 from config import DEFAULT_CONFIG
 from logger import get_logger
+from typing import TYPE_CHECKING
 
 logger = get_logger(__name__)
 
+if TYPE_CHECKING:
+    from tasks import Task
+
 
 class TimeTracker:
-    def __init__(self, task_config):
-        self.task_config = task_config
-        self.interval = task_config.get("interval", 4)
+    def __init__(self, task: "Task"):
+        self.task_config = task.task_config
+        self.task_name = task.task_name
+        self.interval = task.task_config.get("interval", 4)
         self.current_time = datetime.now()
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.time_until = None
