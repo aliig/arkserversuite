@@ -1,5 +1,8 @@
 from datetime import datetime, timedelta
 from config import DEFAULT_CONFIG
+from logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class TimeTracker:
@@ -14,6 +17,7 @@ class TimeTracker:
     def _get_blackout_period(
         self,
     ) -> tuple[datetime.time, datetime.time] | tuple[None, None]:
+        logger.debug(f"Getting blackout period for {self.task_config['name']}")
         blackout_times = self.task_config.get("blackout_times")
 
         if not blackout_times or blackout_times in [("00:00", "00:00"), (), []]:
@@ -36,7 +40,7 @@ class TimeTracker:
                 end = end + timedelta(days=1)
             elif start == end:
                 return None, None
-            print(f"Blackout period: {start} - {end}")
+            logger.debug(f"Blackout period: {start} - {end}")
             return start, end
         except (ValueError, IndexError):
             # Log the error condition here
@@ -54,14 +58,15 @@ class TimeTracker:
 
     def set_next_time(self):
         """Compute the next expected execution time for the task."""
-        print(f"Current time: {self.current_time}")
+        logger.debug(f"Setting next time for {self.task_config['name']}")
+        logger.debug(f"Current time: {self.current_time}")
         next_time = self.current_time + timedelta(hours=self.interval)
 
         while self._is_blackout_time(next_time):
             next_time = next_time + timedelta(hours=self.interval)
 
         self.next_time = next_time
-        print(f"Next time: {self.next_time}")
+        logger.debug(f"Next time: {self.next_time}")
         self.time_until = self.next_time - self.current_time
 
     def reset_next_time(self):
