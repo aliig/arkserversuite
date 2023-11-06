@@ -89,6 +89,8 @@ class Task:
 
 
 class CheckServerRunningAndRestart(Task):
+    task_name = None
+
     def _run_task(self) -> bool:
         if not is_server_running():
             logger.info("Server is not running. Attempting to restart...")
