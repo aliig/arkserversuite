@@ -45,7 +45,6 @@ class LogEvent:
 
 class PlayerConnectEvent(LogEvent):
 
-
     def __init__(self, line):
         self.player_name, self.event_type = self._get_player_info(line)
         super().__init__(line)
@@ -63,7 +62,7 @@ class PlayerConnectEvent(LogEvent):
             send_message_to_player(self.player_name, f'Welcome {self.player_name}! {DEFAULT_CONFIG["tasks"]["announcement"]["description"]}')
         elif self.event_type == "left":
             pass
-        send_to_discord(f"{self.player_name} has {self.event_type} the server")
+        send_to_discord(f"{self.player_name} has {self.event_type} the server", "log_webhook")
 
     def __str__(self):
         return f"Player {self.event_type}: {self.player_name}"
