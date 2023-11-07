@@ -55,3 +55,9 @@ tasks:
   stale:
     interval: 0.5 # interval to check for a stale server in hours
     threshold: 5 # once a server is stale for this many hours, it will be restarted
+
+config_overrides:
+  Game:
+    - SupplyCrateLootQualityMultiplier=1.2
+    - FishingLootQualityMultiplier=2.8
+  GameUserSettings:

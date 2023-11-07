@@ -111,7 +111,9 @@ class HandleEmptyServerRestart(Task):
             if self.first_empty_server_time is None:
                 logger.info("Server is empty, starting stale check timer...")
                 self.first_empty_server_time = self.time.current_time
-            elif self.time.current_time - self.first_empty_server_time >= self.threshold:
+            elif (
+                self.time.current_time - self.first_empty_server_time >= self.threshold
+            ):
                 logger.info("Server is stale, restarting...")
                 self.server.restart("stale server", skip_warnings=True)
                 return True
