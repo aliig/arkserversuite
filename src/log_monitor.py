@@ -86,7 +86,7 @@ class PlayerDied(LogEvent):
 
     @classmethod
     def is_event(cls, line: str):
-        return "was killed" in line.lower() and "tribemember" in line.lower()
+        return "was killed" in line.lower() and "tribemember" in line.lower() and "richcolor" not in line.lower()
 
     def __init__(self, line: str):
         match = self.player_died_pattern.search(line)
@@ -109,7 +109,7 @@ class PlayerDied(LogEvent):
 class DinoTamed(LogEvent):
     EventInfo = namedtuple('EventInfo', 'player_name tribe_name dinosaur level')
     dino_tamed_pattern = re.compile(
-        r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>\w*) Tamed a (?P<dinosaur>(?:Baby )?\w+) - Lvl (?P<level>\d+)"
+        r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>[\w\s]+?) Tamed a (?P<dinosaur>(?:Baby|Juvenile) [\w\s]+) - Lvl (?P<level>\d+)"
     )
 
     @classmethod
