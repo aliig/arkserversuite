@@ -94,6 +94,7 @@ class PlayerDied(LogEvent):
             self.event_info = self.EventInfo(*match.groups())
         else:
             self.event_info = self.EventInfo(None, None, None, None, None)
+        super().__init__(line)
 
     def _post_classification(self):
         if self.event_info.player_name:
