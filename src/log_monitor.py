@@ -60,7 +60,7 @@ class PlayerConnectEvent(LogEvent):
 
     def _post_classification(self):
         if self.event_type == "joined":
-            send_message_to_player(self.player_name, DEFAULT_CONFIG["tasks"]["announcement"]["description"])
+            send_message_to_player(self.player_name, f'Welcome {self.player_name}! {DEFAULT_CONFIG["tasks"]["announcement"]["description"]}')
         elif self.event_type == "left":
             pass
         send_to_discord(f"{self.player_name} has {self.event_type} the server")
