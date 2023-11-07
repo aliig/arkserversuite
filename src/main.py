@@ -53,7 +53,7 @@ class ArkServer:
 
         tasks = {}
         for task_name, task_class in tasks_init.items():
-            logger.info(f"Initializing task: {task_name}")
+            # logger.info(f"Initializing task: {task_name}")
             tasks[task_name] = task_class(self, task_name)
 
         return tasks
@@ -104,6 +104,7 @@ class ArkServer:
         if is_server_running():
             send_message(f"Server is restarting for {reason}.")
             self.tasks["restart"].time.reset()
+            self.tasks["update"].time.reset()
             time.sleep(5)
             self.stop()
             time.sleep(5)

@@ -1,9 +1,4 @@
 from utils import rcon_cmd, send_to_discord, time_as_string
-from config import DEFAULT_CONFIG
-
-
-import datetime
-import time
 
 from logger import get_logger
 
