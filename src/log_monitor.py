@@ -109,7 +109,7 @@ class PlayerDied(LogEvent):
 class DinoTamed(LogEvent):
     EventInfo = namedtuple('EventInfo', 'player_name tribe_name dinosaur level')
     dino_tamed_pattern = re.compile(
-        r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>[\w\s]+?) Tamed a (?P<dinosaur>(?:Baby|Juvenile) [\w\s]+) - Lvl (?P<level>\d+)"
+        r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>[\w\s]*?) Tamed a (?P<dinosaur>.+?) - Lvl (?P<level>\d+)"
     )
 
     @classmethod
@@ -127,8 +127,9 @@ class DinoTamed(LogEvent):
         super().__init__(line)
 
     def _post_classification(self):
-        message = f"{self.event_info.player_name or 'A player'} of Tribe {self.event_info.tribe_name or 'Unknown'} tamed a {self.event_info.dinosaur} (Level {self.event_info.level})"
-        send_to_discord(message, "log_webhook")
+        if (self.event_info.player_name or self.event_info.tribe_name) and self.event_info.dinosaur:
+            message = f"{self.event_info.player_name or 'A player'} of Tribe {self.event_info.tribe_name or 'Unknown'} tamed a {self.event_info.dinosaur} (Level {self.event_info.level})"
+            send_to_discord(message, "log_webhook")
 
     def __str__(self):
         return f"DinoTamed Event: {self.message}"
