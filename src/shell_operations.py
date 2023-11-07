@@ -60,7 +60,7 @@ def generate_batch_file() -> str:
             f"QueryPort={DEFAULT_CONFIG['server']['query_port']}",
             f"Password={DEFAULT_CONFIG['server']['password']}",
             f"MaxPlayers={DEFAULT_CONFIG['server']['players']}",
-            f"WinLiveMaxPlayers={DEFAULT_CONFIG['server']['players']}",
+            f"ServerAdminPassword={DEFAULT_CONFIG['server']['admin_password']}",
             "RCONEnabled=True",
             *DEFAULT_CONFIG["launch_options"]["question_mark"],
         ]
@@ -69,6 +69,7 @@ def generate_batch_file() -> str:
         [
             *map(lambda opt: f"-{opt}", DEFAULT_CONFIG["launch_options"]["hyphen"]),
             f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options']['mods']))}",
+            f"WinLiveMaxPlayers={DEFAULT_CONFIG['server']['players']}",
         ]
     )
 
