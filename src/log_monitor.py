@@ -3,13 +3,13 @@ import re
 
 from server_operations import send_message_to_player, send_to_discord
 
+from collections import namedtuple
 from config import DEFAULT_CONFIG
 
 from logger import get_logger
 
 logger = get_logger(__name__)
 
-CONNECT_PATTERN = re.compile(r": (.*?) (joined|left) this ARK!")
 
 class LogEventFactory:
     event_types = []
@@ -44,15 +44,14 @@ class LogEvent:
         return f"{self.message}"
 
 class PlayerConnectEvent(LogEvent):
+    regexp_pattern = re.compile(r": (.*?) (joined|left) this ARK!")
 
     def __init__(self, line):
         self.player_name, self.event_type = self._get_player_info(line)
         super().__init__(line)
 
-    @staticmethod
-    def _get_player_info(line):
-        # logger.info(f"Searching for player info in {line} with REGEXP {CONNECT_PATTERN.pattern}")
-        match = CONNECT_PATTERN.search(line)
+    def _get_player_info(self, line):
+        match = self.regexp_pattern.search(line)
         if match:
             return match.group(1), match.group(2)
         return None, None
@@ -78,9 +77,36 @@ class PlayerLeft(PlayerConnectEvent):
     def is_event(cls, line):
         return "left this ARK!" in line
 
+class PlayerDied(LogEvent):
+    EventInfo = namedtuple('EventInfo', 'tribe_name player_name level dinosaur dinosaur_level')
+    player_died_pattern = re.compile(
+        r"Tribe\s+(.+?),\s+ID\s+\d+:\s+Day\s+\d+,\s+\d+:\d+:\d+:\s+<RichColor.+?>Tribemember\s+(.+?)\s+-\s+Lvl\s+(\d+)\s+was\s+killed(?:\s+by\s+a\s+(.+?)\s+-\s+Lvl\s+(\d+))?!"
+    )
+
+    @classmethod
+    def is_event(cls, line):
+        return "was killed" in line and "tribemember" in line
+
+    def __init__(self, line):
+        match = self.player_died_pattern.search(line)
+        if match:
+            self.event_info = self.EventInfo(*match.groups())
+        else:
+            self.event_info = self.EventInfo(None, None, None, None, None)
+
+    def _post_classification(self):
+        if self.event_info.player_name:
+            message = f"{self.event_info.player_name} (Level {self.event_info.level}) of Tribe {self.event_info.tribe_name} was killed"
+            if self.event_info.dinosaur:
+                message += f" by {self.event_info.dinosaur} (Level {self.event_info.dinosaur_level})"
+            send_to_discord(message, "log_webhook")
+
+    def __str__(self):
+        return f"PlayerDied Event: {self.message}"
 
 LogEventFactory.register_event_type(PlayerJoined)
 LogEventFactory.register_event_type(PlayerLeft)
+LogEventFactory.register_event_type(PlayerDied)
 
 class LogMonitor:
     def __init__(self):
