@@ -88,6 +88,7 @@ class PlayerDied(LogEvent):
         return "was killed" in line.lower() and "tribemember" in line.lower()
 
     def __init__(self, line: str):
+        print(f"PlayerDied: {line}")
         match = self.player_died_pattern.search(line)
         if match:
             self.event_info = self.EventInfo(*match.groups())
