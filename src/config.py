@@ -43,3 +43,4 @@ class ConfigLoader:
 
 
 DEFAULT_CONFIG = ConfigLoader().merged_config
+print(DEFAULT_CONFIG)
