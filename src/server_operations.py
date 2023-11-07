@@ -41,4 +41,4 @@ def get_active_players() -> int:
     return count
 
 def send_message_to_player(player_name: str, message: str):
-    return rcon_cmd(f"cheat ServerChatToPlayer {player_name} {message}")
+    return rcon_cmd(f"ServerChatToPlayer {player_name} {message}")
