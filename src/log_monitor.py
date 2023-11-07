@@ -9,8 +9,6 @@ from logger import get_logger
 
 logger = get_logger(__name__)
 
-CONNECT_PATTERN = re.compile(r"(.+) (joined|left) this ARK!")
-
 class LogEventFactory:
     event_types = []
 
@@ -32,8 +30,8 @@ class LogEvent:
         self._post_classification()
 
     def _get_message(self):
-        parts = self.line.split(':', 3)
-        return parts[-1].strip() if len(parts) > 3 else None
+        parts = self.line.split(':')
+        return ':'.join(parts[2:]).strip()
 
     def _post_classification(self):
         # This method will be called after an event has been classified.
@@ -44,29 +42,24 @@ class LogEvent:
         return f"{self.message}"
 
 class PlayerConnectEvent(LogEvent):
-    CONNECT_PATTERN = re.compile(r"(.+) (joined|left) this ARK!")  # Define the pattern within the class
+    CONNECT_PATTERN = re.compile(r": (.*?) (joined|left) this ARK!")
 
     def __init__(self, line):
+        self.line = line
         self.player_name = None
         self.event_type = None
-        super().__init__(line)  # Call the superclass constructor after initializing attributes
-
-    def _get_message(self):
-        # Override the method if necessary or remove it if the base class implementation is sufficient
-        return super()._get_message()
+        super().__init__(line)
 
     def _get_player_info(self):
-        match = self.CONNECT_PATTERN.search(self.message)  # Use self.message instead of self.line
+        match = self.CONNECT_PATTERN.search(self.line)
         if match:
             return match.group(1), match.group(2)
         return None, None
 
     def _post_classification(self):
-        # Depending on the event type, you can call different functions
         if self.event_type == "joined":
             send_message_to_player(self.player_name)
         elif self.event_type == "left":
-            # If there's some specific action for left event
             pass
         send_to_discord(f"{self.player_name} has {self.event_type} the server")
 
