@@ -9,6 +9,8 @@ from logger import get_logger
 
 logger = get_logger(__name__)
 
+CONNECT_PATTERN = re.compile(r": (.*?) (joined|left) this ARK!")
+
 class LogEventFactory:
     event_types = []
 
@@ -42,15 +44,16 @@ class LogEvent:
         return f"{self.message}"
 
 class PlayerConnectEvent(LogEvent):
-    CONNECT_PATTERN = re.compile(r": (.*?) (joined|left) this ARK!")
+
 
     def __init__(self, line):
-        self.line = line
-        self.player_name, self.event_type = self._get_player_info()
+        self.player_name, self.event_type = self._get_player_info(line)
+        super().__init__(line)
 
-    def _get_player_info(self):
-        logger.info(f"Searching for player info in {self.line} with REGEXP {self.CONNECT_PATTERN.pattern}")
-        match = self.CONNECT_PATTERN.search(self.line)
+    @staticmethod
+    def _get_player_info(line):
+        logger.info(f"Searching for player info in {line} with REGEXP {CONNECT_PATTERN.pattern}")
+        match = CONNECT_PATTERN.search(line)
         if match:
             return match.group(1), match.group(2)
         return None, None
@@ -89,7 +92,7 @@ class LogMonitor:
             logger.error(f"Log file does not exist: {self.filepath}")
             self.last_size = 0
 
-    def get_new_entries(self) -> list[LogEvent]:
+    def process_new_entries(self) -> list[LogEvent]:
         try:
             current_size = os.path.getsize(self.filepath)
         except FileNotFoundError:
