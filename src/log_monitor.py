@@ -44,13 +44,19 @@ class LogEvent:
         return f"{self.message}"
 
 class PlayerConnectEvent(LogEvent):
+    CONNECT_PATTERN = re.compile(r"(.+) (joined|left) this ARK!")  # Define the pattern within the class
 
     def __init__(self, line):
-        super().__init__(line)
-        self.player_name, self.event_type = self._get_player_info()
+        self.player_name = None
+        self.event_type = None
+        super().__init__(line)  # Call the superclass constructor after initializing attributes
+
+    def _get_message(self):
+        # Override the method if necessary or remove it if the base class implementation is sufficient
+        return super()._get_message()
 
     def _get_player_info(self):
-        match = CONNECT_PATTERN.search(self.message)  # Use self.message instead of self.line
+        match = self.CONNECT_PATTERN.search(self.message)  # Use self.message instead of self.line
         if match:
             return match.group(1), match.group(2)
         return None, None
@@ -59,7 +65,10 @@ class PlayerConnectEvent(LogEvent):
         # Depending on the event type, you can call different functions
         if self.event_type == "joined":
             send_message_to_player(self.player_name)
-        send_to_discord(f"{self.player_name} has {self.event_type} the server", "log_webhook")
+        elif self.event_type == "left":
+            # If there's some specific action for left event
+            pass
+        send_to_discord(f"{self.player_name} has {self.event_type} the server")
 
     def __str__(self):
         return f"Player {self.event_type}: {self.player_name}"
