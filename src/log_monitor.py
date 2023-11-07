@@ -17,7 +17,7 @@ class LogEventFactory:
         cls.event_types.append(event_type)
 
     @classmethod
-    def create(cls, line):
+    def create(cls, line) -> "LogEvent":
         for event_type in cls.event_types:
             if event_type.is_event(line):
                 return event_type(line)
@@ -46,9 +46,7 @@ class PlayerConnectEvent(LogEvent):
 
     def __init__(self, line):
         self.line = line
-        self.player_name = None
-        self.event_type = None
-        super().__init__(line)
+        self.player_name, self.event_type = self._get_player_info()
 
     def _get_player_info(self):
         logger.info(f"Searching for player info in {self.line} with REGEXP {self.CONNECT_PATTERN.pattern}")
@@ -91,7 +89,7 @@ class LogMonitor:
             logger.error(f"Log file does not exist: {self.filepath}")
             self.last_size = 0
 
-    def get_new_entries(self):
+    def get_new_entries(self) -> list[LogEvent]:
         try:
             current_size = os.path.getsize(self.filepath)
         except FileNotFoundError:

@@ -120,7 +120,9 @@ class ArkServer:
                 logger.info("Server is not running. Attempting to restart...")
                 self.start()
 
-            log_monitor.get_new_entries()
+            res = log_monitor.get_new_entries()
+            for msg in res:
+                logger.info(f"New log message for above: {msg}")
 
             for _, task in self.tasks.items():
                 if task.execute():
