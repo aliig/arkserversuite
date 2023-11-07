@@ -69,7 +69,7 @@ def generate_batch_file() -> str:
         [
             *map(lambda opt: f"-{opt}", DEFAULT_CONFIG["launch_options"]["hyphen"]),
             f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options']['mods']))}",
-            f"WinLiveMaxPlayers={DEFAULT_CONFIG['server']['players']}",
+            f"-WinLiveMaxPlayers={DEFAULT_CONFIG['server']['players']}",
         ]
     )
 
