@@ -51,6 +51,7 @@ class PlayerConnectEvent(LogEvent):
         super().__init__(line)
 
     def _get_player_info(self):
+        logger.info(f"Searching for player info in {self.line} with REGEXP {self.CONNECT_PATTERN.pattern}")
         match = self.CONNECT_PATTERN.search(self.line)
         if match:
             return match.group(1), match.group(2)
