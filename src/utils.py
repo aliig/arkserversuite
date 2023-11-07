@@ -36,10 +36,10 @@ def wait_until(
     return res, False
 
 
-def send_to_discord(content: str) -> bool:
+def send_to_discord(content: str, webhook_type: str = "updates_webhook") -> bool:
     """Sends a message to Discord via a webhook."""
     data = {"content": content}
-    response = requests.post(DEFAULT_CONFIG["discord"]["webhook"], json=data)
+    response = requests.post(DEFAULT_CONFIG["discord"][webhook_type], json=data)
     logger.info(f"Sent message to Discord: {content}")
     return response.status_code == 204
 

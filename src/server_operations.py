@@ -39,3 +39,6 @@ def get_active_players() -> int:
     count = len(response.strip().split("\n"))
     logger.info(f"Found {count} active players")
     return count
+
+def send_message_to_player(player_name: str, message: str):
+    return rcon_cmd(f"cheat ServerChatToPlayer {player_name} {message}")

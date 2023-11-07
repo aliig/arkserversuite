@@ -23,6 +23,8 @@ from tasks import (
     Task,
 )
 
+from log_monitor import LogMonitor
+
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -112,10 +114,13 @@ class ArkServer:
 
     def run(self) -> None:
         self.start()
+        log_monitor = LogMonitor()
         while True:
             if not is_server_running():
                 logger.info("Server is not running. Attempting to restart...")
                 self.start()
+
+            log_monitor.get_new_entries()
 
             for _, task in self.tasks.items():
                 if task.execute():
