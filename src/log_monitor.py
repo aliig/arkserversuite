@@ -28,11 +28,12 @@ class LogEventFactory:
 class LogEvent:
     def __init__(self, line):
         self.line = line
-        self.message = self._get_message()
+        self.message = self._get_message(line)
         self._post_classification()
 
-    def _get_message(self):
-        parts = self.line.split(':')
+    @staticmethod
+    def _get_message(line):
+        parts = line.split(':')
         return ':'.join(parts[2:]).strip()
 
     def _post_classification(self):
@@ -88,7 +89,6 @@ class PlayerDied(LogEvent):
         return "was killed" in line.lower() and "tribemember" in line.lower()
 
     def __init__(self, line: str):
-        print(f"PlayerDied: {line}")
         match = self.player_died_pattern.search(line)
         if match:
             self.event_info = self.EventInfo(*match.groups())
@@ -106,9 +106,36 @@ class PlayerDied(LogEvent):
     def __str__(self):
         return f"PlayerDied Event: {self.message}"
 
+class DinoTamed(LogEvent):
+    EventInfo = namedtuple('EventInfo', 'player_name tribe_name dinosaur level')
+    dino_tamed_pattern = re.compile(
+        r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>\w*) Tamed a (?P<dinosaur>(?:Baby )?\w+) - Lvl (?P<level>\d+)"
+    )
+
+    @classmethod
+    def is_event(cls, line: str):
+        return "tamed a" in line.lower()
+
+    def __init__(self, line: str):
+        self.message = self._get_message(line)
+        match = self.dino_tamed_pattern.search(self.message)
+        if match:
+            self.event_info = self.EventInfo(*match.groups())
+        else:
+            self.event_info = self.EventInfo(None, None, None, None)
+        super().__init__(line)
+
+    def _post_classification(self):
+        message = f"{self.event_info.player_name or 'A player'} of Tribe {self.event_info.tribe_name or 'Unknown'} tamed a {self.event_info.dinosaur} (Level {self.event_info.level})"
+        send_to_discord(message, "log_webhook")
+
+    def __str__(self):
+        return f"DinoTamed Event: {self.message}"
+
 LogEventFactory.register_event_type(PlayerJoined)
 LogEventFactory.register_event_type(PlayerLeft)
 LogEventFactory.register_event_type(PlayerDied)
+LogEventFactory.register_event_type(DinoTamed)
 
 class LogMonitor:
     def __init__(self):
