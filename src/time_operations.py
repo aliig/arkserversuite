@@ -26,8 +26,13 @@ class TimeTracker:
             return None, None
 
         try:
-            start_time = datetime.strptime(blackout_times[0], "%H:%M").time()
-            end_time = datetime.strptime(blackout_times[1], "%H:%M").time()
+            # Convert to string if not already a string
+            start_time_str = str(blackout_times[0]) if not isinstance(blackout_times[0], str) else blackout_times[0]
+            end_time_str = str(blackout_times[1]) if not isinstance(blackout_times[1], str) else blackout_times[1]
+
+            # Now parse the times
+            start_time = datetime.strptime(start_time_str, "%H:%M").time()
+            end_time = datetime.strptime(end_time_str, "%H:%M").time()
 
             if start_time == end_time:
                 return None, None
