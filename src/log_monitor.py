@@ -86,7 +86,7 @@ class PlayerDied(LogEvent):
 
     @classmethod
     def is_event(cls, line: str):
-        return "was killed" in line.lower() and "tribemember" in line.lower() and "richcolor" not in line.lower()
+        return "was killed" in line.lower() and "tribemember" in line.lower()
 
     def __init__(self, line: str):
         match = self.player_died_pattern.search(line)
@@ -114,10 +114,11 @@ class DinoTamed(LogEvent):
 
     @classmethod
     def is_event(cls, line: str):
-        return "tamed a" in line.lower()
+        return "tamed a" in line.lower() and "richcolor" not in line.lower()
 
     def __init__(self, line: str):
         self.message = self._get_message(line)
+        print(f"Searching for {self.dino_tamed_pattern} in {self.message}")
         match = self.dino_tamed_pattern.search(self.message)
         if match:
             self.event_info = self.EventInfo(*match.groups())
