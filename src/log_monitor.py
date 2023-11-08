@@ -149,9 +149,6 @@ class DinoTamed(LogEvent):
         return f"DinoTamed Event: {self.message}"
 
 
-import re
-from collections import namedtuple
-
 
 class GlobalChatMessage(LogEvent):
     EventInfo = namedtuple("EventInfo", "account_name player_name message")
@@ -163,7 +160,8 @@ class GlobalChatMessage(LogEvent):
     @classmethod
     def is_event(cls, line: str):
         # Perform the search and store the result
-        cls._last_match = cls.global_chat_pattern.search(line)
+        message = cls._get_message(line)
+        cls._last_match = cls.global_chat_pattern.search(message)
         return cls._last_match is not None
 
     def __init__(self, line: str):
