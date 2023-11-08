@@ -20,24 +20,25 @@ class TimeTracker:
     def _get_blackout_times(
         self,
     ) -> tuple[datetime.time, datetime.time] | tuple[None, None]:
-        blackout_times = self.task_config.get("blackout_times")
+        blackout_period = self.task_config.get("blackout_period")
 
-        if not blackout_times or blackout_times in [("00:00", "00:00"), (), []]:
+        if not blackout_period:
+            return None, None
+
+        start_time_str = blackout_period.get("start")
+        end_time_str = blackout_period.get("end")
+
+        if not start_time_str or not end_time_str:
             return None, None
 
         try:
-            # Convert to string if not already a string
-            start_time_str = str(blackout_times[0]) if not isinstance(blackout_times[0], str) else blackout_times[0]
-            end_time_str = str(blackout_times[1]) if not isinstance(blackout_times[1], str) else blackout_times[1]
-
-            # Now parse the times
             start_time = datetime.strptime(start_time_str, "%H:%M").time()
             end_time = datetime.strptime(end_time_str, "%H:%M").time()
 
             if start_time == end_time:
                 return None, None
             return start_time, end_time
-        except (ValueError, IndexError):
+        except ValueError:
             return None, None
 
     def _is_blackout_time(self, time_to_check: datetime) -> bool:

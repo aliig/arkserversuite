@@ -40,7 +40,9 @@ tasks:
   restart:
     description: "Routine server restart"
     interval: 24 # hours
-    blackout_times: ["07:00", "02:00"] # range of times to NOT perform a scheduled reset from beginning to end in 24hr time
+    blackout_period:
+      start: "07:00"
+      end: "02:00"
     warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
   update:
     description: "Server update"
@@ -49,7 +51,9 @@ tasks:
   destroy_wild_dinos:
     description: "Routine wild dino wipe"
     interval: 72
-    blackout_times: ["07:00", "02:00"]
+    blackout_period:
+      start: "07:00"
+      end: "02:00"
     warnings: [60, 30, 10, 1]
   announcement:
     interval: 1
