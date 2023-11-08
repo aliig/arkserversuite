@@ -25,6 +25,7 @@ class LogEventFactory:
                 return event_type(line)
         return LogEvent(line)
 
+
 class LogEvent:
     def __init__(self, line):
         self.line = line
@@ -33,8 +34,8 @@ class LogEvent:
 
     @staticmethod
     def _get_message(line):
-        parts = line.split(':')
-        return ':'.join(parts[2:]).strip()
+        parts = line.split(":")
+        return ":".join(parts[2:]).strip()
 
     def _post_classification(self):
         # This method will be called after an event has been classified.
@@ -43,6 +44,7 @@ class LogEvent:
 
     def __str__(self):
         return f"{self.message}"
+
 
 class PlayerConnectEvent(LogEvent):
     regexp_pattern = re.compile(r": (.*?) (joined|left) this ARK!")
@@ -59,10 +61,15 @@ class PlayerConnectEvent(LogEvent):
 
     def _post_classification(self):
         if self.event_type == "joined":
-            send_message_to_player(self.player_name, f'Welcome {self.player_name}! {DEFAULT_CONFIG["tasks"]["announcement"]["description"]}')
+            send_message_to_player(
+                self.player_name,
+                f'Welcome {self.player_name}! {DEFAULT_CONFIG["tasks"]["announcement"]["description"]}',
+            )
         elif self.event_type == "left":
             pass
-        send_to_discord(f"{self.player_name} has {self.event_type} the server", "log_webhook")
+        send_to_discord(
+            f"{self.player_name} has {self.event_type} the server", "log_webhook"
+        )
 
     def __str__(self):
         return f"Player {self.event_type}: {self.player_name}"
@@ -73,13 +80,17 @@ class PlayerJoined(PlayerConnectEvent):
     def is_event(cls, line):
         return "joined this ARK!" in line
 
+
 class PlayerLeft(PlayerConnectEvent):
     @classmethod
     def is_event(cls, line):
         return "left this ARK!" in line
 
+
 class PlayerDied(LogEvent):
-    EventInfo = namedtuple('EventInfo', 'tribe_name player_name level dinosaur dinosaur_level')
+    EventInfo = namedtuple(
+        "EventInfo", "tribe_name player_name level dinosaur dinosaur_level"
+    )
     player_died_pattern = re.compile(
         r"Tribe\s+(.+?),\s+ID\s+\d+:\s+Day\s+\d+,\s+\d+:\d+:\d+:\s+<RichColor.+?>Tribemember\s+(.+?)\s+-\s+Lvl\s+(\d+)\s+was\s+killed(?:\s+by\s+a\s+(.+?)\s+-\s+Lvl\s+(\d+))?!"
     )
@@ -106,8 +117,9 @@ class PlayerDied(LogEvent):
     def __str__(self):
         return f"PlayerDied Event: {self.message}"
 
+
 class DinoTamed(LogEvent):
-    EventInfo = namedtuple('EventInfo', 'player_name tribe_name dinosaur level')
+    EventInfo = namedtuple("EventInfo", "player_name tribe_name dinosaur level")
     dino_tamed_pattern = re.compile(
         r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>[\w\s]*?) Tamed a (?P<dinosaur>.+?) - Lvl (?P<level>\d+)"
     )
@@ -127,17 +139,64 @@ class DinoTamed(LogEvent):
         super().__init__(line)
 
     def _post_classification(self):
-        if (self.event_info.player_name or self.event_info.tribe_name) and self.event_info.dinosaur:
+        if (
+            self.event_info.player_name or self.event_info.tribe_name
+        ) and self.event_info.dinosaur:
             message = f"{self.event_info.player_name or 'A player'} of Tribe {self.event_info.tribe_name or 'Unknown'} tamed a {self.event_info.dinosaur} (Level {self.event_info.level})"
             send_to_discord(message, "log_webhook")
 
     def __str__(self):
         return f"DinoTamed Event: {self.message}"
 
+
+import re
+from collections import namedtuple
+
+
+class GlobalChatMessage(LogEvent):
+    EventInfo = namedtuple("EventInfo", "account_name player_name message")
+    global_chat_pattern = re.compile(
+        r"(?P<account_name>.+?)\s+\((?P<player_name>.+?)\):\s+(?P<message>.*?)$"
+    )
+    _last_match = None
+
+    @classmethod
+    def is_event(cls, line: str):
+        # Perform the search and store the result
+        cls._last_match = cls.global_chat_pattern.search(line)
+        return cls._last_match is not None
+
+    def __init__(self, line: str):
+        # Use the match stored in _last_match
+        if self._last_match:
+            match = self._last_match
+            # Clear the match after use to prevent stale information
+            self.__class__._last_match = None
+            self.event_info = self.EventInfo(
+                match.group("account_name"),
+                match.group("player_name"),
+                match.group("message"),
+            )
+        else:
+            self.event_info = self.EventInfo(None, None, None)
+        super().__init__(line)
+
+    def _post_classification(self):
+        if self.event_info.player_name and self.event_info.message:
+            # Formulate the message to be sent to Discord
+            message = f"{self.event_info.account_name} ({self.event_info.player_name}): {self.event_info.message}"
+            send_to_discord(message, "chat_webhook")
+
+    def __str__(self):
+        return f"GlobalChatMessage Event: {self.event_info.account_name} ({self.event_info.player_name}): {self.event_info.message}"
+
+
 LogEventFactory.register_event_type(PlayerJoined)
 LogEventFactory.register_event_type(PlayerLeft)
 LogEventFactory.register_event_type(PlayerDied)
 LogEventFactory.register_event_type(DinoTamed)
+LogEventFactory.register_event_type(GlobalChatMessage)
+
 
 class LogMonitor:
     def __init__(self):
@@ -160,7 +219,7 @@ class LogMonitor:
 
         new_entries = []
         try:
-            with open(self.filepath, 'r') as file:
+            with open(self.filepath, "r") as file:
                 file.seek(self.last_size)
                 new_entries = file.readlines()
                 self.last_size = current_size
@@ -173,8 +232,9 @@ class LogMonitor:
         log_events = [LogEventFactory.create(line) for line in new_entries]
         return log_events
 
+
 # Usage
 if __name__ == "__main__":
-    log_file_path = 'path/to/your/logfile.log'  # Replace with your log file path
+    log_file_path = "path/to/your/logfile.log"  # Replace with your log file path
     monitor = LogMonitor(log_file_path)
     monitor.monitor()  # Starts the monitoring process
