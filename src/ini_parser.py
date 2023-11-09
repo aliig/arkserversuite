@@ -1,8 +1,14 @@
 import os
+import shutil
 from collections import defaultdict
 from configparser import RawConfigParser
+from datetime import datetime
 
 from config import DEFAULT_CONFIG
+from constants import OUTPUT_DIRECTORY
+from logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class CustomConfigParser(RawConfigParser):
@@ -121,6 +127,15 @@ def _ini_filepath(file):
 def update_setting(file, section, settings):
     # Get the current configuration
     filepath = _ini_filepath(file)
+
+    # Save a backup of the current configuration
+    file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    backup_filepath = os.path.join(
+        OUTPUT_DIRECTORY, "backup", "config", f"{file}_{file_timestamp}.ini"
+    )
+    os.makedirs(os.path.dirname(backup_filepath), exist_ok=True)
+    shutil.copy(filepath, backup_filepath)
+    logger.info(f"Saved backup of {file}.ini to {backup_filepath}")
 
     # Create an instance of the custom parser
     config = CustomConfigParser()

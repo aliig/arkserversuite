@@ -17,9 +17,6 @@ def _run_steamcmd(args: str) -> None:
 
 
 def _check_and_download_steamcmd():
-    # Path to steamcmd.exe in the working directory
-
-    # Check if steamcmd.exe exists
     if not os.path.isfile(STEAMCMD_PATH):
         logger.info("steamcmd.exe not found, downloading...")
         zip_path = "steamcmd.zip"
@@ -32,6 +29,7 @@ def _check_and_download_steamcmd():
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall()
             logger.info("Extracted steamcmd.exe")
+            os.makedirs(os.path.dirname(OUTPUT_DIRECTORY), exist_ok=True)
             os.rename("steamcmd.exe", STEAMCMD_PATH)
             os.remove(zip_path)
             logger.info("Removed steamcmd.zip")
