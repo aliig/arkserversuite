@@ -1,6 +1,5 @@
 import time
 
-from config import DEFAULT_CONFIG
 from log_monitor import LogMonitor
 from logger import get_logger
 from rcon import save_world, send_message
@@ -25,6 +24,7 @@ from utils import wait_until
 logger = get_logger(__name__)
 
 SLEEP_TIME = 60  # seconds to sleep between server state checks
+SERVER_TIMEOUT = 20
 
 
 class ArkServerStartError(Exception):
@@ -66,7 +66,7 @@ class ArkServer:
             run_shell_cmd(cmd, use_shell=False, use_popen=True, suppress_output=True)
 
             _, success = wait_until(
-                is_server_running, lambda x: x, timeout=20, sleep_interval=1
+                is_server_running, lambda x: x, timeout=SERVER_TIMEOUT, sleep_interval=1
             )
             if not success:
                 logger.error("Failed to start the Ark server")
@@ -85,7 +85,10 @@ class ArkServer:
             time.sleep(5)
             kill_server()
             _, success = wait_until(
-                is_server_running, lambda x: not x, timeout=20, sleep_interval=1
+                is_server_running,
+                lambda x: not x,
+                timeout=SERVER_TIMEOUT,
+                sleep_interval=1,
             )
             if success:
                 logger.info("Ark server stopped")

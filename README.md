@@ -1,8 +1,8 @@
-# Ark Ascended Server Suite
+# Ark Ascended Dedicated Server Suite
 
 ## Overview
 
-Ark Ascended Server Suite is a Python-based automation tool for managing an ARK: Survival Ascended server. It automates server updates, restarts, and other maintenance tasks, and provides Discord integration for real-time notifications and logs.
+Ark Ascended Dedicated Server Suite is a Python-based automation tool for managing an ARK Survival Ascended server. It automates server updates, restarts, and other maintenance tasks, and provides Discord integration for real-time notifications and logs.
 
 ## Features
 
