@@ -44,6 +44,3 @@ class ConfigLoader:
 
 
 DEFAULT_CONFIG = ConfigLoader().merged_config
-print(DEFAULT_CONFIG)
-
-# Now update the config file with the new values

@@ -4,10 +4,10 @@ from typing import TYPE_CHECKING
 from config import DEFAULT_CONFIG
 from logger import get_logger
 
-logger = get_logger(__name__)
-
 if TYPE_CHECKING:
     from tasks import Task
+
+logger = get_logger(__name__)
 
 
 class TimeTracker:

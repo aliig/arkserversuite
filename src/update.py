@@ -3,13 +3,12 @@ import os
 import steam.client
 from steam.client import SteamClient
 
+from config import DEFAULT_CONFIG
 from logger import get_logger
 
 logger = get_logger(__name__)
 
 client = SteamClient()
-
-from config import DEFAULT_CONFIG
 
 
 def _get_latest_build_id(steam_app_id: int = DEFAULT_CONFIG["steam_app_id"]) -> str:

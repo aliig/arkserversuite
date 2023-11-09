@@ -3,22 +3,24 @@ import urllib.request
 import zipfile
 
 from config import DEFAULT_CONFIG
+from constants import OUTPUT_DIRECTORY
 from logger import get_logger
 from shell_operations import run_shell_cmd
 
 logger = get_logger(__name__)
 
+STEAMCMD_PATH = os.path.join(OUTPUT_DIRECTORY, "steamcmd.exe")
+
 
 def _run_steamcmd(args: str) -> None:
-    run_shell_cmd(f"steamcmd.exe {args}")
+    run_shell_cmd(f"{STEAMCMD_PATH} {args}")
 
 
 def _check_and_download_steamcmd():
     # Path to steamcmd.exe in the working directory
-    steamcmd_path = "steamcmd.exe"
 
     # Check if steamcmd.exe exists
-    if not os.path.isfile(steamcmd_path):
+    if not os.path.isfile(STEAMCMD_PATH):
         logger.info("steamcmd.exe not found, downloading...")
         zip_path = "steamcmd.zip"
         try:
@@ -30,6 +32,7 @@ def _check_and_download_steamcmd():
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall()
             logger.info("Extracted steamcmd.exe")
+            os.rename("steamcmd.exe", STEAMCMD_PATH)
             os.remove(zip_path)
             logger.info("Removed steamcmd.zip")
 

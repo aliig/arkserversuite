@@ -9,10 +9,10 @@ server:
   port: 7777 # The main port for your ARK server
   query_port: 27015
   rcon_port: 32330
-  players: 26 # The maximum number of players that can join the server
-  password: "" # Server password for private access (if needed)
+  max_players: 26 # The maximum number of players that can join the server
+  password: "rear" # Server password for private access (if needed)
   map: "TheIsland_WP" # The map that the server will load
-  admin_password: "" # Password for admin privileges
+  admin_password: "ttt" # Password for admin privileges
   timezone: "America/New_York" # The timezone your server's operating system is set to
 
 # Launch options for the server
@@ -80,5 +80,4 @@ tasks:
 config_overrides:
   Game:
     /Script/ShooterGame.ShooterGameMode:
-      SupplyCrateLootQualityMultiplier: 1.2
-      FishingLootQualityMultiplier: 2.8
+      SupplyCrateLootQualityMultiplier: 30

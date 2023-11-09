@@ -1,5 +1,6 @@
 import time
 
+from constants import SERVER_TIMEOUT, SLEEP_TIME
 from log_monitor import LogMonitor
 from logger import get_logger
 from rcon import save_world, send_message
@@ -22,9 +23,6 @@ from update import does_server_need_update
 from utils import wait_until
 
 logger = get_logger(__name__)
-
-SLEEP_TIME = 60  # seconds to sleep between server state checks
-SERVER_TIMEOUT = 20
 
 
 class ArkServerStartError(Exception):

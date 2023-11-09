@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 from config import DEFAULT_CONFIG
+from constants import OUTPUT_DIRECTORY
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -66,7 +67,7 @@ def generate_batch_file() -> str:
             f"Port={DEFAULT_CONFIG['server']['port']}",
             f"QueryPort={DEFAULT_CONFIG['server']['query_port']}",
             f"Password={DEFAULT_CONFIG['server']['password']}",
-            f"MaxPlayers={DEFAULT_CONFIG['server']['players']}",
+            f"MaxPlayers={DEFAULT_CONFIG['server']['max_players']}",
             f"ServerAdminPassword={DEFAULT_CONFIG['server']['admin_password']}",
             "RCONEnabled=True",
             *DEFAULT_CONFIG["launch_options"]["question_mark"],
@@ -76,14 +77,16 @@ def generate_batch_file() -> str:
         [
             *map(lambda opt: f"-{opt}", DEFAULT_CONFIG["launch_options"]["hyphen"]),
             f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options']['mods']))}",
-            f"-WinLiveMaxPlayers={DEFAULT_CONFIG['server']['players']}",
+            f"-WinLiveMaxPlayers={DEFAULT_CONFIG['server']['max_players']}",
         ]
     )
 
     cmd_string = f"{base_arg} {question_mark_options} {hyphen_options}"
     batch_content = f'@echo off\nstart "" {cmd_string}'
 
-    with open(".start_server.bat", "w") as batch_file:
+    with open(
+        (file_path := os.path.join(OUTPUT_DIRECTORY, ".start_server.bat")), "w"
+    ) as batch_file:
         batch_file.write(batch_content)
 
-    return ".start_server.bat"
+    return file_path

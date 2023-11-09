@@ -1,5 +1,4 @@
 __pycache__/
-.start_server.bat
-log.txt
+output/
 config/custom.yml
 dist
