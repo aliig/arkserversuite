@@ -13,6 +13,25 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Cache pip
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cache/pip
+          !~/.cache/pip/log
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Cache conda
+      uses: actions/cache@v2
+      with:
+        path: |
+          ~/conda_pkgs_dir
+        key: ${{ runner.os }}-conda-${{ hashFiles('**/environment.yml') }}
+        restore-keys: |
+          ${{ runner.os }}-conda-
+
     - name: Setup Miniconda
       uses: conda-incubator/setup-miniconda@v2
       with:
@@ -21,6 +40,9 @@ jobs:
         environment-file: environment.yml
         activate-environment: ark
         auto-activate-base: false
+
+    - name: Configure conda package dir
+      run: conda config --add pkgs_dirs ~/conda_pkgs_dir
 
     - name: Install Dependencies
       shell: bash -l {0}
@@ -38,14 +60,14 @@ jobs:
         cd src
         rm -f __init__.py
         pyinstaller --onefile main.py
-        mv dist/main.exe ../dist/main.exe
-
+        cd ..
+        mkdir -p dist
+        mv src/dist/main.exe dist/main.exe
 
     - name: Zip Executable and Config Directory
       shell: bash -l {0}
       run: |
         7z a release.zip ./dist/main.exe ./config/
-
 
     - name: Create Release
       id: create_release
