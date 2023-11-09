@@ -1,35 +1,46 @@
-import steam.client
-from steam.client import SteamClient
 import os
 
+import steam.client
+from steam.client import SteamClient
+
 from logger import get_logger
+
 logger = get_logger(__name__)
 
 client = SteamClient()
 
 from config import DEFAULT_CONFIG
 
-def _get_latest_build_id(app_id: int = DEFAULT_CONFIG['steamcmd']['app_id']) -> str:
+
+def _get_latest_build_id(app_id: int = DEFAULT_CONFIG["steamcmd"]["app_id"]) -> str:
     if client.anonymous_login():
         app_info = client.get_product_info(apps=[app_id])
         if app_info:
             # Extract the public branch buildid
-            public_branch_info = app_info['apps'][app_id]['depots']['branches']['public']
+            public_branch_info = app_info["apps"][app_id]["depots"]["branches"][
+                "public"
+            ]
             client.disconnect()
-            return public_branch_info['buildid']
+            return public_branch_info["buildid"]
     return None
 
 
-def _get_installed_build_id(app_id: int = DEFAULT_CONFIG['steamcmd']['app_id']) -> str | None:
+def _get_installed_build_id(
+    app_id: int = DEFAULT_CONFIG["steamcmd"]["app_id"],
+) -> str | None:
     appmanifest_name = f"appmanifest_{app_id}.acf"
-    appmanifest_path = os.path.join(DEFAULT_CONFIG['server']['install_path'], 'steamapps', appmanifest_name)
+    appmanifest_path = os.path.join(
+        DEFAULT_CONFIG["server"]["install_path"], "steamapps", appmanifest_name
+    )
 
     if not os.path.isfile(appmanifest_path):
-        logger.error(f"The appmanifest file for app ID {app_id} does not exist at {appmanifest_path}.")
+        logger.error(
+            f"The appmanifest file for app ID {app_id} does not exist at {appmanifest_path}."
+        )
         return None
 
     try:
-        with open(appmanifest_path, 'r') as acf_file:
+        with open(appmanifest_path, "r") as acf_file:
             for line in acf_file:
                 if '"buildid"' in line:
                     build_id = line.split('"')[-2]
@@ -41,6 +52,7 @@ def _get_installed_build_id(app_id: int = DEFAULT_CONFIG['steamcmd']['app_id']) 
     logger.error(f"Build ID not found in {appmanifest_path}.")
     return None
 
+
 def does_server_need_update() -> bool:
     logger.info("Checking if the Ark server needs to be updated...")
 
@@ -50,7 +62,9 @@ def does_server_need_update() -> bool:
     if latest_build_id is None or installed_build_id is None:
         return False
 
-    status = f"installed build_id: {installed_build_id}, latest build_id: {latest_build_id}"
+    status = (
+        f"installed build_id: {installed_build_id}, latest build_id: {latest_build_id}"
+    )
 
     if latest_build_id == installed_build_id:
         logger.info(f"The Ark server is up to date, {status}")

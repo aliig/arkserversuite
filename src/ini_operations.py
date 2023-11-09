@@ -1,6 +1,7 @@
-from config import DEFAULT_CONFIG
 import configparser
 import os
+
+from config import DEFAULT_CONFIG
 
 
 def _ini_filepath(file):

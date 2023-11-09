@@ -1,7 +1,7 @@
 import subprocess
-from config import DEFAULT_CONFIG
 import sys
 
+from config import DEFAULT_CONFIG
 from logger import get_logger
 
 logger = get_logger(__name__)

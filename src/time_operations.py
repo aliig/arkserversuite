@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
+
 from config import DEFAULT_CONFIG
 from logger import get_logger
-from typing import TYPE_CHECKING
 
 logger = get_logger(__name__)
 

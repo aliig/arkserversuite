@@ -1,11 +1,12 @@
+import logging
+import time
+from datetime import datetime, timedelta
+from typing import TYPE_CHECKING
+
+from config import DEFAULT_CONFIG
+from rcon import destroy_wild_dinos, get_active_players, send_message
 from shell_operations import is_server_running
 from update import does_server_need_update
-from server_operations import send_message, get_active_players, destroy_wild_dinos
-import logging
-from config import DEFAULT_CONFIG
-from datetime import datetime, timedelta
-import time
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from main import ArkServer
@@ -111,8 +112,8 @@ class HandleEmptyServerRestart(Task):
             if self.first_empty_server_time is None:
                 logger.info("Server is empty, starting stale check timer...")
                 self.first_empty_server_time = self.time.current_time
-            elif (
-                self.time.current_time - self.first_empty_server_time >= timedelta(hours=self.threshold)
+            elif self.time.current_time - self.first_empty_server_time >= timedelta(
+                hours=self.threshold
             ):
                 logger.info("Server is stale, restarting...")
                 self.server.restart("stale server", skip_warnings=True)

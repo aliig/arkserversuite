@@ -1,9 +1,7 @@
-steamcmd:
-  path: "C:\\gameservers\\SteamCMD"
-  app_id: 2430930
+app_id: 2430930
 
 server:
-  name: "[US East] Brohana 4xH/XP,8xT,16xB"
+  name: "YourServer"
   ip_address: "192.168.1.42"
   install_path: "C:\\gameservers\\ark_survival_ascended"
   port: 7777
@@ -12,7 +10,7 @@ server:
   players: 26
   password: ""
   map: "TheIsland_WP"
-  admin_password: "hello"
+  admin_password: ""
   timezone: "America/New_York"
 
 launch_options:
@@ -32,9 +30,9 @@ launch_options:
 
 
 discord:
-  updates_webhook: "https://discord.com/api/webhooks/1169356449873412116/7NaksFrGxSfnxEbk2hAL7hqYMdKIxbskqJ6D1gr-OKdxKW4Gegb4KP70O25cDQzkaaSW"
-  log_webhook: "https://discord.com/api/webhooks/1171468617951490078/1Vuj9PuXaHNUX6XIOa5VC636tgdKKnz1Y2ddm2Q_55iFMrefy8myuy3-0v19_YPa3vnl"
-  chat_webhook: "https://discord.com/api/webhooks/1171638160720154695/3-uV_L_YArwPBJWTlRUYgiSo3MWH7Sapf_JPaX8M8yNXSVqAMmWh218RcBTXc11KNvvS"
+  updates_webhook: ""
+  log_webhook: ""
+  chat_webhook: ""
 
 tasks:
   restart:

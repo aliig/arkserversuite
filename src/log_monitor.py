@@ -1,12 +1,10 @@
 import os
 import re
-
-from server_operations import send_message_to_player, send_to_discord
-
 from collections import namedtuple
-from config import DEFAULT_CONFIG
 
+from config import DEFAULT_CONFIG
 from logger import get_logger
+from rcon import send_message_to_player, send_to_discord
 
 logger = get_logger(__name__)
 
@@ -147,7 +145,6 @@ class DinoTamed(LogEvent):
 
     def __str__(self):
         return f"DinoTamed Event: {self.message}"
-
 
 
 class GlobalChatMessage(LogEvent):

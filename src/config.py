@@ -1,6 +1,7 @@
-import yaml
 import os
 from functools import cached_property
+
+import yaml
 
 
 class ConfigLoader:
