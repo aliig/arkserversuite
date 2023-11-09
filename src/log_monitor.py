@@ -199,7 +199,13 @@ if DEFAULT_CONFIG["discord"]["events"]["global_chat"]:
 
 class LogMonitor:
     def __init__(self):
-        self.filepath = f"{DEFAULT_CONFIG['server']['install_path']}\\ShooterGame\\Saved\\Logs\\ShooterGame.log"
+        self.filepath = os.path.join(
+            DEFAULT_CONFIG["server"]["install_path"],
+            "ShooterGame",
+            "Saved",
+            "Logs",
+            "ShooterGame.log",
+        )
         try:
             self.last_size = os.path.getsize(self.filepath)
         except FileNotFoundError:

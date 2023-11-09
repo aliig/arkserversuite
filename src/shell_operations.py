@@ -1,3 +1,4 @@
+import os
 import subprocess
 import sys
 
@@ -51,7 +52,13 @@ def is_server_running() -> bool:
 
 
 def generate_batch_file() -> str:
-    base_arg = f"{DEFAULT_CONFIG['server']['install_path']}\\ShooterGame\\Binaries\\Win64\\ArkAscendedServer.exe"
+    base_arg = os.path.join(
+        DEFAULT_CONFIG["server"]["install_path"],
+        "ShooterGame",
+        "Binaries",
+        "Win64",
+        "ArkAscendedServer.exe",
+    )
     question_mark_options = "?".join(
         [
             DEFAULT_CONFIG["server"]["map"],
@@ -80,12 +87,3 @@ def generate_batch_file() -> str:
         batch_file.write(batch_content)
 
     return ".start_server.bat"
-
-
-def update_server() -> None:
-    logger.info("Updating the Ark server...")
-    cmd_str = (
-        f"steamcmd.exe +force_install_dir {DEFAULT_CONFIG['server']['install_path']} +login "
-        f"anonymous +app_update {DEFAULT_CONFIG['steam_app_id']} validate +quit"
-    )
-    run_shell_cmd(cmd_str)

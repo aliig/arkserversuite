@@ -1,0 +1,51 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        python-version: "3.11"
+        environment-file: environment.yml
+        activate-environment: ark
+        auto-activate-base: false
+
+    - name: Install Dependencies
+      shell: bash -l {0}
+      run: |
+        conda env update --name ark --file environment.yml
+
+    - name: Install PyInstaller
+      shell: bash -l {0}
+      run: |
+        conda install -c conda-forge pyinstaller || pip install pyinstaller
+
+    - name: Build Executable
+      shell: bash -l {0}
+      run: |
+        pyinstaller --onefile src/main.py
+
+    - name: Zip Executable and Config Directory
+      shell: bash -l {0}
+      run: |
+        7z a release.zip ./dist/main.exe ./config/
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ./release.zip
+        asset_name: release.zip
+        asset_content_type: application/zip

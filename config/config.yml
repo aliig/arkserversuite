@@ -1,21 +1,26 @@
+# The Steam application ID for the ARK server
 steam_app_id: 2430930
 
+# Server configuration section
 server:
-  name: "YourServer"
-  ip_address: "192.168.1.42"
-  install_path: "C:\\gameservers\\ark_survival_ascended"
-  port: 7777
+  name: "MyArkServer" # The name of your ARK server
+  ip_address: "192.168.1.42" # The internal IP address where your ARK server is hosted
+  install_path: "C:\\gameservers\\ark_survival_ascended" # The file path where your ARK server files are installed
+  port: 7777 # The main port for your ARK server
   query_port: 27015
   rcon_port: 32330
-  players: 26
-  password: ""
-  map: "TheIsland_WP"
-  admin_password: ""
-  timezone: "America/New_York"
+  players: 26 # The maximum number of players that can join the server
+  password: "" # Server password for private access (if needed)
+  map: "TheIsland_WP" # The map that the server will load
+  admin_password: "" # Password for admin privileges
+  timezone: "America/New_York" # The timezone your server's operating system is set to
 
+# Launch options for the server
 launch_options:
+  # Options prefixed with a question mark
   question_mark:
-    - AllowCrateSpawnsOnTopOfStructures=True
+    - AllowCrateSpawnsOnTopOfStructures=True # Allows crates to spawn on top of structures
+  # Options prefixed with a hyphen
   hyphen:
     - EnableIdlePlayerKick
     - NoBattlEye
@@ -25,46 +30,53 @@ launch_options:
     - nosteamclient
     - server
     - log
+  # List of mods to include on the server
   mods:
-    - 928988
+    - 928988 # Mod ID
 
-
+# Discord integration settings
 discord:
-  updates_webhook: ""
-  log_webhook: ""
-  chat_webhook: ""
+  updates_webhook: "" # Webhook URL for server update messages
+  log_webhook: "" # Webhook URL for server log (i.e.; player joined, player died, etc.)
+  chat_webhook: "" # Webhook URL for chat messages (i.e.; any global chat messages send will be sent to this webhook)
   events:
-    player_connect: True
-    player_died: True
-    dino_tamed: True
-    global_chat: True
+    player_connect: True # Sends discord message when a player joins or leaves
+    player_died: True # Sends discord message when a player dies
+    dino_tamed: True # Sends discord message when a dino is tamed
+    global_chat: True # Sends discord message on global chat messages
 
+# Scheduled tasks for server management
 tasks:
-  restart:
+  restart: # Task for server restart
     description: "Routine server restart"
-    interval: 24 # hours
-    blackout_period:
+    interval: 24 # Frequency of restart in hours
+    blackout_period: # Time range when restarts are not allowed (e.g. if start is 07:00 and end is 02:00, the event will only take place between 2 am and 7 am)
       start: "07:00"
       end: "02:00"
-    warnings: [10, 5, 1] # list of minutes to warn user before restart for scheduled restart or update check
+    warnings: [10, 5, 1] # Warnings before restart at these minute intervals
+  # Task for server updates
   update:
     description: "Server update"
-    interval: 1
-    warnings: [10, 5, 1]
+    interval: 1 # Frequency of update checks in hours
+    warnings: [10, 5, 1] # Warnings before update at these minute intervals
+  # Task for destroying wild dinos
   destroy_wild_dinos:
     description: "Routine wild dino wipe"
-    interval: 72
-    blackout_period:
+    interval: 72 # Frequency of wild dino wipe in hours
+    blackout_period: # Time range when wild dino wipe is not allowed (e.g. if start is 07:00 and end is 02:00, the event will only take place between 2 am and 7 am)
       start: "07:00"
       end: "02:00"
-    warnings: [60, 30, 10, 1]
+    warnings: [60, 30, 10, 1] # Warnings before wild dino wipe at these minute intervals
+  # Task for server announcements
   announcement:
-    interval: 1
+    interval: 1 # Frequency of announcements in hours
     description: "Thanks for playing on Brohana. Server is still WIP and adjustments/mods may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
+  # Task for checking stale server status
   stale:
-    interval: 0.5 # interval to check for a stale server in hours
-    threshold: 5 # once a server is stale for this many hours, it will be restarted
+    interval: 0.5 # Frequency of stale server checks in hours
+    threshold: 5 # Hours a server must be stale before it is restarted
 
+# Configuration overrides for game settings
 config_overrides:
   Game:
     /Script/ShooterGame.ShooterGameMode:

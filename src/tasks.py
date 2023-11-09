@@ -5,13 +5,12 @@ from typing import TYPE_CHECKING
 
 from config import DEFAULT_CONFIG
 from rcon import destroy_wild_dinos, get_active_players, send_message
-from shell_operations import is_server_running
 from update import does_server_need_update
 
 if TYPE_CHECKING:
     from main import ArkServer
 
-from time_operations import TimeTracker
+from time_tracker import TimeTracker
 
 logger = logging.getLogger(__name__)
 
