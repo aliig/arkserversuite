@@ -1,45 +1,65 @@
-# ASA Server Management Tool
+# Ark Ascended Server Suite
 
-A basic Python-based tool designed to automate and manage an ARK: Survival Ascended server instance.
+## Overview
+
+Ark Ascended Server Suite is a Python-based automation tool for managing an ARK: Survival Ascended server. It automates server updates, restarts, and other maintenance tasks, and provides Discord integration for real-time notifications and logs.
 
 ## Features
 
-- **Server Management**: Easily start, stop, and restart your ARK server.
-- **Server Monitoring**: Checks if the server process is currently running.
-- **Update Management**: Checks for updates and applies them automatically.
-- **RCON Command Interface**: Send any RCON command to the server.
+- Automated server updates and restarts.
+- Scheduled tasks for server maintenance such as destroying wild dinos and sending announcements.
+- Discord integration for sending server logs and update messages.
+- Customizable server settings through `config.yml`.
 
-## Requirements
+## Installation
 
-- Python 3.8 or higher
-- `yaml` library for configuration management
-- A running ARK: Survival Evolved server instance.
+### Using Miniconda
 
-## Configuration
+1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) on your server.
+2. Clone the Ark Manager repository.
+3. Create a new Conda environment using the `environment.yml` file:
 
-Before using, configure the server settings in `config.yaml`. This file contains essential settings, including paths, credentials, intervals, and other server-specific settings.
+    ```bash
+    conda env create -f environment.yml
+    ```
 
-Example of `config.yaml`:
-```
-steamcmd:
-  path: "/path/to/steamcmd.exe"
-  username: "steam-username"
-  steam_app_id: 123456
-  ...
-```
+4. Activate the Conda environment:
+
+    ```bash
+    conda activate ark
+    ```
+
+### Configuration
+
+- Modify `config/config.yml` to your liking
+- If you'd rather, you can also create a file at `config/custum.yml` if you wish to override default configurations without altering the original `config.yml`. Just include the configurations you specifically want to override.
 
 ## Usage
 
+With the "ark" environment activated, navigate to the project root directory and run:
+
 ```bash
-python server_management.py
+python src/main.py
 ```
 
-This will start the management tool which will then manage your ARK server based on the configurations provided.
+## Project Structure
+- config/: Contains config.yml for server configurations.
+- src/: Source code for the server management functionalities.
 
-## Contribution
+## Dependencies
+The project depends on several Python packages:
 
-Feel free to fork the repository and submit pull requests. All contributions are welcome!
+- pyyaml: For parsing YAML configuration files.
+- requests: For making HTTP requests (used in Discord integration).
+- steam[client]: For interacting with Steam client operations.
+
+These are specified in the environment.yml file and will be installed when setting up the Conda environment.
+
+## Contributing
+Contributors are welcome to extend the functionality of the program. Please ensure you follow best practices and keep the project structure and coding style consistent.
 
 ## License
+This project is open-sourced under the MIT License.
 
-This project is open-sourced and available under the [MIT License](LICENSE).
+## ASA Server
+Join our Discord server for support and community discussions. https://discord.gg/BsH25X3pTB
