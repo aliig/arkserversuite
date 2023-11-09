@@ -1,6 +1,6 @@
 name: ark
 dependencies:
-  - python=3.11
+  - python=3.11.3
   - pip
   - pip:
     - pyyaml
