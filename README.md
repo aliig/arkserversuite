@@ -16,7 +16,7 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 ### Using Miniconda
 
 1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) on your server.
-2. Clone the Ark Manager repository.
+2. Clone the repository.
 3. Create a new Conda environment using the `environment.yml` file:
 
     ```bash
@@ -32,7 +32,7 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 ### Configuration
 
 - Modify `config/config.yml` to your liking
-- If you'd rather, you can also create a file at `config/custum.yml` if you wish to override default configurations without altering the original `config.yml`. Just include the configurations you specifically want to override.
+- You can also create a file at `config/custom.yml` if you wish to override default configurations without altering the original `config.yml`. It will read `config.yml` by default and override anything specified in `custom.yml`.
 
 ## Usage
 
