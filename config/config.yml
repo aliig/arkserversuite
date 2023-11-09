@@ -1,4 +1,4 @@
-app_id: 2430930
+steam_app_id: 2430930
 
 server:
   name: "YourServer"
@@ -33,6 +33,11 @@ discord:
   updates_webhook: ""
   log_webhook: ""
   chat_webhook: ""
+  events:
+    player_connect: True
+    player_died: True
+    dino_tamed: True
+    global_chat: True
 
 tasks:
   restart:

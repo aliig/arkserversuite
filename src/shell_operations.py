@@ -85,7 +85,7 @@ def generate_batch_file() -> str:
 def update_server() -> None:
     logger.info("Updating the Ark server...")
     cmd_str = (
-        f"{DEFAULT_CONFIG['steamcmd']['path']}\\steamcmd.exe +force_install_dir {DEFAULT_CONFIG['server']['install_path']} +login "
-        f"anonymous +app_update {DEFAULT_CONFIG['steamcmd']['app_id']} validate +quit"
+        f"steamcmd.exe +force_install_dir {DEFAULT_CONFIG['server']['install_path']} +login "
+        f"anonymous +app_update {DEFAULT_CONFIG['steam_app_id']} validate +quit"
     )
     run_shell_cmd(cmd_str)

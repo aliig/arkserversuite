@@ -186,11 +186,15 @@ class GlobalChatMessage(LogEvent):
         return f"GlobalChatMessage Event: {self.event_info.account_name} ({self.event_info.player_name}): {self.event_info.message}"
 
 
-LogEventFactory.register_event_type(PlayerJoined)
-LogEventFactory.register_event_type(PlayerLeft)
-LogEventFactory.register_event_type(PlayerDied)
-LogEventFactory.register_event_type(DinoTamed)
-LogEventFactory.register_event_type(GlobalChatMessage)
+if DEFAULT_CONFIG["discord"]["events"]["player_connect"]:
+    LogEventFactory.register_event_type(PlayerJoined)
+    LogEventFactory.register_event_type(PlayerLeft)
+if DEFAULT_CONFIG["discord"]["events"]["player_died"]:
+    LogEventFactory.register_event_type(PlayerDied)
+if DEFAULT_CONFIG["discord"]["events"]["dino_tamed"]:
+    LogEventFactory.register_event_type(DinoTamed)
+if DEFAULT_CONFIG["discord"]["events"]["global_chat"]:
+    LogEventFactory.register_event_type(GlobalChatMessage)
 
 
 class LogMonitor:

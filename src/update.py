@@ -12,12 +12,12 @@ client = SteamClient()
 from config import DEFAULT_CONFIG
 
 
-def _get_latest_build_id(app_id: int = DEFAULT_CONFIG["steamcmd"]["app_id"]) -> str:
+def _get_latest_build_id(steam_app_id: int = DEFAULT_CONFIG["steam_app_id"]) -> str:
     if client.anonymous_login():
-        app_info = client.get_product_info(apps=[app_id])
+        app_info = client.get_product_info(apps=[steam_app_id])
         if app_info:
             # Extract the public branch buildid
-            public_branch_info = app_info["apps"][app_id]["depots"]["branches"][
+            public_branch_info = app_info["apps"][steam_app_id]["depots"]["branches"][
                 "public"
             ]
             client.disconnect()
@@ -26,16 +26,16 @@ def _get_latest_build_id(app_id: int = DEFAULT_CONFIG["steamcmd"]["app_id"]) -> 
 
 
 def _get_installed_build_id(
-    app_id: int = DEFAULT_CONFIG["steamcmd"]["app_id"],
+    steam_app_id: int = DEFAULT_CONFIG["steam_app_id"],
 ) -> str | None:
-    appmanifest_name = f"appmanifest_{app_id}.acf"
+    appmanifest_name = f"appmanifest_{steam_app_id}.acf"
     appmanifest_path = os.path.join(
         DEFAULT_CONFIG["server"]["install_path"], "steamapps", appmanifest_name
     )
 
     if not os.path.isfile(appmanifest_path):
         logger.error(
-            f"The appmanifest file for app ID {app_id} does not exist at {appmanifest_path}."
+            f"The appmanifest file for app ID {steam_app_id} does not exist at {appmanifest_path}."
         )
         return None
 

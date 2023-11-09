@@ -24,7 +24,7 @@ Example of `config.yaml`:
 steamcmd:
   path: "/path/to/steamcmd.exe"
   username: "steam-username"
-  app_id: 123456
+  steam_app_id: 123456
   ...
 ```
 

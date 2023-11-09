@@ -1,8 +1,7 @@
 import os
-import socket
-import struct
 import time
 import urllib.request
+import zipfile
 from datetime import datetime
 from typing import Callable, TypeVar
 
@@ -38,13 +37,6 @@ def wait_until(
     return res, False
 
 
-def _send_to_discord(content: str, webhook_type: str = "updates_webhook") -> bool:
-    data = {"content": content}
-    response = requests.post(DEFAULT_CONFIG["discord"][webhook_type], json=data)
-    logger.info(f"Sent message to Discord: {content}")
-    return response.status_code == 204
-
-
 def send_to_discord(content: str, webhook_type: str = "updates_webhook") -> bool | None:
     """Sends a message to Discord via a webhook."""
     if (
@@ -52,11 +44,14 @@ def send_to_discord(content: str, webhook_type: str = "updates_webhook") -> bool
         and webhook_type in DEFAULT_CONFIG["discord"]
         and DEFAULT_CONFIG["discord"][webhook_type]
     ):
-        return _send_to_discord(content, webhook_type)
+        data = {"content": content}
+        response = requests.post(DEFAULT_CONFIG["discord"][webhook_type], json=data)
+        logger.info(f"Sent message to Discord: {content}")
+        return response.status_code == 204
     return None
 
 
-def check_and_download_steamcmd(working_directory):
+def check_and_download_steamcmd(working_directory: str = ""):
     # Path to steamcmd.exe in the working directory
     steamcmd_path = os.path.join(working_directory, "steamcmd.exe")
 
@@ -65,16 +60,21 @@ def check_and_download_steamcmd(working_directory):
 
     # Check if steamcmd.exe exists
     if not os.path.isfile(steamcmd_path):
-        print("steamcmd.exe not found, downloading...")
-        # Download steamcmd.zip
+        logger.info("steamcmd.exe not found, downloading...")
         zip_path = os.path.join(working_directory, "steamcmd.zip")
-        urllib.request.urlretrieve(steamcmd_url, zip_path)
-        print("Downloaded steamcmd.zip")
+        try:
+            urllib.request.urlretrieve(steamcmd_url, zip_path)
+            logger.info("Downloaded steamcmd.zip")
+            with zipfile.ZipFile(zip_path, "r") as zip_ref:
+                zip_ref.extractall(working_directory)
+            logger.info("Extracted steamcmd.exe")
+            os.remove(zip_path)
+            logger.info("Removed steamcmd.zip")
 
-        # Here you would normally extract the zip file and clean up
-        # For example, using zipfile module to extract and os.remove to delete the zip file
-        # This part of the code is left as an exercise
+        except Exception as e:
+            logger.error(f"An error occurred: {e}")
+            raise e
 
-        print("steamcmd.exe is ready to use.")
-    else:
-        print("steamcmd.exe is already present.")
+
+if __name__ == "__main__":
+    check_and_download_steamcmd()
