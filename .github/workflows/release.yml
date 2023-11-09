@@ -32,10 +32,14 @@ jobs:
       run: |
         conda install -c conda-forge pyinstaller || pip install pyinstaller
 
-    - name: Build Executable
-      shell: bash -l {0}
-      run: |
-        pyinstaller --onefile src/main.py
+  - name: Build Executable
+    shell: bash -l {0}
+    run: |
+      cd src
+      rm -f __init__.py
+      pyinstaller --onefile main.py
+      mv dist/main.exe ../dist/main.exe  # Move the executable back to the dist folder in the root
+
 
     - name: Zip Executable and Config Directory
       shell: bash -l {0}

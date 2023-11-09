@@ -61,5 +61,5 @@ Contributors are welcome to extend the functionality of the program. Please ensu
 ## License
 This project is open-sourced under the MIT License.
 
-## ASA Server
-Join our Discord server for support and community discussions. https://discord.gg/BsH25X3pTB
+## PvE Server
+Feel free to join my hosted ASA server "Brohana"; just search "Brohana" on unofficial. Here is the Brohana discord server for support and community discussions. https://discord.gg/BsH25X3pTB
