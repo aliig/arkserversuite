@@ -130,7 +130,7 @@ def _save_backup(file):
     filepath = _ini_filepath(file)
     file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_filepath = os.path.join(
-        OUTPUT_DIRECTORY, "backup", "config", f"{file}_{file_timestamp}.ini"
+        OUTPUT_DIRECTORY, "backup", "config", f"{file}.ini_{file_timestamp}"
     )
     os.makedirs(os.path.dirname(backup_filepath), exist_ok=True)
     shutil.copy(filepath, backup_filepath)
