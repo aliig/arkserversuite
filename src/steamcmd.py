@@ -9,7 +9,8 @@ from shell_operations import run_shell_cmd
 
 logger = get_logger(__name__)
 
-STEAMCMD_PATH = os.path.join(OUTPUT_DIRECTORY, "steamcmd.exe")
+STEAMCMD_DIR = os.path.join(OUTPUT_DIRECTORY, "steamcmd")
+STEAMCMD_PATH = os.path.join(STEAMCMD_DIR, "steamcmd.exe")
 
 
 def _run_steamcmd(args: str) -> None:
@@ -19,18 +20,23 @@ def _run_steamcmd(args: str) -> None:
 def _check_and_download_steamcmd():
     if not os.path.isfile(STEAMCMD_PATH):
         logger.info("steamcmd.exe not found, downloading...")
-        zip_path = "steamcmd.zip"
+        zip_path = os.path.join(OUTPUT_DIRECTORY, "steamcmd.zip")
         try:
             urllib.request.urlretrieve(
                 "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip",
                 zip_path,
             )
             logger.info("Downloaded steamcmd.zip")
+
+            # Create the steamcmd directory if it doesn't exist
+            os.makedirs(STEAMCMD_DIR, exist_ok=True)
+
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
-                zip_ref.extractall()
+                # Extract directly into the steamcmd directory
+                zip_ref.extractall(STEAMCMD_DIR)
             logger.info("Extracted steamcmd.exe")
-            os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
-            os.rename("steamcmd.exe", STEAMCMD_PATH)
+
+            # Remove the downloaded zip file
             os.remove(zip_path)
             logger.info("Removed steamcmd.zip")
 
