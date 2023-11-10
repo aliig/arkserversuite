@@ -18,6 +18,8 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 
 - **Scheduled Tasks**: Configurable tasks for server maintenance, such as destroying wild dinos, sending announcements, and checking for stale server status.
 
+- **Welcome Messages**: Will send any users connecting to the server a welcome message. (derived from config.yml -> tasks/announcement/description)
+
 - **Customizable Server Settings**: Tailor server settings to specific needs, including server name, map, player limits, and more, through an easy-to-edit configuration file.
 
 - **Stale Server Handling**: Monitors server activity and can automatically restart an empty or stale server based on predefined thresholds.

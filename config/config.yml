@@ -70,7 +70,7 @@ tasks:
   # Task for server announcements
   announcement:
     interval: 1 # Frequency of announcements in hours
-    description: "Thanks for playing on Brohana. Server is still WIP and adjustments/mods may be made here and there. Discord (also WIP): https://discord.gg/GzbSc9UJ"
+    description: "Thanks for playing, please consider donating to keep the server running!"
   # Task for checking stale server status
   stale:
     interval: 0.5 # Frequency of stale server checks in hours
