@@ -5,7 +5,7 @@ import sys
 from constants import OUTPUT_DIRECTORY
 
 # Setting up logging
-os.makedirs(os.path.dirname(OUTPUT_DIRECTORY), exist_ok=True)
+os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
 log_path = os.path.join(OUTPUT_DIRECTORY, "log.txt")
 logging.basicConfig(
     level=logging.INFO,

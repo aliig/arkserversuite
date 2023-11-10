@@ -29,7 +29,7 @@ def _check_and_download_steamcmd():
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 zip_ref.extractall()
             logger.info("Extracted steamcmd.exe")
-            os.makedirs(os.path.dirname(OUTPUT_DIRECTORY), exist_ok=True)
+            os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
             os.rename("steamcmd.exe", STEAMCMD_PATH)
             os.remove(zip_path)
             logger.info("Removed steamcmd.zip")

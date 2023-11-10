@@ -84,7 +84,7 @@ def generate_batch_file() -> str:
     cmd_string = f"{base_arg} {question_mark_options} {hyphen_options}"
     batch_content = f'@echo off\nstart "" {cmd_string}'
 
-    os.makedirs(os.path.dirname(OUTPUT_DIRECTORY), exist_ok=True)
+    os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
     with open(
         (file_path := os.path.join(OUTPUT_DIRECTORY, ".start_server.bat")), "w"
     ) as batch_file:
