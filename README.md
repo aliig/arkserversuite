@@ -89,13 +89,13 @@ Please note that running from source may require additional steps such as settin
 - Modify `config/config.yml` to your liking
 - You can also create a file at `config/custom.yml` if you wish to override default configurations without altering the original `config.yml`. It will read `config.yml` by default and override anything specified in `custom.yml`.
 
-### Disclaimer
+## Disclaimer
 
-Use this program at your own risk. I have tested it and used it for my personal ASA server, but I haven't been able to test every configuration change, etc. For example, it will modify your ARK config .ini files to implement server settings, but before it does it will save backups to the output directory.
+Use this program at your own risk. I have tested it and used it for my personal ASA server, but I haven't been able to test every configuration change, etc.
 
 ## Roadmap
 - Implement a GUI for easier use
-- Manage server backups
+- Manage routine server backups
 - Hotkeys for rcon commands like destroywilddinos, saveworld, etc.
 
 ## Contributing
