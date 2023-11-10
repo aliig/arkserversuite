@@ -113,6 +113,7 @@ class ArkServer:
         if not is_server_installed():
             update_server("Installing the Ark server...")
             logger.info("Ark server installed")
+            """
             logger.info("Startup the server to initialize config files, then exit")
             self.start()
             for file in ["Game", "GameUserSettings"]:
@@ -126,6 +127,7 @@ class ArkServer:
                     logger.error(f"Failed to find {file}.ini")
                     raise FileNotFoundError(f"Failed to find {file}.ini")
             self.stop()
+            """
         update_ark_configs()
 
     def run(self) -> None:

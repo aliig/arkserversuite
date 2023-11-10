@@ -134,10 +134,9 @@ def ini_file(file) -> tuple[bool, str]:
 def _save_backup(file):
     filepath, exists = ini_file(file)
     if not exists:
-        logger.warning(f"{file}.ini not found at {filepath}, will create a blank file.")
+        logger.warning(f"{file}.ini not found at {filepath}, no backup will be created")
     else:
         # Save a backup of the current configuration
-        filepath
         file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_filepath = os.path.join(
             OUTPUT_DIRECTORY, "backup", "config", f"{file}.ini_{file_timestamp}"
@@ -149,13 +148,13 @@ def _save_backup(file):
 
 def _update_setting(file, section, settings):
     # Get the current configuration
-    filepath, _ = ini_file(file)
+    filepath, exists = ini_file(file)
 
     # Create an instance of the custom parser
     config = CustomConfigParser()
 
     # Check if the INI file exists, create it if it doesn't
-    if not os.path.exists(filepath):
+    if not exists:
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
         with open(filepath, "w") as f:
             pass  # Create an empty file
