@@ -115,12 +115,16 @@ class ArkServer:
             logger.info("Ark server installed")
             logger.info("Startup the server to initialize config files, then exit")
             self.start()
-            wait_until(
-                ini_file_exists,
-                lambda x: x,
-                timeout=INI_INIT_TIMEOUT,
-                sleep_interval=5,
-            )
+            for file in ["Game", "GameUserSettings"]:
+                _, found = wait_until(
+                    lambda: ini_file_exists(file),
+                    lambda x: x,
+                    timeout=INI_INIT_TIMEOUT,
+                    sleep_interval=5,
+                )
+                if not found:
+                    logger.error(f"Failed to find {file}.ini")
+                    raise FileNotFoundError(f"Failed to find {file}.ini")
             self.stop()
         update_ark_configs()
 
