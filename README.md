@@ -7,7 +7,8 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 ## Features
 
 - Automated server updates and restarts.
-- Scheduled tasks for server maintenance such as destroying wild dinos and sending announcements.
+- Scheduled tasks for server maintenance such as destroying wild dinos and sending announcements. Sends configurable warnings to users prior to task execution.
+- Send welcome messages to users who join the ARK server
 - Discord integration for sending server logs and update messages.
 - Customizable server settings through `config.yml`.
 
@@ -18,7 +19,7 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 For most users, it is recommended to use the pre-built `arkserversuite.exe` executable from the latest release.
 
 1. Download the latest release from the [releases page](https://github.com/aliig/arkserversuite/releases) and extract the .zip file.
-2. Run the executable file. Windows may display a security warning since the file is an executable. You can proceed by clicking "More info" and then "Run anyway" to start the program.
+2. Run the executable file. Windows may display an "unknown publisher" security warning. You can proceed by clicking "More info" and then "Run anyway" to start the program.
 3. For better insight into the program's activity, especially if you encounter any issues, it is advised to run the executable from a command prompt or PowerShell window. Navigate to the directory containing `arkserversuite.exe` and execute it by typing:
 
     ```cmd
