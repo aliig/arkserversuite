@@ -54,7 +54,9 @@ def _get_installed_build_id(
 
 def is_server_installed() -> bool:
     logger.info("Checking if the Ark server is installed...")
-    return _get_installed_build_id() is not None
+    if (res := _get_installed_build_id()) is None:
+        logger.warning("The Ark server is not installed.")
+    return res is not None
 
 
 def does_server_need_update() -> bool:

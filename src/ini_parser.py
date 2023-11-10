@@ -125,6 +125,10 @@ def _ini_filepath(file):
     )
 
 
+def ini_file_exists(file):
+    return os.path.isfile(_ini_filepath(file))
+
+
 def _save_backup(file):
     # Save a backup of the current configuration
     filepath = _ini_filepath(file)
@@ -137,7 +141,7 @@ def _save_backup(file):
     logger.info(f"Saved backup of {file}.ini to {backup_filepath}")
 
 
-def update_setting(file, section, settings):
+def _update_setting(file, section, settings):
     # Get the current configuration
     filepath = _ini_filepath(file)
 
@@ -164,7 +168,7 @@ def update_setting(file, section, settings):
 def _update_from_config_overrides():
     for file, sections in DEFAULT_CONFIG["config_overrides"].items():
         for section, settings in sections.items():
-            update_setting(file, section, settings)
+            _update_setting(file, section, settings)
 
 
 def _update_from_server_settings():
@@ -181,7 +185,7 @@ def _update_from_server_settings():
         },
     }
     for section, settings in game_user_settings_overrides.items():
-        update_setting("GameUserSettings", section, settings)
+        _update_setting("GameUserSettings", section, settings)
 
 
 def update_ark_configs():

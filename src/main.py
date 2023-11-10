@@ -1,7 +1,7 @@
 import time
 
-from constants import SERVER_TIMEOUT, SLEEP_TIME
-from ini_parser import update_ark_configs
+from constants import INI_INIT_TIMEOUT, SERVER_TIMEOUT, SLEEP_TIME
+from ini_parser import ini_file_exists, update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from rcon import save_world, send_message
@@ -115,6 +115,12 @@ class ArkServer:
             logger.info("Ark server installed")
             logger.info("Startup the server to initialize config files, then exit")
             self.start()
+            wait_until(
+                ini_file_exists,
+                lambda x: x,
+                timeout=INI_INIT_TIMEOUT,
+                sleep_interval=5,
+            )
             self.stop()
         update_ark_configs()
 
