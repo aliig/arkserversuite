@@ -77,7 +77,7 @@ tasks:
     threshold: 5 # Hours a server must be stale before it is restarted
 
 # Configuration overrides for game settings
-config_overrides:
-  Game:
-    /Script/ShooterGame.ShooterGameMode:
-      SupplyCrateLootQualityMultiplier: 30
+# config_overrides:
+#   Game:
+#     /Script/ShooterGame.ShooterGameMode:
+#       SupplyCrateLootQualityMultiplier: 1
