@@ -185,7 +185,7 @@ def _update_from_server_settings():
 
 
 def update_ark_configs():
-    for file in ["GameUserSettings", "Game.ini"]:
+    for file in ["GameUserSettings", "Game"]:
         _save_backup(file)
     # update the ARK config .ini files based on specific set config.yml overrides
     _update_from_config_overrides()
