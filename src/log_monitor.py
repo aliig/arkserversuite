@@ -128,7 +128,7 @@ class DinoTamed(LogEvent):
 
     def __init__(self, line: str):
         self.message = self._get_message(line)
-        logger.info(f"Searching for {self.dino_tamed_pattern} in {self.message}")
+        # logger.info(f"Searching for {self.dino_tamed_pattern} in {self.message}")
         match = self.dino_tamed_pattern.search(self.message)
         if match:
             self.event_info = self.EventInfo(*match.groups())
