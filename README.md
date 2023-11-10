@@ -8,7 +8,12 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 
 - **Automated Server Management**: Streamlines ARK server operations with automated updates, restarts, and maintenance tasks.
 
+![preview](https://i.imgur.com/MgV6veK.png)
+
 - **Discord Integration**: Sends real-time notifications for server events, player activities, and chat messages directly to a Discord server.
+
+![preview](https://i.imgur.com/aLU2dKJ.png)
+![preview](https://i.imgur.com/Dfu0NFB.png)
 
 - **Dynamic INI Configuration**: Custom Ark INI parser allows for complex configuration changes, including handling duplicate keys, directly from `config.yml`.
 
