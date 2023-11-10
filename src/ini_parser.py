@@ -125,11 +125,9 @@ def _ini_filepath(file):
     )
 
 
-def update_setting(file, section, settings):
-    # Get the current configuration
-    filepath = _ini_filepath(file)
-
+def _save_backup(file):
     # Save a backup of the current configuration
+    filepath = _ini_filepath(file)
     file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     backup_filepath = os.path.join(
         OUTPUT_DIRECTORY, "backup", "config", f"{file}_{file_timestamp}.ini"
@@ -137,6 +135,11 @@ def update_setting(file, section, settings):
     os.makedirs(os.path.dirname(backup_filepath), exist_ok=True)
     shutil.copy(filepath, backup_filepath)
     logger.info(f"Saved backup of {file}.ini to {backup_filepath}")
+
+
+def update_setting(file, section, settings):
+    # Get the current configuration
+    filepath = _ini_filepath(file)
 
     # Create an instance of the custom parser
     config = CustomConfigParser()
@@ -182,6 +185,8 @@ def _update_from_server_settings():
 
 
 def update_ark_configs():
+    for file in ["GameUserSettings", "Game.ini"]:
+        _save_backup(file)
     # update the ARK config .ini files based on specific set config.yml overrides
     _update_from_config_overrides()
     # update the ARK config .ini files based on server settings in config.yml
