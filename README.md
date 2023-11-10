@@ -4,16 +4,33 @@
 
 Ark Ascended Dedicated Server Suite is a Python-based automation tool for managing an ARK Survival Ascended server. It automates server updates, restarts, and other maintenance tasks, and provides Discord integration for real-time notifications and logs.
 
-## Features
+## Key Features
 
-- Automated ARK server update detection with server updates.
-- Scheduled tasks for server maintenance such as destroying wild dinos and sending announcements.
-- Send welcome messages to users who join the ARK server
-- Discord integration for sending server logs and update messages.
-- Customizable server settings through `config.yml`.
-- (and more)
+- **Automated Server Management**: Streamlines ARK server operations with automated updates, restarts, and maintenance tasks.
+
+- **Discord Integration**: Sends real-time notifications for server events, player activities, and chat messages directly to a Discord server.
+
+- **Dynamic INI Configuration**: Custom INI parser allows for complex configuration changes, including handling duplicate keys, directly from `config.yml`.
+
+- **Backup and Restore**: Automatically backs up server configuration files before making changes, with timestamped backups for easy rollback.
+
+- **SteamCMD Automation**: Integrates with SteamCMD to manage server updates, with the ability to download and set up SteamCMD if not already installed.
+
+- **Scheduled Tasks**: Configurable tasks for server maintenance, such as destroying wild dinos, sending announcements, and checking for stale server status.
+
+- **Customizable Server Settings**: Tailor server settings to specific needs, including server name, map, player limits, and more, through an easy-to-edit configuration file.
+
+- **Stale Server Handling**: Monitors server activity and can automatically restart an empty or stale server based on predefined thresholds.
 
 ## Usage
+
+### Requirements
+
+- **Knowledge of ARK Server Management**: Familiarity with running and managing ARK servers is essential. New users should refer to external tutorials for basic server setup and management.
+
+- **Port Forwarding**: Proper network configuration is required to allow external connections to the ARK server. Users must know how to forward ports on their network router.
+
+- **Stable Internet Connection**: A reliable internet connection is required for server updates, player connectivity, and Discord integration features.
 
 ### Running the Release Executable
 
