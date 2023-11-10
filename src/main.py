@@ -1,7 +1,7 @@
 import time
 
 from constants import INI_INIT_TIMEOUT, SERVER_TIMEOUT, SLEEP_TIME
-from ini_parser import ini_file_exists, update_ark_configs
+from ini_parser import ini_file, update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from rcon import save_world, send_message
@@ -117,7 +117,7 @@ class ArkServer:
             self.start()
             for file in ["Game", "GameUserSettings"]:
                 _, found = wait_until(
-                    lambda: ini_file_exists(file),
+                    lambda: ini_file(file)[1],
                     lambda x: x,
                     timeout=INI_INIT_TIMEOUT,
                     sleep_interval=5,

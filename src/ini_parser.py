@@ -90,20 +90,24 @@ class CustomConfigParser(RawConfigParser):
 
     def set(self, section, option, value):
         """Set an option."""
-        if not section or section not in self._sections:
-            raise ValueError("Section [%s] not found." % section)
-        if not option:
-            raise ValueError("Option not valid.")
+        if not section:
+            raise ValueError("Section name is required.")
+
+        option = self.optionxform(option)  # Preserve case
+
+        # Create the section if it doesn't exist
+        if section not in self._sections:
+            self._sections[section] = []
 
         # Find the tuple with the matching option and replace its value
         # If the option does not exist, append a new tuple
-        option = self.optionxform(option)  # Preserve case
         option_found = False
         for i, (optname, _) in enumerate(self._sections[section]):
             if optname == option:
                 self._sections[section][i] = (option, value)
                 option_found = True
                 break
+
         if not option_found:
             self._sections[section].append((option, value))
 
@@ -117,36 +121,44 @@ class CustomConfigParser(RawConfigParser):
             fp.write("\n")
 
 
-def _ini_filepath(file):
-    return os.path.join(
+def ini_file(file) -> tuple[bool, str]:
+    path = os.path.join(
         DEFAULT_CONFIG["server"]["install_path"],
         "ShooterGame\Saved\Config\WindowsServer",
         f"{file}.ini",
     )
-
-
-def ini_file_exists(file):
-    return os.path.isfile(_ini_filepath(file))
+    exists = os.path.isfile(path)
+    return path, exists
 
 
 def _save_backup(file):
-    # Save a backup of the current configuration
-    filepath = _ini_filepath(file)
-    file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    backup_filepath = os.path.join(
-        OUTPUT_DIRECTORY, "backup", "config", f"{file}.ini_{file_timestamp}"
-    )
-    os.makedirs(os.path.dirname(backup_filepath), exist_ok=True)
-    shutil.copy(filepath, backup_filepath)
-    logger.info(f"Saved backup of {file}.ini to {backup_filepath}")
+    filepath, exists = ini_file(file)
+    if not exists:
+        logger.warning(f"{file}.ini not found at {filepath}, will create a blank file.")
+    else:
+        # Save a backup of the current configuration
+        filepath
+        file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filepath = os.path.join(
+            OUTPUT_DIRECTORY, "backup", "config", f"{file}.ini_{file_timestamp}"
+        )
+        os.makedirs(os.path.dirname(backup_filepath), exist_ok=True)
+        shutil.copy(filepath, backup_filepath)
+        logger.info(f"Saved backup of {file}.ini to {backup_filepath}")
 
 
 def _update_setting(file, section, settings):
     # Get the current configuration
-    filepath = _ini_filepath(file)
+    filepath, _ = ini_file(file)
 
     # Create an instance of the custom parser
     config = CustomConfigParser()
+
+    # Check if the INI file exists, create it if it doesn't
+    if not os.path.exists(filepath):
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        with open(filepath, "w") as f:
+            pass  # Create an empty file
 
     # Read the INI file
     with open(filepath, "r") as f:
