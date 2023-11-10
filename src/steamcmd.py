@@ -39,10 +39,10 @@ def _check_and_download_steamcmd():
             raise e
 
 
-def update_server() -> None:
-    logger.info("Updating the Ark server...")
-    args = f"+force_install_dir {os.path.join(DEFAULT_CONFIG['server']['install_path'])} +login anonymous +app_update {DEFAULT_CONFIG['steam_app_id']} validate +quit"
+def update_server(msg: str = "Updating the Ark server...") -> None:
+    logger.info(msg)
     _check_and_download_steamcmd()
+    args = f"+force_install_dir {os.path.join(DEFAULT_CONFIG['server']['install_path'])} +login anonymous +app_update {DEFAULT_CONFIG['steam_app_id']} validate +quit"
     _run_steamcmd(args)
 
 

@@ -10,7 +10,7 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 
 - **Discord Integration**: Sends real-time notifications for server events, player activities, and chat messages directly to a Discord server.
 
-- **Dynamic INI Configuration**: Custom INI parser allows for complex configuration changes, including handling duplicate keys, directly from `config.yml`.
+- **Dynamic INI Configuration**: Custom Ark INI parser allows for complex configuration changes, including handling duplicate keys, directly from `config.yml`.
 
 - **Backup and Restore**: Automatically backs up server configuration files before making changes, with timestamped backups for easy rollback.
 
@@ -33,6 +33,8 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 - **Port Forwarding**: Proper network configuration is required to allow external connections to the ARK server. Users must know how to forward ports on their network router.
 
 - **Stable Internet Connection**: A reliable internet connection is required for server updates, player connectivity, and Discord integration features.
+
+- **Correct Server Settings**: Requires correct file paths, etc. in the `config.yml`` file.
 
 ### Running the Release Executable
 

@@ -20,7 +20,7 @@ from tasks import (
     SendAnnouncement,
     Task,
 )
-from update import does_server_need_update
+from update import does_server_need_update, is_server_installed
 from utils import wait_until
 
 logger = get_logger(__name__)
@@ -109,8 +109,17 @@ class ArkServer:
             time.sleep(5)
         self.start()
 
-    def run(self) -> None:
+    def _pre_run(self) -> None:
+        if not is_server_installed():
+            update_server("Installing the Ark server...")
+            logger.info("Ark server installed")
+            logger.info("Startup the server to initialize config files, then exit")
+            self.start()
+            self.stop()
         update_ark_configs()
+
+    def run(self) -> None:
+        self._pre_run()
         self.start()
         log_monitor = LogMonitor()
         while True:
