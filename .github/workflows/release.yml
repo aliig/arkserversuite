@@ -52,12 +52,12 @@ jobs:
         pyinstaller --onefile --name=arkserversuite main.py
         cd ..
         mkdir -p dist
-        mv src/dist/main.exe dist/main.exe
+        mv src/dist/arkserversuite.exe dist/arkserversuite.exe
 
     - name: Zip Executable and Config Directory
       shell: bash -l {0}
       run: |
-        7z a release.zip ./dist/main.exe ./config/
+        7z a release.zip ./dist/arkserversuite.exe ./config/
 
     - name: Create Release
       id: create_release
