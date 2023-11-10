@@ -33,7 +33,7 @@ def _get_installed_build_id(
     )
 
     if not os.path.isfile(appmanifest_path):
-        logger.error(
+        logger.warning(
             f"The appmanifest file for app ID {steam_app_id} does not exist at {appmanifest_path}."
         )
         return None
