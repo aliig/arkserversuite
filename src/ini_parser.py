@@ -3,6 +3,7 @@ import shutil
 from collections import defaultdict
 from configparser import RawConfigParser
 from datetime import datetime
+from typing import Any
 
 from config import DEFAULT_CONFIG
 from constants import OUTPUT_DIRECTORY

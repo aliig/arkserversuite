@@ -1,6 +1,7 @@
 import time
 
 from constants import SERVER_TIMEOUT, SLEEP_TIME
+from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from rcon import save_world, send_message
@@ -109,6 +110,7 @@ class ArkServer:
         self.start()
 
     def run(self) -> None:
+        update_ark_configs()
         self.start()
         log_monitor = LogMonitor()
         while True:
