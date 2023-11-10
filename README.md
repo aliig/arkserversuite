@@ -11,13 +11,32 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 - Discord integration for sending server logs and update messages.
 - Customizable server settings through `config.yml`.
 
-## Installation
+## Usage
 
-### Using Miniconda
+### Running the Release Executable
 
-1. Install [Miniconda](https://docs.conda.io/en/latest/miniconda.html) on your server.
-2. Clone the repository.
-3. Create a new Conda environment using the `environment.yml` file:
+For most users, it is recommended to use the pre-built `arkserversuite.exe` executable from the latest release.
+
+1. Download the latest release from the [releases page](https://github.com/aliig/arkserversuite/releases) and extract the .zip file.
+2. Run the executable file. Windows may display a security warning since the file is an executable. You can proceed by clicking "More info" and then "Run anyway" to start the program.
+3. For better insight into the program's activity, especially if you encounter any issues, it is advised to run the executable from a command prompt or PowerShell window. Navigate to the directory containing `arkserversuite.exe` and execute it by typing:
+
+    ```cmd
+    .\arkserversuite.exe
+    ```
+
+### Running from Source
+
+For those interested in running the bleeding-edge version from GitHub or wishing to contribute to the project, follow these steps:
+
+1. Ensure you have [Miniconda](https://docs.conda.io/en/latest/miniconda.html) installed on your server.
+2. Clone the repository:
+
+    ```bash
+    git clone https://github.com/aliig/arkserversuite.git
+    ```
+
+3. Navigate to the cloned directory and create a new Conda environment using the `environment.yml` file:
 
     ```bash
     conda env create -f environment.yml
@@ -29,37 +48,33 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
     conda activate ark
     ```
 
+5. Run the program from the source:
+
+    ```bash
+    python src/main.py
+    ```
+
+Please note that running from source may require additional steps such as setting up the development environment and dealing with potential dependencies or issues that arise from the latest changes in the codebase.
+
 ### Configuration
 
 - Modify `config/config.yml` to your liking
 - You can also create a file at `config/custom.yml` if you wish to override default configurations without altering the original `config.yml`. It will read `config.yml` by default and override anything specified in `custom.yml`.
 
-## Usage
+### Disclaimer
 
-With the "ark" environment activated, navigate to the project root directory and run:
+Use this program at your own risk. I have tested it and used it for my personal ASA server, but I haven't been able to test every configuration change, etc. For example, it will modify your ARK config .ini files to implement server settings, but before it does it will save backups to the output directory.
 
-```bash
-python src/main.py
-```
-
-## Project Structure
-- config/: Contains config.yml for server configurations.
-- src/: Source code for the server management functionalities.
-
-## Dependencies
-The project depends on several Python packages:
-
-- pyyaml: For parsing YAML configuration files.
-- requests: For making HTTP requests (used in Discord integration).
-- steam[client]: For interacting with Steam client operations.
-
-These are specified in the environment.yml file and will be installed when setting up the Conda environment.
+## Roadmap
+- Implement a GUI for easier use
+- Manage server backups
+- Hotkeys for rcon commands like destroywilddinos, saveworld, etc.
 
 ## Contributing
 Contributors are welcome to extend the functionality of the program. Please ensure you follow best practices and keep the project structure and coding style consistent.
 
+## PvE Server
+Feel free to join my hosted ASA server--just search "Brohana" on unofficial. Here is the Discord server for support and community discussions. https://discord.gg/BsH25X3pTB
+
 ## License
 This project is open-sourced under the MIT License.
-
-## PvE Server
-Feel free to join my hosted ASA server "Brohana"; just search "Brohana" on unofficial. Here is the Brohana discord server for support and community discussions. https://discord.gg/BsH25X3pTB
