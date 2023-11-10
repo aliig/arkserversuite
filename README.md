@@ -6,11 +6,12 @@ Ark Ascended Dedicated Server Suite is a Python-based automation tool for managi
 
 ## Features
 
-- Automated server updates and restarts.
-- Scheduled tasks for server maintenance such as destroying wild dinos and sending announcements. Sends configurable warnings to users prior to task execution.
+- Automated ARK server update detection with server updates.
+- Scheduled tasks for server maintenance such as destroying wild dinos and sending announcements.
 - Send welcome messages to users who join the ARK server
 - Discord integration for sending server logs and update messages.
 - Customizable server settings through `config.yml`.
+- (and more)
 
 ## Usage
 
