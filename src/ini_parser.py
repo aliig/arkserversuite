@@ -177,9 +177,10 @@ def _update_setting(file, section, settings):
 
 
 def _update_from_config_overrides():
-    for file, sections in DEFAULT_CONFIG["config_overrides"].items():
-        for section, settings in sections.items():
-            _update_setting(file, section, settings)
+    if "config_overrides" in DEFAULT_CONFIG:
+        for file, sections in DEFAULT_CONFIG["config_overrides"].items():
+            for section, settings in sections.items():
+                _update_setting(file, section, settings)
 
 
 def _update_from_server_settings():
