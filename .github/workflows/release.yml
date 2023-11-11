@@ -59,6 +59,12 @@ jobs:
       run: |
         7z a release.zip ./dist/arkserversuite.exe ./config/
 
+    - name: Generate Changelog
+      id: changelog
+      uses: mikepenz/release-changelog-builder-action@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
@@ -67,6 +73,7 @@ jobs:
       with:
         tag_name: ${{ github.ref }}
         release_name: Release ${{ github.ref }}
+        body: ${{ steps.changelog.outputs.changelog }}
         draft: false
         prerelease: false
 
