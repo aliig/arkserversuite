@@ -75,8 +75,9 @@ def generate_batch_file() -> str:
     )
     hyphen_options = " ".join(
         [
-            *map(lambda opt: f"-{opt}", DEFAULT_CONFIG["launch_options"]["hyphen"]),
-            f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options']['mods']))}",
+            *(f"-{opt}" for opt in DEFAULT_CONFIG["launch_options"].get("hyphen", []) if opt),
+            *(f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options']['mods']))}"
+            if DEFAULT_CONFIG['launch_options'].get('mods') else []),
             f"-WinLiveMaxPlayers={DEFAULT_CONFIG['server']['max_players']}",
         ]
     )
