@@ -124,7 +124,7 @@ class CustomConfigParser(RawConfigParser):
 def ini_file(file) -> tuple[bool, str]:
     path = os.path.join(
         DEFAULT_CONFIG["server"]["install_path"],
-        "ShooterGame\Saved\Config\WindowsServer",
+        "ShooterGame/Saved/Config/WindowsServer",
         f"{file}.ini",
     )
     exists = os.path.isfile(path)
