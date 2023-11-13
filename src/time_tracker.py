@@ -18,6 +18,13 @@ class TimeTracker:
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.reset()
 
+    @staticmethod
+    def _parse_time(time_str):
+        try:
+            return datetime.strptime(time_str, "%H:%M").time()
+        except ValueError:
+            return None
+
     def _get_blackout_times(
         self,
     ) -> tuple[datetime.time, datetime.time] | tuple[None, None]:
@@ -26,43 +33,54 @@ class TimeTracker:
         if not blackout_period:
             return None, None
 
-        start_time_str = blackout_period.get("start")
-        end_time_str = blackout_period.get("end")
+        start_time = self._parse_time(blackout_period.get("start"))
+        end_time = self._parse_time(blackout_period.get("end"))
 
-        if not start_time_str or not end_time_str:
+        if not start_time or not end_time or start_time == end_time:
             return None, None
 
-        try:
-            start_time = datetime.strptime(start_time_str, "%H:%M").time()
-            end_time = datetime.strptime(end_time_str, "%H:%M").time()
+        logger.debug(f"Blackout period for {self.task_name}: {start_time}-{end_time}")
+        return start_time, end_time
 
-            if start_time == end_time:
-                return None, None
-            logger.debug(
-                f"Blackout period for {self.task_name}: {start_time}-{end_time}"
-            )
-            return start_time, end_time
-        except ValueError:
-            return None, None
+    @staticmethod
+    def is_blackout_time(
+        start_t: datetime.time, end_t: datetime.time, dt_to_check: datetime
+    ) -> bool:
+        now = datetime.now()
+        blackout_start = datetime.combine(now.date(), start_t)
+        blackout_end = datetime.combine(now.date(), end_t)
+        if blackout_end < blackout_start:
+            blackout_end += timedelta(days=1)
+
+        time_to_check = datetime.combine(now.date(), dt_to_check.time())
+
+        return blackout_start <= time_to_check < blackout_end
 
     def _is_blackout_time(self, datetime_to_check: datetime) -> bool:
         if not all((self.blackout_start_time, self.blackout_end_time)):
             return False
-
-        blackout_start = datetime.combine(
-            self.current_time.date(), self.blackout_start_time
-        )
-        blackout_end = datetime.combine(
-            self.current_time.date(), self.blackout_end_time
-        )
-        if blackout_end < blackout_start:
-            blackout_end += timedelta(days=1)
-
-        time_to_check = datetime.combine(
-            self.current_time.date(), datetime_to_check.time()
+        return self.is_blackout_time(
+            self.blackout_start_time, self.blackout_end_time, datetime_to_check
         )
 
-        return blackout_start < time_to_check <= blackout_end
+    @staticmethod
+    def adjust_for_blackout(
+        blackout_end_time: datetime.time, dt_to_adjust: datetime
+    ) -> tuple[datetime, int, int]:
+        # Calculate the end of the blackout period
+        blackout_end_datetime = datetime.combine(dt_to_adjust.date(), blackout_end_time)
+        if blackout_end_datetime < dt_to_adjust:
+            blackout_end_datetime += timedelta(days=1)
+
+        # Adjust the expected execution time to just after the blackout period
+        adjusted_execution_dt = blackout_end_datetime
+
+        # Calculate the adjustment duration
+        adjustment_duration = adjusted_execution_dt - dt_to_adjust
+        hours_added, remainder = divmod(adjustment_duration.seconds, 3600)
+        minutes_added = remainder // 60
+
+        return adjusted_execution_dt, hours_added, minutes_added
 
     def _adjust_for_blackout(self, expected_execution_dt: datetime) -> datetime:
         """Adjust the expected execution time to account for the blackout period."""
@@ -75,26 +93,14 @@ class TimeTracker:
         )
 
         if is_during_blackout:
-            # Calculate the end of the blackout period
-            blackout_end_datetime = datetime.combine(
-                expected_execution_dt.date(), self.blackout_end_time
-            )
-            if blackout_end_datetime < expected_execution_dt:
-                blackout_end_datetime += timedelta(days=1)
-
-            # Adjust the expected execution time to just after the blackout period
-            adjusted_execution_dt = blackout_end_datetime
-
-            # Calculate the adjustment duration
-            adjustment_duration = adjusted_execution_dt - expected_execution_dt
-            hours_added, remainder = divmod(adjustment_duration.seconds, 3600)
-            minutes_added = remainder // 60
-
+            (
+                expected_execution_dt,
+                hours_added,
+                minutes_added,
+            ) = self.adjust_for_blackout(self.blackout_end_time, expected_execution_dt)
             logger.debug(
-                f"Added {hours_added} hours, {minutes_added} minutes; Adjusted {self.task_name} execution time: {adjusted_execution_dt}"
+                f"Added {hours_added} hours, {minutes_added} minutes; Adjusted {self.task_name} execution time: {expected_execution_dt}"
             )
-            return adjusted_execution_dt
-
         return expected_execution_dt
 
     def set_next_time(self):

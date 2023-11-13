@@ -7,3 +7,6 @@ dependencies:
     - requests
     - "steam[client]"
     - pytest
+    - pytest-env
+    - pytest-pythonpath
+    - pytest-mock
