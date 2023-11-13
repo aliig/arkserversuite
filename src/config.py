@@ -2,9 +2,6 @@ import os
 from functools import cached_property
 
 import yaml
-from logger import get_logger
-
-logger = get_logger(__name__)
 
 
 class ConfigLoader:
@@ -23,7 +20,7 @@ class ConfigLoader:
                 file_content = file.read().replace("\\", "\\\\")
             return yaml.safe_load(file_content)
         except yaml.YAMLError as e:
-            logger.error(f"Error loading YAML file {file_path}: {e}")
+            print(f"Error loading YAML file {file_path}: {e}")
             raise
 
     @cached_property
