@@ -236,10 +236,3 @@ class LogMonitor:
 
         log_events = [LogEventFactory.create(line) for line in new_entries]
         return log_events
-
-
-# Usage
-if __name__ == "__main__":
-    log_file_path = "path/to/your/logfile.log"  # Replace with your log file path
-    monitor = LogMonitor(log_file_path)
-    monitor.monitor()  # Starts the monitoring process
