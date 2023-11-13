@@ -76,6 +76,8 @@ tasks:
     interval: 0.5 # Frequency of stale server checks in hours
     threshold: 5 # Hours a server must be stale before it is restarted
 
+log_level: info # Log level for the application (debug/info)
+
 # Configuration overrides for game settings
 # config_overrides:
 #   Game:
