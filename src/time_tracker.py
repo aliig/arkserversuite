@@ -54,12 +54,18 @@ class TimeTracker:
         blackout_end = datetime.combine(time_to_check.date(), self.blackout_end_time)
 
         if self.blackout_start_time <= self.blackout_end_time:
+            # Blackout does not span midnight
             return blackout_start <= time_to_check <= blackout_end
-        else:  # blackout period spans midnight
-            blackout_end += timedelta(
-                days=1
-            )  # Add a day to the end time if it's past midnight
-            return not (blackout_end <= time_to_check <= blackout_start)
+        else:
+            # Blackout period spans midnight
+            if time_to_check < blackout_start:
+                # Check if time is before today's blackout start. If so, compare with yesterday's blackout end
+                yesterday_blackout_end = blackout_end - timedelta(days=1)
+                return time_to_check <= yesterday_blackout_end
+            else:
+                # Check if time is after today's blackout start. If so, compare with today's blackout end
+                blackout_end += timedelta(days=1)  # Add a day to the end time
+                return time_to_check <= blackout_end
 
     def _adjust_for_blackout(self, expected_execution_dt: datetime) -> datetime:
         """Adjust the expected execution time to account for the blackout period."""
