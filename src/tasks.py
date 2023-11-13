@@ -34,10 +34,7 @@ class Task:
     def _warn_before_task(self):
         """Send warnings if the time for a task is approaching."""
         if not self.warning_times:
-            logger.debug(f"No warnings set for {self.task_name}")
             return
-        else:
-            logger.debug(f"Warnings set for {self.task_name}: {self.warning_times}")
 
         minutes_until_task = self.time.time_until.total_seconds() / 60
         logger.debug(f"Minutes until {self.task_name}: {minutes_until_task}")
