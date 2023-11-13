@@ -54,3 +54,5 @@ class ConfigLoader:
 
 
 DEFAULT_CONFIG = ConfigLoader().merged_config
+
+print(f"Config settings: {DEFAULT_CONFIG}")
