@@ -64,22 +64,32 @@ class TimeTracker:
     def _adjust_for_blackout(self, expected_execution_dt: datetime) -> datetime:
         """Adjust the expected execution time to account for the blackout period."""
         original_time = expected_execution_dt  # Store original time for logging
-        if self._is_blackout_time(expected_execution_dt):
-            if self.blackout_start_time <= self.blackout_end_time:
-                # Blackout does not span midnight
-                adjusted_time = datetime.combine(
-                    expected_execution_dt.date(), self.blackout_end_time
-                )
-            else:
+        logger.debug(f"Original {self.task_name} execution time: {original_time}")
+        is_during_blackout = self._is_blackout_time(expected_execution_dt)
+        logger.debug(
+            f"Is {self.task_name} execution during blackout? {is_during_blackout}"
+        )
+        if is_during_blackout:
+            blackout_start = datetime.combine(
+                expected_execution_dt.date(), self.blackout_start_time
+            )
+            blackout_end = datetime.combine(
+                expected_execution_dt.date(), self.blackout_end_time
+            )
+
+            if self.blackout_end_time < self.blackout_start_time:
                 # Blackout spans midnight
-                if expected_execution_dt.time() >= self.blackout_start_time:
-                    next_day = expected_execution_dt.date() + timedelta(days=1)
-                    adjusted_time = datetime.combine(next_day, self.blackout_end_time)
+                if expected_execution_dt < blackout_start:
+                    # Current time is before blackout starts, adjust to today's blackout end
+                    adjusted_time = blackout_end
                 else:
-                    adjusted_time = datetime.combine(
-                        expected_execution_dt.date(), self.blackout_end_time
-                    )
-            time_adjustment = adjusted_time - original_time
+                    # Current time is after blackout starts, adjust to tomorrow's blackout end
+                    adjusted_time = blackout_end + timedelta(days=1)
+            else:
+                # Blackout does not span midnight
+                adjusted_time = blackout_end
+
+            time_adjustment = adjusted_time - expected_execution_dt
             logger.debug(
                 f"Time adjusted by {time_adjustment} for blackout during {self.task_name} execution."
             )
