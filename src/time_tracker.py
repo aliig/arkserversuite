@@ -38,6 +38,9 @@ class TimeTracker:
 
             if start_time == end_time:
                 return None, None
+            logger.debug(
+                f"Blackout period for {self.task_name}: {start_time}-{end_time}"
+            )
             return start_time, end_time
         except ValueError:
             return None, None
