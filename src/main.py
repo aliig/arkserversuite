@@ -131,7 +131,7 @@ class ArkServer:
         self._pre_run()
         self.start()
 
-        log_monitor_thread = threading.Thread(target=self.run_log_monitor)
+        log_monitor_thread = threading.Thread(target=self._run_log_monitor)
         log_monitor_thread.start()
 
         while self.running:
