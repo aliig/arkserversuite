@@ -45,65 +45,57 @@ class TimeTracker:
         except ValueError:
             return None, None
 
-    def _is_blackout_time(self, time_to_check: datetime) -> bool:
-        """Check if a given datetime is within the blackout period."""
+    def _is_blackout_time(self, datetime_to_check: datetime) -> bool:
         if not all((self.blackout_start_time, self.blackout_end_time)):
             return False
 
-        # Normalize dates by setting them to the same date
         blackout_start = datetime.combine(
-            time_to_check.date(), self.blackout_start_time
+            self.current_time.date(), self.blackout_start_time
         )
-        blackout_end = datetime.combine(time_to_check.date(), self.blackout_end_time)
-
-        if self.blackout_start_time <= self.blackout_end_time:
-            # Blackout does not span midnight
-            is_blackout = blackout_start <= time_to_check <= blackout_end
-        else:
-            # Blackout period spans midnight, adjust blackout_end to the next day
+        blackout_end = datetime.combine(
+            self.current_time.date(), self.blackout_end_time
+        )
+        if blackout_end < blackout_start:
             blackout_end += timedelta(days=1)
-            is_blackout = not (blackout_end <= time_to_check < blackout_start)
 
-        logger.debug(
-            f"Blackout start: {blackout_start}, Blackout end: {blackout_end}, Time to check: {time_to_check}, Is blackout? {is_blackout}"
+        time_to_check = datetime.combine(
+            self.current_time.date(), datetime_to_check.time()
         )
-        return is_blackout
+
+        return blackout_start < time_to_check <= blackout_end
 
     def _adjust_for_blackout(self, expected_execution_dt: datetime) -> datetime:
         """Adjust the expected execution time to account for the blackout period."""
-        original_time = expected_execution_dt  # Store original time for logging
-        logger.debug(f"Original {self.task_name} execution time: {original_time}")
+        logger.debug(
+            f"Original {self.task_name} execution time: {expected_execution_dt}"
+        )
         is_during_blackout = self._is_blackout_time(expected_execution_dt)
         logger.debug(
             f"Is {self.task_name} execution during blackout? {is_during_blackout}"
         )
+
         if is_during_blackout:
-            blackout_start = datetime.combine(
-                expected_execution_dt.date(), self.blackout_start_time
-            )
-            blackout_end = datetime.combine(
+            # Calculate the end of the blackout period
+            blackout_end_datetime = datetime.combine(
                 expected_execution_dt.date(), self.blackout_end_time
             )
+            if blackout_end_datetime < expected_execution_dt:
+                blackout_end_datetime += timedelta(days=1)
 
-            if self.blackout_end_time < self.blackout_start_time:
-                # Blackout spans midnight
-                if expected_execution_dt < blackout_start:
-                    # Current time is before blackout starts, adjust to today's blackout end
-                    adjusted_time = blackout_end
-                else:
-                    # Current time is after blackout starts, adjust to tomorrow's blackout end
-                    adjusted_time = blackout_end + timedelta(days=1)
-            else:
-                # Blackout does not span midnight
-                adjusted_time = blackout_end
+            # Adjust the expected execution time to just after the blackout period
+            adjusted_execution_dt = blackout_end_datetime
 
-            time_adjustment = adjusted_time - expected_execution_dt
+            # Calculate the adjustment duration
+            adjustment_duration = adjusted_execution_dt - expected_execution_dt
+            hours_added, remainder = divmod(adjustment_duration.seconds, 3600)
+            minutes_added = remainder // 60
+
             logger.debug(
-                f"Time adjusted by {time_adjustment} for blackout during {self.task_name} execution."
+                f"Added {hours_added} hours, {minutes_added} minutes; Adjusted {self.task_name} execution time: {adjusted_execution_dt}"
             )
-            return adjusted_time
-        else:
-            return expected_execution_dt
+            return adjusted_execution_dt
+
+        return expected_execution_dt
 
     def set_next_time(self):
         """Compute the next expected execution time for the task."""
