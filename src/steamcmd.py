@@ -26,7 +26,7 @@ def _check_and_download_steamcmd():
                 "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip",
                 zip_path,
             )
-            logger.info("Downloaded steamcmd.zip")
+            logger.debug("Downloaded steamcmd.zip")
 
             # Create the steamcmd directory if it doesn't exist
             os.makedirs(STEAMCMD_DIR, exist_ok=True)
@@ -34,11 +34,11 @@ def _check_and_download_steamcmd():
             with zipfile.ZipFile(zip_path, "r") as zip_ref:
                 # Extract directly into the steamcmd directory
                 zip_ref.extractall(STEAMCMD_DIR)
-            logger.info("Extracted steamcmd.exe")
+            logger.debug("Extracted steamcmd.exe")
 
             # Remove the downloaded zip file
             os.remove(zip_path)
-            logger.info("Removed steamcmd.zip")
+            logger.debug("Removed steamcmd.zip")
 
         except Exception as e:
             logger.error(f"An error occurred: {e}")

@@ -143,7 +143,7 @@ def _save_backup(file):
         )
         os.makedirs(os.path.dirname(backup_filepath), exist_ok=True)
         shutil.copy(filepath, backup_filepath)
-        logger.info(f"Saved backup of {file}.ini to {backup_filepath}")
+        logger.debug(f"Saved backup of {file}.ini to {backup_filepath}")
 
 
 def _update_setting(file, section, settings):

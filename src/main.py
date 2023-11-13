@@ -51,7 +51,7 @@ class ArkServer:
 
         tasks = {}
         for task_name, task_class in tasks_init.items():
-            # logger.info(f"Initializing task: {task_name}")
+            logger.debug(f"Initializing task: {task_name}")
             tasks[task_name] = task_class(self, task_name)
 
         return tasks
@@ -63,7 +63,7 @@ class ArkServer:
 
             batch_file_path = generate_batch_file()
             cmd = ["cmd", "/c", batch_file_path]
-            logger.info(f"Starting Ark server with cmd: {cmd}")
+            logger.debug(f"Starting Ark server with cmd: {cmd}")
             run_shell_cmd(cmd, use_shell=False, use_popen=True, suppress_output=True)
 
             _, success = wait_until(
