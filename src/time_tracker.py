@@ -109,7 +109,9 @@ class TimeTracker:
             self.current_time + timedelta(hours=self.interval)
         )
         logger.info(f"Next {self.task_name} execution: {self.display_next_time()}")
-        self.time_until = self.next_time - self.current_time
+
+    def seconds_until(self):
+        return (self.next_time - self.current_time).total_seconds()
 
     def reset(self):
         self.current_time = datetime.now()

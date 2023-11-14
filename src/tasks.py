@@ -36,7 +36,7 @@ class Task:
         if not self.warning_times:
             return
 
-        minutes_until_task = self.time.time_until.total_seconds() / 60
+        minutes_until_task = round(self.time.seconds_until() / 60)
         logger.debug(f"Minutes until {self.task_name}: {minutes_until_task}")
 
         # Iterate over the warning times that have not been warned yet
