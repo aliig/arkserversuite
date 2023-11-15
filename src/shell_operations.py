@@ -74,21 +74,13 @@ def generate_batch_file() -> str:
         ]
     )
     hyphen_options = " ".join(
-        [
-            [
-                " ".join(
-                    f"-{opt}"
-                    for opt in DEFAULT_CONFIG["launch_options"].get("hyphen", [])
-                    if opt
-                )
-            ],
-            [
-                f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options']['mods']))}"
-                if DEFAULT_CONFIG["launch_options"].get("mods")
-                else ""
-            ],
-            [f"-WinLiveMaxPlayers={DEFAULT_CONFIG['server']['max_players']}"],
+        [f"-{opt}" for opt in DEFAULT_CONFIG["launch_options"].get("hyphen", []) if opt]
+        + [
+            f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options'].get('mods', [])))}"
+            if DEFAULT_CONFIG["launch_options"].get("mods")
+            else ""
         ]
+        + [f"-WinLiveMaxPlayers={DEFAULT_CONFIG['server']['max_players']}"]
     )
 
     cmd_string = f"{base_arg} {question_mark_options} {hyphen_options}"
