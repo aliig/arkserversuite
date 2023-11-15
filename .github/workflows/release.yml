@@ -59,6 +59,13 @@ jobs:
       run: |
         7z a release.zip ./dist/arkserversuite.exe ./config/
 
+    - name: Upload release artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: release
+        path: release.zip
+
+
   changelog:
     needs: build
     runs-on: ubuntu-20.04
@@ -94,6 +101,11 @@ jobs:
           draft: false
           prerelease: false
 
+      - name: Download release artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: release
+          path: .
 
       - name: Upload Release Asset
         uses: actions/upload-release-asset@v1
