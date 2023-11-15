@@ -59,27 +59,46 @@ jobs:
       run: |
         7z a release.zip ./dist/arkserversuite.exe ./config/
 
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
+  changelog:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
+    outputs:
+      changelog: ${{ steps.changelog_output.outputs.changelog }}
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      - name: Build Changelog
-        id: github_release
-        uses: mikepenz/release-changelog-builder-action@v3
+      - name: Generate release changelog
+        id: changelog_output
+        uses: heinrichreimer/action-github-changelog-generator@v2.3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  create_release:
+    needs: [build, changelog]
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create Release
-        uses: mikepenz/action-gh-release@v0.2.0-a03
         with:
-          body: ${{ steps.github_release.outputs.changelog }}
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ needs.changelog.outputs.changelog }}
           draft: false
           prerelease: false
-          files: ./release.zip
-          tag_name: ${{ github.ref }}
-          name: Release ${{ github.ref }}
+
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release.zip
+          asset_name: release.zip
+          asset_content_type: application/zip
