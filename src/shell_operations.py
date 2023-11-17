@@ -42,11 +42,34 @@ def kill_server() -> None:
     run_shell_cmd("taskkill /IM ShooterGameServer.exe /F", suppress_output=True)
 
 
-def is_server_running() -> bool:
+def get_process_id(expected_port: int) -> int | None:
+    cmd = "netstat -ano"
+    process = run_shell_cmd(cmd, suppress_output=True)
+
+    if process.returncode != 0:
+        print("Error running netstat:", process.stderr)
+        return None
+
+    for line in process.stdout.splitlines():
+        parts = line.split()
+        if len(parts) >= 2 and parts[1].startswith("0.0.0.0:"):
+            port = int(parts[1].split(":")[1])
+            if port == expected_port:
+                process_id = int(parts[-1])
+                logger.debug(f"Found process id {process_id} on port {port}")
+                return process_id
+    logger.debug(f"Process id on port {expected_port} not found")
+    return None
+
+
+def is_server_running(ark_port: int = DEFAULT_CONFIG["server"]["port"]) -> bool:
+    if not (pid := get_process_id(ark_port)):
+        return False
+
     try:
-        cmd_str = 'tasklist /FI "IMAGENAME eq ArkAscendedServer.exe"'
+        cmd_str = f'tasklist /FI "PID eq {pid}"'
         result = run_shell_cmd(cmd_str, suppress_output=True)
-        return "ArkAscendedServer.exe" in result.stdout
+        return pid in result.stdout
     except Exception as e:
         logger.error(f"Error checking if server is running: {e}")
         return False
