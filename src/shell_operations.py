@@ -69,7 +69,7 @@ def is_server_running(ark_port: int = DEFAULT_CONFIG["server"]["port"]) -> bool:
     try:
         cmd_str = f'tasklist /FI "PID eq {pid}"'
         result = run_shell_cmd(cmd_str, suppress_output=True)
-        return pid in result.stdout
+        return str(pid) in result.stdout
     except Exception as e:
         logger.error(f"Error checking if server is running: {e}")
         return False
