@@ -47,7 +47,7 @@ def get_process_id(expected_port: int) -> int | None:
     process = run_shell_cmd(cmd, suppress_output=True)
 
     if process.returncode != 0:
-        print("Error running netstat:", process.stderr)
+        logger.error("Error running netstat:", process.stderr)
         return None
 
     for line in process.stdout.splitlines():
@@ -56,9 +56,9 @@ def get_process_id(expected_port: int) -> int | None:
             port = int(parts[1].split(":")[1])
             if port == expected_port:
                 process_id = int(parts[-1])
-                logger.debug(f"Found process id {process_id} on port {port}")
+                # logger.debug(f"Found process id {process_id} on port {port}")
                 return process_id
-    logger.debug(f"Process id on port {expected_port} not found")
+    # logger.debug(f"Process id on port {expected_port} not found")
     return None
 
 
