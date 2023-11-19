@@ -10,7 +10,6 @@ from shell_operations import (
     is_server_running,
     kill_server,
     run_shell_cmd,
-    get_process_id,
 )
 from steamcmd import update_server
 from tasks import (
