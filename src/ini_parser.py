@@ -6,7 +6,6 @@ from datetime import datetime
 from typing import Any
 
 from config import DEFAULT_CONFIG
-from constants import OUTPUT_DIRECTORY
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -139,7 +138,10 @@ def _save_backup(file):
         # Save a backup of the current configuration
         file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_filepath = os.path.join(
-            OUTPUT_DIRECTORY, "backup", "config", f"{file}.ini_{file_timestamp}"
+            DEFAULT_CONFIG["advanced"].get("output_directory", "output"),
+            "backup",
+            "config",
+            f"{file}.ini_{file_timestamp}",
         )
         os.makedirs(os.path.dirname(backup_filepath), exist_ok=True)
         shutil.copy(filepath, backup_filepath)

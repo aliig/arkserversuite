@@ -3,7 +3,6 @@ import subprocess
 import sys
 
 from config import DEFAULT_CONFIG
-from constants import OUTPUT_DIRECTORY
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -110,9 +109,10 @@ def generate_batch_file() -> str:
     cmd_string = f"{base_arg} {question_mark_options} {hyphen_options}"
     batch_content = f'@echo off\nstart "" {cmd_string}'
 
-    os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
+    outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
+    os.makedirs(outdir, exist_ok=True)
     with open(
-        (file_path := os.path.join(OUTPUT_DIRECTORY, ".start_server.bat")), "w"
+        (file_path := os.path.join(outdir, ".start_server.bat")), "w"
     ) as batch_file:
         batch_file.write(batch_content)
 

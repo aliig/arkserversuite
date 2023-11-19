@@ -1,7 +1,8 @@
+import threading
 import time
 
-from constants import INI_INIT_TIMEOUT, SERVER_TIMEOUT, SLEEP_TIME, LOG_CHECK_RATE
-from ini_parser import ini_file, update_ark_configs
+from config import DEFAULT_CONFIG
+from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from rcon import save_world, send_message
@@ -22,7 +23,6 @@ from tasks import (
 )
 from update import does_server_need_update, is_server_installed
 from utils import wait_until
-import threading
 
 logger = get_logger(__name__)
 
@@ -39,6 +39,9 @@ class ArkServer:
     def __init__(self):
         self.tasks: dict[str, Task] = self.initialize_tasks()
         self.running = True
+        self.server_timeout = DEFAULT_CONFIG["advanced"].get("server_timeout", 300)
+        self.sleep_time = DEFAULT_CONFIG["advanced"].get("sleep_time", 60)
+        self.log_check_rate = DEFAULT_CONFIG["advanced"].get("log_check_rate", 5)
 
     def initialize_tasks(self):
         tasks_init = {
@@ -67,7 +70,10 @@ class ArkServer:
             run_shell_cmd(cmd, use_shell=False, use_popen=True, suppress_output=True)
 
             _, success = wait_until(
-                is_server_running, lambda x: x, timeout=SERVER_TIMEOUT, sleep_interval=1
+                is_server_running,
+                lambda x: x,
+                timeout=self.server_timeout,
+                sleep_interval=3,
             )
             if not success:
                 logger.error("Failed to start the Ark server")
@@ -88,8 +94,8 @@ class ArkServer:
             _, success = wait_until(
                 is_server_running,
                 lambda x: not x,
-                timeout=SERVER_TIMEOUT,
-                sleep_interval=1,
+                timeout=self.server_timeout,
+                sleep_interval=3,
             )
             if success:
                 logger.info("Ark server stopped")
@@ -121,7 +127,7 @@ class ArkServer:
         log_monitor = LogMonitor()
         while self.running:
             log_monitor.process_new_entries()
-            time.sleep(LOG_CHECK_RATE)
+            time.sleep(self.log_check_rate)
 
     def _exit(self) -> None:
         logger.info("Exiting...")
@@ -142,7 +148,7 @@ class ArkServer:
             for _, task in self.tasks.items():
                 if task.execute():
                     break
-            time.sleep(SLEEP_TIME)
+            time.sleep(self.sleep_time)
 
         log_monitor_thread.join()
 

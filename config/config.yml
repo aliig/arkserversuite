@@ -76,10 +76,17 @@ tasks:
     interval: 0.5 # Frequency of stale server checks in hours
     threshold: 5 # Hours a server must be stale before it is restarted
 
-log_level: info # Log level for the application (debug/info)
 
 # Configuration overrides for game settings
 # config_overrides:
 #   Game:
 #     /Script/ShooterGame.ShooterGameMode:
 #       SupplyCrateLootQualityMultiplier: 1
+
+# program manager settings, should not need adjustment
+advanced:
+  log_level: info
+  sleep_time: 60  # seconds to sleep between server state checks
+  server_timeout: 60  # seconds to wait for server to start or stop before exiting
+  output_directory: "output"
+  log_check_rate: 2  # seconds to wait between log file checks

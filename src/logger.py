@@ -2,16 +2,16 @@ import logging
 import os
 import sys
 
-from constants import OUTPUT_DIRECTORY
 from config import DEFAULT_CONFIG
 
 # Retrieve log level from the configuration
-log_level_str = DEFAULT_CONFIG["log_level"] if "log_level" in DEFAULT_CONFIG else "info"
+log_level_str = DEFAULT_CONFIG["advanced"].get("log_level", "info")
 log_level = logging.DEBUG if log_level_str.lower() == "debug" else logging.INFO
 
 # Setting up logging
-os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
-log_path = os.path.join(OUTPUT_DIRECTORY, "log.txt")
+outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
+os.makedirs(outdir, exist_ok=True)
+log_path = os.path.join(outdir, "log.txt")
 logging.basicConfig(
     level=log_level,  # Use the log level from the config
     format="%(asctime)s [%(levelname)s]: %(message)s",

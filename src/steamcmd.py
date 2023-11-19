@@ -3,13 +3,15 @@ import urllib.request
 import zipfile
 
 from config import DEFAULT_CONFIG
-from constants import OUTPUT_DIRECTORY
 from logger import get_logger
 from shell_operations import run_shell_cmd
 
 logger = get_logger(__name__)
 
-STEAMCMD_DIR = os.path.join(OUTPUT_DIRECTORY, "steamcmd")
+
+STEAMCMD_DIR = os.path.join(
+    DEFAULT_CONFIG["advanced"].get("output_directory", "output"), "steamcmd"
+)
 STEAMCMD_PATH = os.path.join(STEAMCMD_DIR, "steamcmd.exe")
 
 
@@ -20,7 +22,9 @@ def _run_steamcmd(args: str) -> None:
 def _check_and_download_steamcmd():
     if not os.path.isfile(STEAMCMD_PATH):
         logger.info("steamcmd.exe not found, downloading...")
-        zip_path = os.path.join(OUTPUT_DIRECTORY, "steamcmd.zip")
+        zip_path = os.path.join(
+            DEFAULT_CONFIG["advanced"].get("output_directory", "output"), "steamcmd.zip"
+        )
         try:
             urllib.request.urlretrieve(
                 "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip",
