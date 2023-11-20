@@ -76,6 +76,10 @@ def is_server_running(ark_port: int = DEFAULT_CONFIG["server"]["port"]) -> bool:
 
 
 def generate_batch_file() -> str:
+    def _server_config_option(key, format_str):
+        value = DEFAULT_CONFIG["server"].get(key)
+        return format_str.format(value) if value else None
+
     base_arg = os.path.join(
         DEFAULT_CONFIG["server"]["install_path"],
         "ShooterGame",
@@ -83,21 +87,22 @@ def generate_batch_file() -> str:
         "Win64",
         "ArkAscendedServer.exe",
     )
-    question_mark_options = "?".join(
-        [
-            DEFAULT_CONFIG["server"]["map"],
-            "listen",
-            f"MultiHome={DEFAULT_CONFIG['server']['ip_address']}",
-            # f"SessionName=\"{DEFAULT_CONFIG['server']['name']}\"",
-            f"Port={DEFAULT_CONFIG['server']['port']}",
-            f"QueryPort={DEFAULT_CONFIG['server']['query_port']}",
-            f"Password={DEFAULT_CONFIG['server']['password']}",
-            f"MaxPlayers={DEFAULT_CONFIG['server']['max_players']}",
-            f"ServerAdminPassword={DEFAULT_CONFIG['server']['admin_password']}",
-            "RCONEnabled=True",
-            *DEFAULT_CONFIG["launch_options"]["question_mark"],
-        ]
-    )
+    question_mark_options_list = [
+        DEFAULT_CONFIG["server"]["map"],
+        "listen",
+        _server_config_option("ip_address", "MultiHome={}"),
+        # _server_config_option('name', "SessionName=\"{}\""),
+        _server_config_option("port", "Port={}"),
+        _server_config_option("query_port", "QueryPort={}"),
+        _server_config_option("password", "Password={}"),
+        _server_config_option("max_players", "MaxPlayers={}"),
+        _server_config_option("admin_password", "ServerAdminPassword={}"),
+        "RCONEnabled=True",
+        *DEFAULT_CONFIG["launch_options"]["question_mark"],
+    ]
+
+    question_mark_options = "?".join(filter(None, question_mark_options_list))
+
     hyphen_options = " ".join(
         [f"-{opt}" for opt in DEFAULT_CONFIG["launch_options"].get("hyphen", []) if opt]
         + [
