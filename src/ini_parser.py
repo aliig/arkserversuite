@@ -171,10 +171,12 @@ def _update_setting(file, section, settings):
     # If settings is a dictionary, update all key/value pairs
     if isinstance(settings, dict):
         for key, val in settings.items():
+            logger.debug(f"{key} = {val}")
             if val is None:
                 val = ""
             # Use the custom set method to handle duplicates
             config.set(section, key, str(val))
+            logger.debug(f"Updated {file}.ini {section} {key} = {val}")
     else:
         raise ValueError("Settings must be a dictionary of key/value pairs.")
 
