@@ -188,13 +188,11 @@ def _update_from_config_overrides():
 def _update_from_server_settings():
     game_user_settings_overrides: dict[str, dict[str, Any]] = {
         "ServerSettings": {
+            "SessionName": DEFAULT_CONFIG["server"]["name"],
             "ServerPassword": DEFAULT_CONFIG["server"]["password"],
             "ServerAdminPassword": DEFAULT_CONFIG["server"]["admin_password"],
             "RCONPort": DEFAULT_CONFIG["server"]["rcon_port"],
             "RCONEnabled": True,
-        },
-        "SessionSettings": {
-            "SessionName": DEFAULT_CONFIG["server"]["name"],
             "MultiHome": DEFAULT_CONFIG["server"]["ip_address"],
         },
         "/Script/Engine.GameSession": {

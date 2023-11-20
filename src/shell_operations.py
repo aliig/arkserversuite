@@ -88,7 +88,7 @@ def generate_batch_file() -> str:
             DEFAULT_CONFIG["server"]["map"],
             "listen",
             f"MultiHome={DEFAULT_CONFIG['server']['ip_address']}",
-            f"SessionName=\"{DEFAULT_CONFIG['server']['name']}\"",
+            # f"SessionName=\"{DEFAULT_CONFIG['server']['name']}\"",
             f"Port={DEFAULT_CONFIG['server']['port']}",
             f"QueryPort={DEFAULT_CONFIG['server']['query_port']}",
             f"Password={DEFAULT_CONFIG['server']['password']}",
