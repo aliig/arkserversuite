@@ -193,7 +193,10 @@ def _update_from_server_settings():
             "RCONPort": DEFAULT_CONFIG["server"]["rcon_port"],
             "RCONEnabled": True,
         },
-        "SessionSettings": {"SessionName": DEFAULT_CONFIG["server"]["name"]},
+        "SessionSettings": {
+            "SessionName": DEFAULT_CONFIG["server"]["name"],
+            "MultiHome": DEFAULT_CONFIG["server"]["ip_address"],
+        },
         "/Script/Engine.GameSession": {
             "MaxPlayers": DEFAULT_CONFIG["server"]["max_players"]
         },
