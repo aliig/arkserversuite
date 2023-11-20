@@ -58,7 +58,7 @@ def get_process_id(expected_port: int) -> int | None:
                 logger.debug(f"Found process id {process_id} on port {port}")
                 return process_id
     logger.debug(f"Process id on port {expected_port} not found")
-    logger.debug(f"output was: {process.stdout}")
+    # logger.debug(f"output was: {process.stdout}")
     return None
 
 
