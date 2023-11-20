@@ -96,7 +96,7 @@ def generate_batch_file() -> str:
         _server_config_option("query_port", "QueryPort={}"),
         _server_config_option("password", "Password={}"),
         _server_config_option("max_players", "MaxPlayers={}"),
-        _server_config_option("admin_password", "ServerAdminPassword={}"),
+        # _server_config_option("admin_password", "ServerAdminPassword={}"),
         "RCONEnabled=True",
         *DEFAULT_CONFIG["launch_options"]["question_mark"],
     ]
