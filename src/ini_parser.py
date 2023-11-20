@@ -98,6 +98,9 @@ class CustomConfigParser(RawConfigParser):
         if section not in self._sections:
             self._sections[section] = []
 
+        if value is None:
+            value = ""
+
         # Find the tuple with the matching option and replace its value
         # If the option does not exist, append a new tuple
         option_found = False
@@ -168,6 +171,8 @@ def _update_setting(file, section, settings):
     # If settings is a dictionary, update all key/value pairs
     if isinstance(settings, dict):
         for key, val in settings.items():
+            if val is None:
+                val = ""
             # Use the custom set method to handle duplicates
             config.set(section, key, str(val))
     else:
@@ -188,16 +193,21 @@ def _update_from_config_overrides():
 def _update_from_server_settings():
     game_user_settings_overrides: dict[str, dict[str, Any]] = {
         "ServerSettings": {
-            "SessionName": DEFAULT_CONFIG["server"]["name"],
             "ServerPassword": DEFAULT_CONFIG["server"]["password"],
             "ServerAdminPassword": DEFAULT_CONFIG["server"]["admin_password"],
             "RCONPort": DEFAULT_CONFIG["server"]["rcon_port"],
             "RCONEnabled": True,
-            "MultiHome": DEFAULT_CONFIG["server"]["ip_address"],
+        },
+        "SessionSettings": {
+            "SessionName": DEFAULT_CONFIG["server"]["name"],
+            "MULTIHOME": DEFAULT_CONFIG["server"]["ip_address"],
+            "Port": DEFAULT_CONFIG["server"]["port"],
+            "QueryPort": DEFAULT_CONFIG["server"]["query_port"],
         },
         "/Script/Engine.GameSession": {
             "MaxPlayers": DEFAULT_CONFIG["server"]["max_players"]
         },
+        "MultiHome": {"MultiHome": True},
     }
     for section, settings in game_user_settings_overrides.items():
         _update_setting("GameUserSettings", section, settings)
