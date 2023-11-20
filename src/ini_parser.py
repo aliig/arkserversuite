@@ -106,11 +106,13 @@ class CustomConfigParser(RawConfigParser):
         option_found = False
         for i, (optname, _) in enumerate(self._sections[section]):
             if optname == option:
+                logger.debug(f"Updated {section} {option} = {value}")
                 self._sections[section][i] = (option, value)
                 option_found = True
                 break
 
         if not option_found:
+            logger.debug(f"Added {section} {option} = {value}")
             self._sections[section].append((option, value))
 
     def write(self, fp):
