@@ -102,6 +102,7 @@ def generate_batch_file() -> str:
     ]
 
     question_mark_options = "?".join(filter(None, question_mark_options_list))
+    logger.debug(f"question_mark_options: {question_mark_options}")
 
     hyphen_options = " ".join(
         [f"-{opt}" for opt in DEFAULT_CONFIG["launch_options"].get("hyphen", []) if opt]
