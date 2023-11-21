@@ -119,7 +119,7 @@ class PlayerDied(LogEvent):
 class DinoTamed(LogEvent):
     EventInfo = namedtuple("EventInfo", "player_name tribe_name dinosaur level")
     dino_tamed_pattern = re.compile(
-        r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>[\w\s]*?) Tamed a (?P<dinosaur>.+?) - Lvl (?P<level>\d+)"
+        r"(?:(?P<player_name>\w+) of )?Tribe (?P<tribe_name>[\w\s]*?) Tamed a(?:n)? (?P<dinosaur>.+?) - Lvl (?P<level>\d+)"
     )
 
     @classmethod
@@ -236,3 +236,15 @@ class LogMonitor:
 
         log_events = [LogEventFactory.create(line) for line in new_entries]
         return log_events
+
+
+if __name__ == "__main__":
+    test_strings = [
+        "[2023.11.21-21.07.55:731][258]2023.11.21_21.07.55: Tribe Brohalla Tamed an Anglerfish - Lvl 224 (Anglerfish)!"
+    ]
+
+    for test_string in test_strings:
+        event = LogEventFactory.create(test_string)
+        print(f"Test string: {test_string}")
+        print(f"Identified as: {event}")
+        print("---------------------------------")
