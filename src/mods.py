@@ -119,9 +119,9 @@ def get_all_mods() -> list[Mod]:
     return all_mods
 
 
-def mods_needing_update(all_mods: list[Mod]) -> list[Mod]:
+def mods_needing_update() -> list[Mod]:
     mods_update_list = []
-    for mod in all_mods:
+    for mod in get_all_mods():
         if mod.installed_dt and mod.latest_dt:
             if mod.installed_dt < mod.latest_dt:
                 mods_update_list.append(mod)
@@ -130,6 +130,4 @@ def mods_needing_update(all_mods: list[Mod]) -> list[Mod]:
 
 
 if __name__ == "__main__":
-    all_mods = get_all_mods()
-    print(f"all_mods: {all_mods}")
-    print(mods_needing_update(all_mods))
+    print(mods_needing_update())
