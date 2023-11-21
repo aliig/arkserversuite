@@ -16,6 +16,7 @@ STEAMCMD_PATH = os.path.join(STEAMCMD_DIR, "steamcmd.exe")
 
 
 def _run_steamcmd(args: str) -> None:
+    logger.debug(f"Run steamcmd.exe with {STEAMCMD_PATH} {args}")
     run_shell_cmd(f"{STEAMCMD_PATH} {args}")
 
 

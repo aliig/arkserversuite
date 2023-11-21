@@ -74,7 +74,11 @@ tasks:
   # Task for checking stale server status
   stale:
     interval: 0.5 # Frequency of stale server checks in hours
-    threshold: 5 # Hours a server must be stale before it is restarted
+    threshold: 5 # Consecutive hours a server must be stale before it is restarted
+  mod_update:
+    description: "Mod update"
+    interval: 3 # Frequency of mod update checks in hours
+    warnings: [10, 5, 1] # Warnings before restart for mod update at these minute intervals
 
 
 # Configuration overrides for game settings

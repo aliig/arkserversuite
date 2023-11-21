@@ -14,7 +14,8 @@ from shell_operations import (
 )
 from steamcmd import update_server
 from tasks import (
-    CheckForUpdatesAndRestart,
+    CheckForArkUpdatesAndRestart,
+    CheckForModUpdatesAndRestart,
     DestroyWildDinos,
     HandleEmptyServerRestart,
     PerformRoutineRestart,
@@ -47,7 +48,8 @@ class ArkServer:
         tasks_init = {
             "announcement": SendAnnouncement,
             "destroy_wild_dinos": DestroyWildDinos,
-            "update": CheckForUpdatesAndRestart,
+            "update": CheckForArkUpdatesAndRestart,
+            "mod_update": CheckForModUpdatesAndRestart,
             "restart": PerformRoutineRestart,
             "stale": HandleEmptyServerRestart,
         }

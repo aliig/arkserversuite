@@ -10,3 +10,5 @@ dependencies:
     - pytest-env
     - pytest-pythonpath
     - pytest-mock
+    - python-dotenv
+    - colorlog

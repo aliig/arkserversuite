@@ -7,6 +7,7 @@ from config import DEFAULT_CONFIG
 from rcon import destroy_wild_dinos, get_active_players, send_message
 from time_tracker import TimeTracker
 from update import does_server_need_update
+from mods import mods_needing_update, Mod
 
 if TYPE_CHECKING:
     from main import ArkServer
@@ -47,7 +48,7 @@ class Task:
             ):
                 self.warned_times.add(warning_minute)
                 send_message(
-                    f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display_next_time()}."
+                    f"Warning: {self.description} will occur in {warning_minute} {'minute' if warning_minute == 1 else 'minutes'} at approximately {self.time.display_next_time()}."
                 )
 
     def _warn_then_wait(self):
@@ -125,7 +126,7 @@ class HandleEmptyServerRestart(Task):
         return False
 
 
-class CheckForUpdatesAndRestart(Task):
+class CheckForArkUpdatesAndRestart(Task):
     def __init__(self, server: "ArkServer", task_name: str):
         super().__init__(server, task_name)
 
@@ -133,6 +134,30 @@ class CheckForUpdatesAndRestart(Task):
         if does_server_need_update():
             self._warn_then_wait()
             self.server.restart("server update")
+            return True
+        return False
+
+    def execute(self) -> bool:
+        """Execute the task if it's time."""
+        self.time.current_time = datetime.now()
+        if self.time.is_time_to_execute():
+            res = self._run_task()
+            self._post_run()
+            return res
+        return False
+
+
+class CheckForModUpdatesAndRestart(Task):
+    def __init__(self, server: "ArkServer", task_name: str):
+        super().__init__(server, task_name)
+
+    def _run_task(self) -> bool:
+        mods: list[Mod] = mods_needing_update()
+        if len(mods) > 0:
+            self._warn_then_wait()
+            # make a string of all the mod names needing update
+            mod_names = ", ".join([mod.name for mod in mods])
+            self.server.restart(f"mod update ({mod_names})")
             return True
         return False
 
