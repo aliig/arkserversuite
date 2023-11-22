@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
+import os
 
 from config import DEFAULT_CONFIG
 from logger import get_logger
@@ -103,10 +104,26 @@ class TimeTracker:
             )
         return expected_execution_dt
 
+    def _get_prev_state(self) -> datetime | None:
+        outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
+        file_path = os.path.join(outdir, "state", f"{self.task_name}.txt")
+        if os.path.exists(file_path):
+            logger.debug(f"Opening {self.task_name} state file: {file_path}")
+            # read the previous time from the file
+            with open(file_path, "r") as f:
+                try:
+                    return datetime.fromisoformat(f.read())
+                except ValueError:
+                    logger.error(f"Invalid datetime in {file_path}")
+        return None
+
     def set_next_time(self):
         """Compute the next expected execution time for the task."""
+        prev_state = self._get_prev_state()
+        ref_time = self.current_time if prev_state is None else prev_state
+
         self.next_time = self._adjust_for_blackout(
-            self.current_time + timedelta(hours=self.interval)
+            ref_time + timedelta(hours=self.interval)
         )
         logger.info(f"Next {self.task_name} execution: {self.display_next_time()}")
 
