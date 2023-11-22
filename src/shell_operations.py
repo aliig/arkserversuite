@@ -28,15 +28,10 @@ def run_shell_cmd(
 
     # Print stdout and stderr to the console
     if not suppress_output:
-        while True:
-            output = process.stdout.readline()
-            if output == "" and process.poll() is not None:
-                break
-            if output:
-                print(output.strip())
-            err = process.stderr.readline()
-            if err:
-                print(err.strip(), file=sys.stderr)
+        if process.stdout:
+            print(process.stdout)
+        if process.stderr:
+            print(process.stderr, file=sys.stderr)
 
     return process
 
