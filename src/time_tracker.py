@@ -18,9 +18,11 @@ class TimeTracker:
         self.interval = task.task_config.get("interval", 4)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
 
-        outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
+        outdir = os.path.join(
+            DEFAULT_CONFIG["advanced"].get("output_directory", "output"), "state"
+        )
         os.makedirs(outdir, exist_ok=True)
-        self.state_file_path = os.path.join(outdir, "state", f"{self.task_name}.txt")
+        self.state_file_path = os.path.join(outdir, f"{self.task_name}.txt")
 
         self.reset()
 
