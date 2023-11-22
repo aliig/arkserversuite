@@ -93,7 +93,7 @@ class TimeTracker:
     def _adjust_for_blackout(self, expected_execution_dt: datetime) -> datetime:
         """Adjust the expected execution time to account for the blackout period."""
         logger.debug(
-            f"Original {self.task_name} execution time: {expected_execution_dt}"
+            f"Unadjusted {self.task_name} execution time: {expected_execution_dt}"
         )
         is_during_blackout = self._is_blackout_time(expected_execution_dt)
         logger.debug(
