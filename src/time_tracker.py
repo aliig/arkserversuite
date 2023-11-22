@@ -17,11 +17,12 @@ class TimeTracker:
         self.task_name = task.task_name
         self.interval = task.task_config.get("interval", 4)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
-        self.reset()
 
         outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
         os.makedirs(outdir, exist_ok=True)
         self.state_file_path = os.path.join(outdir, "state", f"{self.task_name}.txt")
+
+        self.reset()
 
     @staticmethod
     def _parse_time(time_str):
