@@ -19,6 +19,10 @@ class TimeTracker:
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
         self.reset()
 
+        outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
+        os.makedirs(outdir, exist_ok=True)
+        self.state_file_path = os.path.join(outdir, "state", f"{self.task_name}.txt")
+
     @staticmethod
     def _parse_time(time_str):
         try:
@@ -105,17 +109,23 @@ class TimeTracker:
         return expected_execution_dt
 
     def _get_prev_state(self) -> datetime | None:
-        outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
-        file_path = os.path.join(outdir, "state", f"{self.task_name}.txt")
-        if os.path.exists(file_path):
-            logger.debug(f"Opening {self.task_name} state file: {file_path}")
+        if os.path.exists(self.state_file_path):
+            # logger.debug(f"Opening {self.task_name} state file: {self.state_file_path}")
             # read the previous time from the file
-            with open(file_path, "r") as f:
+            with open(self.state_file_path, "r") as f:
                 try:
-                    return datetime.fromisoformat(f.read())
+                    prev_time = datetime.fromisoformat(f.read())
+                    logger.debug(f"Previous {self.task_name} execution: {prev_time}")
+                    return prev_time
                 except ValueError:
-                    logger.error(f"Invalid datetime in {file_path}")
+                    logger.error(f"Invalid datetime in {self.state_file_path}")
         return None
+
+    def save_state(self) -> None:
+        logger.debug(f"Saving {self.task_name} state file: {self.state_file_path}")
+        # write the current time to the file
+        with open(self.state_file_path, "w") as f:
+            f.write(str(self.current_time))
 
     def set_next_time(self):
         """Compute the next expected execution time for the task."""

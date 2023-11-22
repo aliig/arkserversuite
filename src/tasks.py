@@ -66,14 +66,6 @@ class Task:
         """Reset the warned times list after task execution."""
         self.warned_times = set()
 
-    def _save_state(self) -> None:
-        outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
-        os.makedirs(outdir, exist_ok=True)
-        file_path = os.path.join(outdir, "state", f"{self.task_name}.txt")
-        # write the current time to the file
-        with open(file_path, "w") as f:
-            f.write(str(self.time.current_time))
-
     def _pre_run(self) -> None:
         self.time.current_time = datetime.now()
         self._warn_before_task()
@@ -81,7 +73,7 @@ class Task:
     def _post_run(self) -> None:
         """Cleanup after task execution."""
         self._reset_sent_warnings()
-        self._save_state()
+        self.time.save_state()
         self.time.set_next_time()
 
     def _run_task(self):
