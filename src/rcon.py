@@ -102,6 +102,9 @@ def destroy_wild_dinos() -> bool:
 
 def get_active_players() -> int:
     response = _rcon_cmd("ListPlayers")
+    if not response:
+        logger.error(f"Error getting active players")
+        return None
 
     # Check for the "No Players Connected" response
     if "No Players Connected" in response:
