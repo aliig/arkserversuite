@@ -140,7 +140,9 @@ def delete_mods_folder() -> None:
     )
     try:
         os.remove(mods_folder)
+        logger.debug(f"Deleted mods folder: {mods_folder}")
         os.remove(mods_user_data_folder)
+        logger.debug(f"Deleted mods user data folder: {mods_user_data_folder}")
     except FileNotFoundError:
         logger.warning("Mods folder not found, skipping deletion")
     except Exception as e:
