@@ -24,6 +24,7 @@ from tasks import (
 )
 from update import does_server_need_update, is_server_installed
 from utils import wait_until
+from mods import delete_mods_folder
 
 logger = get_logger(__name__)
 
@@ -65,6 +66,8 @@ class ArkServer:
         if not is_server_running():
             if does_server_need_update():
                 update_server()
+
+            delete_mods_folder()
 
             batch_file_path = generate_batch_file()
             cmd = ["cmd", "/c", batch_file_path]

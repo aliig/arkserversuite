@@ -129,5 +129,23 @@ def mods_needing_update() -> list[Mod]:
     return mods_update_list
 
 
+def delete_mods_folder() -> None:
+    mods_folder = os.path.join(
+        DEFAULT_CONFIG["server"]["install_path"],
+        "ShooterGame/Binaries/Win64/ShooterGame/Mods",
+    )
+    mods_user_data_folder = os.path.join(
+        DEFAULT_CONFIG["server"]["install_path"],
+        "ShooterGame/Binaries/Win64/ShooterGame/ModsUserData",
+    )
+    try:
+        os.remove(mods_folder)
+        os.remove(mods_user_data_folder)
+    except FileNotFoundError:
+        logger.warning("Mods folder not found, skipping deletion")
+    except Exception as e:
+        logger.error(e)
+
+
 if __name__ == "__main__":
     print(mods_needing_update())

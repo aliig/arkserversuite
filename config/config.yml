@@ -94,3 +94,7 @@ advanced:
   server_timeout: 60  # seconds to wait for server to start or stop before exiting
   output_directory: "output"
   log_check_rate: 2  # seconds to wait between log file checks
+  download_url:
+    steamcmd: "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
+    vc_redist: "https://aka.ms/vs/17/release/vc_redist.x64.exe"
+    directx: "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe"
