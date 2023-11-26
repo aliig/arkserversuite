@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import requests
 from dotenv import load_dotenv
@@ -138,15 +139,16 @@ def delete_mods_folder() -> None:
         DEFAULT_CONFIG["server"]["install_path"],
         "ShooterGame/Binaries/Win64/ShooterGame/ModsUserData",
     )
+
     try:
-        os.remove(mods_folder)
+        shutil.rmtree(mods_folder)
         logger.debug(f"Deleted mods folder: {mods_folder}")
-        os.remove(mods_user_data_folder)
+        shutil.rmtree(mods_user_data_folder)
         logger.debug(f"Deleted mods user data folder: {mods_user_data_folder}")
     except FileNotFoundError:
         logger.warning("Mods folder not found, skipping deletion")
     except Exception as e:
-        logger.error(e)
+        logger.error(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":
