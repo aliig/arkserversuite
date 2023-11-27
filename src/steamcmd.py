@@ -20,8 +20,12 @@ def _run_steamcmd(args: str) -> None:
     run_shell_cmd(f"{STEAMCMD_PATH} {args}")
 
 
+def is_steam_cmd_installed():
+    return os.path.isfile(STEAMCMD_PATH)
+
+
 def _check_and_download_steamcmd():
-    if not os.path.isfile(STEAMCMD_PATH):
+    if not is_steam_cmd_installed():
         logger.info("steamcmd.exe not found, downloading...")
         zip_path = os.path.join(
             DEFAULT_CONFIG["advanced"].get("output_directory", "output"), "steamcmd.zip"

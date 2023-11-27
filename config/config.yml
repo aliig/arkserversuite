@@ -98,3 +98,5 @@ advanced:
     steamcmd: "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
     vc_redist: "https://aka.ms/vs/17/release/vc_redist.x64.exe"
     directx: "https://download.microsoft.com/download/1/7/1/1718CCC4-6315-4D8E-9543-8E28A4E18C4C/dxwebsetup.exe"
+    AmazonRootCA1: "https://www.amazontrust.com/repository/AmazonRootCA1.cer"
+    r2m02: "http://crt.r2m02.amazontrust.com/r2m02.cer"
