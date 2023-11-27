@@ -122,4 +122,4 @@ class TestLoader(ConfigLoader):
         return self.load_yaml_with_backslash_handling(self.custom_config_path) if os.path.exists(self.custom_config_path) else {}
 
 
-# DEFAULT_CONFIG = ConfigLoader().merged_config
+DEFAULT_CONFIG = ConfigLoader().merged_config
