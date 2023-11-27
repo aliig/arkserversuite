@@ -1,83 +1,19 @@
-import sys
-import ctypes
 import os
+import platform
 import requests
-import subprocess
-import zipfile
+import ctypes
 import winreg
+import shutil
 
 from config import DEFAULT_CONFIG
-from steamcmd import STEAMCMD_DIR, is_steam_cmd_installed
+from steamcmd import check_and_download_steamcmd
 from shell_operations import run_shell_cmd
+
 
 from logger import get_logger
 
 logger = get_logger(__name__)
 
-# check for directx
-
-
-# check for ark server
-
-
-def install_certificates():
-    amazon_root_ca_url = "https://www.amazontrust.com/repository/AmazonRootCA1.cer"
-    certificate_url = "http://crt.r2m02.amazontrust.com/r2m02.cer"
-    temp_dir = os.getenv("TEMP", "/tmp")
-    amazon_root_ca_path = os.path.join(temp_dir, "AmazonRootCA1.cer")
-    certificate_path = os.path.join(temp_dir, "r2m02.cer")
-
-    try:
-        # Downloading certificates
-        with open(amazon_root_ca_path, "wb") as f:
-            f.write(requests.get(amazon_root_ca_url).content)
-
-        with open(certificate_path, "wb") as f:
-            f.write(requests.get(certificate_url).content)
-
-        # Here, you would add the logic to install the certificates.
-        # This is platform-dependent and may require administrative privileges.
-
-        if sys.platform == "win32":
-            # Windows: Use certutil command to install the certificate
-            subprocess.run(["certutil", "-addstore", "root", amazon_root_ca_path])
-            subprocess.run(["certutil", "-addstore", "root", certificate_path])
-        elif sys.platform == "linux":
-            # Linux: This varies a lot between distributions.
-            # You might need to copy the certificate to /usr/local/share/ca-certificates/
-            # and then update the certificates with 'update-ca-certificates' command.
-            pass
-        elif sys.platform == "darwin":
-            # macOS: Use security add-certificates command.
-            subprocess.run(
-                [
-                    "security",
-                    "add-certificates",
-                    "-k",
-                    "/Library/Keychains/System.keychain",
-                    amazon_root_ca_path,
-                ]
-            )
-            subprocess.run(
-                [
-                    "security",
-                    "add-certificates",
-                    "-k",
-                    "/Library/Keychains/System.keychain",
-                    certificate_path,
-                ]
-            )
-        else:
-            logger.error("Unsupported OS")
-
-    except Exception as e:
-        logger.error(f"Error occurred while installing the certificate: {e}")
-
-
-install_certificates()
-
-
-steamcmd_url = DEFAULT_CONFIG["download_url"]["steamcmd"]
 
 vc_redist_url = DEFAULT_CONFIG["download_url"]["vc_redist"]
 directx_url = DEFAULT_CONFIG["download_url"]["directx"]
@@ -87,45 +23,43 @@ certificate_urls = {
 }
 
 
-def install_server():
-    create_directories()
-    install_certificates()
-    install_dependencies()
-    download_and_extract_steamcmd()
-    install_ark_server()
+def install_prerequisites():
+    if platform.system() == "Windows":
+        install_certificates_windows()
+        install_dependencies_windows()
+    elif platform.system() == "Linux":
+        install_certificates_linux()
+        install_dependencies_linux()
+    else:
+        logger.error("Unsupported operating system.")
+    check_and_download_steamcmd()
 
-
-def create_directories():
-    for directory in [config_data["SteamCMD"], config_data["ARKServerPath"]]:
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-
-
-def install_certificates():
+def install_certificates_windows():
     crypt32 = ctypes.WinDLL("Crypt32.dll")
     for cert_name, cert_url in certificate_urls.items():
         cert_content = download_file(cert_url)
         add_certificate_to_store(crypt32, cert_content)
-    logger.info(f"Certificate {cert_name} installed successfully.")
+        logger.info(f"Certificate {cert_name} installed successfully.")
 
+def install_certificates_linux():
+    for cert_name, cert_url in certificate_urls.items():
+        cert_path = download_file(cert_url)
+        if cert_path:
+            try:
+                # This is a common path; it might differ between distributions
+                shutil.copy(cert_path, '/usr/local/share/ca-certificates/')
+                run_shell_cmd('sudo update-ca-certificates', suppress_output=False)
+                logger.info(f"Certificate {cert_name} installed successfully on Linux.")
+            except Exception as e:
+                logger.error(f"Failed to install certificate {cert_name} on Linux: {e}")
 
-def add_certificate_to_store(crypt32, cert_content):
-    crypt32.CertAddEncodedCertificateToStore(
-        ctypes.c_void_p(crypt32.CertOpenSystemStoreW(0, "CA")),
-        1,  # X509_ASN_ENCODING
-        ctypes.c_char_p(cert_content),
-        ctypes.c_int(len(cert_content)),
-        ctypes.c_int(0),  # dwAddDisposition
-        ctypes.byref(ctypes.c_int(0)),  # pCertContext
-    )
-
-
-def install_dependencies():
+def install_dependencies_windows():
     if not is_dependency_installed(
         winreg.HKEY_LOCAL_MACHINE,
         r"Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
     ):
         install_component(vc_redist_url, "vc_redist.x64.exe", "/passive /norestart")
+        logger.info("Visual C++ Redistributable installed successfully.")
     else:
         logger.debug("Visual C++ Redistributable already installed.")
 
@@ -133,8 +67,32 @@ def install_dependencies():
         winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\DirectX"
     ):
         install_component(directx_url, "dxwebsetup.exe", "/silent")
+        logger.info("DirectX Runtime installed successfully.")
     else:
         logger.debug("DirectX Runtime already installed.")
+
+def install_dependencies_linux():
+    # Linux-specific dependency installation logic
+    pass
+
+
+def add_certificate_to_store(crypt32, cert_content):
+    store_handle = crypt32.CertOpenSystemStoreW(0, "CA")
+    if not store_handle:
+        logger.error("Failed to open certificate store")
+        return
+
+    try:
+        crypt32.CertAddEncodedCertificateToStore(
+            ctypes.c_void_p(store_handle),
+            1,  # X509_ASN_ENCODING
+            ctypes.c_char_p(cert_content),
+            ctypes.c_int(len(cert_content)),
+            ctypes.c_int(0),  # dwAddDisposition
+            ctypes.byref(ctypes.c_int(0)),  # pCertContext
+        )
+    finally:
+        crypt32.CertCloseStore(store_handle, 0)
 
 
 def is_dependency_installed(key, sub_key):
@@ -148,26 +106,30 @@ def is_dependency_installed(key, sub_key):
 def install_component(url, output_file, arguments):
     component_path = os.path.join(os.environ["TEMP"], output_file)
     download_file(url, component_path)
-    run_shell_cmd(f"{component_path} /install {arguments}")
+    try:
+        run_shell_cmd(f"{component_path} /install {arguments}")
+    finally:
+        try:
+            os.remove(component_path)
+            logger.debug(f"Temporary file {component_path} deleted.")
+        except OSError as e:
+            logger.warning(f"Could not delete temporary file {component_path}: {e}")
 
 
 def download_file(url, target_path=None):
+    try:
+        response = requests.get(url, stream=True)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        logger.error(f"Error downloading file: {e}")
+        return None
+
     if not target_path:
         file_name = url.split("/")[-1]
         target_path = os.path.join(os.environ["TEMP"], file_name)
 
-    response = requests.get(url, stream=True)
     with open(target_path, "wb") as file:
         for chunk in response.iter_content(chunk_size=1024):
             if chunk:
                 file.write(chunk)
     return target_path
-
-
-def download_and_extract_steamcmd():
-    if not is_steam_cmd_installed():
-        logger.info("Downloading SteamCMD...")
-        steamcmd_zip_path = download_file(steamcmd_url)
-        with zipfile.ZipFile(steamcmd_zip_path, "r") as zip_ref:
-            zip_ref.extractall(STEAMCMD_DIR)
-        os.remove(steamcmd_zip_path)

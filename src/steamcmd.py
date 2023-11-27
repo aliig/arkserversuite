@@ -24,7 +24,7 @@ def is_steam_cmd_installed():
     return os.path.isfile(STEAMCMD_PATH)
 
 
-def _check_and_download_steamcmd():
+def check_and_download_steamcmd():
     if not is_steam_cmd_installed():
         logger.info("steamcmd.exe not found, downloading...")
         zip_path = os.path.join(
@@ -32,7 +32,7 @@ def _check_and_download_steamcmd():
         )
         try:
             urllib.request.urlretrieve(
-                "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip",
+                DEFAULT_CONFIG["download_url"]["steamcmd"],
                 zip_path,
             )
             logger.debug("Downloaded steamcmd.zip")
@@ -56,10 +56,10 @@ def _check_and_download_steamcmd():
 
 def update_server(msg: str = "Updating the Ark server...") -> None:
     logger.info(msg)
-    _check_and_download_steamcmd()
+    check_and_download_steamcmd()
     args = f"+force_install_dir {os.path.join(DEFAULT_CONFIG['server']['install_path'])} +login anonymous +app_update {DEFAULT_CONFIG['steam_app_id']} validate +quit"
     _run_steamcmd(args)
 
 
 if __name__ == "__main__":
-    _check_and_download_steamcmd()
+    check_and_download_steamcmd()
