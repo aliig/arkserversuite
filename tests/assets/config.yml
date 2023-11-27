@@ -1,0 +1,17 @@
+server:
+  name: "DefaultServer"
+  ip_address: "192.168.1.100"
+  port: 7777
+  rcon_port: 32330
+  max_players: 20
+  map: "TheIsland_WP"
+  timezone: "America/New_York"
+
+tasks:
+  restart:
+    enable: True
+    interval: 24
+    blackout_period:
+      start: "07:00"
+      end: "02:00"
+    warnings: [10, 5, 1]

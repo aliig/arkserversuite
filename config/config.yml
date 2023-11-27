@@ -48,6 +48,7 @@ discord:
 # Scheduled tasks for server management
 tasks:
   restart: # Task for server restart
+    enable: True
     description: "Routine server restart"
     interval: 24 # Frequency of restart in hours
     blackout_period: # Time range when restarts are not allowed (e.g. if start is 07:00 and end is 02:00, the event will only take place between 2 am and 7 am)
@@ -56,11 +57,13 @@ tasks:
     warnings: [10, 5, 1] # Warnings before restart at these minute intervals
   # Task for server updates
   update:
+    enable: True
     description: "Server update"
     interval: 1 # Frequency of update checks in hours
     warnings: [10, 5, 1] # Warnings before update at these minute intervals
   # Task for destroying wild dinos
   destroy_wild_dinos:
+    enable: True
     description: "Routine wild dino wipe"
     interval: 72 # Frequency of wild dino wipe in hours
     blackout_period: # Time range when wild dino wipe is not allowed (e.g. if start is 07:00 and end is 02:00, the event will only take place between 2 am and 7 am)
@@ -69,19 +72,22 @@ tasks:
     warnings: [60, 30, 10, 1] # Warnings before wild dino wipe at these minute intervals
   # Task for server announcements
   announcement:
+    enable: True
     interval: 1 # Frequency of announcements in hours
     description: "Thanks for playing, please consider donating to keep the server running!"
   # Task for checking stale server status
   stale:
+    enable: True
     interval: 0.5 # Frequency of stale server checks in hours
     threshold: 5 # Consecutive hours a server must be stale before it is restarted
   mod_update:
+    enable: True
     description: "Mod update"
     interval: 3 # Frequency of mod update checks in hours
     warnings: [10, 5, 1] # Warnings before restart for mod update at these minute intervals
 
 
-# Configuration overrides for game settings
+# Configuration ini file overrides for game settings
 # config_overrides:
 #   Game:
 #     /Script/ShooterGame.ShooterGameMode:

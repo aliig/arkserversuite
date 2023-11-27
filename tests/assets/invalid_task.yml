@@ -1,0 +1,11 @@
+# config_with_invalid_task.yml
+server:
+  name: "ServerWithInvalidTask"
+  ip_address: "192.168.1.102"
+  port: 7777
+
+tasks:
+  restart:
+    enable: True
+    interval: 1
+    warnings: [10, 60, 120] # Invalid: warning times exceed the interval

@@ -1,0 +1,3 @@
+server:
+  name: "IncompleteServer"
+  # Missing 'ip_address' and other required fields

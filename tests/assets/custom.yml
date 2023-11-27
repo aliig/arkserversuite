@@ -1,0 +1,7 @@
+server:
+  ip_address: "192.168.1.101"
+  max_players: 30
+
+tasks:
+  restart:
+    interval: 12

@@ -57,8 +57,11 @@ class ArkServer:
 
         tasks = {}
         for task_name, task_class in tasks_init.items():
-            logger.debug(f"Initializing task: {task_name}")
-            tasks[task_name] = task_class(self, task_name)
+            if DEFAULT_CONFIG["tasks"][task_name].get('enable', False):
+                logger.debug(f"Initializing task: {task_name}")
+                tasks[task_name] = task_class(self, task_name)
+            else:
+                logger.debug(f"Skipping task: {task_name} as 'enable' is set to False")
 
         return tasks
 
