@@ -5,7 +5,7 @@ from configparser import RawConfigParser
 from datetime import datetime
 from typing import Any
 
-from config import CONFIG
+from config import CONFIG, OUTDIR
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -215,7 +215,7 @@ def _update_from_server_settings():
 
 
 def _write_admin_list() -> str:
-    file_path = "adminlist.txt"
+    file_path = os.path.join(OUTDIR, "adminlist.txt")
     if "admin_list" in CONFIG["server"] and (
         admin_list := CONFIG["server"]["admin_list"]
     ):
