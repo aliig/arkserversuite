@@ -12,16 +12,26 @@ client = SteamClient()
 
 
 def _get_latest_build_id(steam_app_id: int = CONFIG["steam_app_id"]) -> str:
-    if client.anonymous_login():
-        app_info = client.get_product_info(apps=[steam_app_id])
-        if app_info:
-            # Extract the public branch buildid
-            public_branch_info = app_info["apps"][steam_app_id]["depots"]["branches"][
-                "public"
-            ]
-            client.disconnect()
-            return public_branch_info["buildid"]
-    return None
+    max_attempts = 2  # Number of attempts before giving up
+
+    for attempt in range(max_attempts):
+        try:
+            if client.anonymous_login():
+                app_info = client.get_product_info(apps=[steam_app_id])
+                if app_info:
+                    # Extract the public branch buildid
+                    public_branch_info = app_info["apps"][steam_app_id]["depots"][
+                        "branches"
+                    ]["public"]
+                    client.disconnect()
+                    return public_branch_info["buildid"]
+        except Exception as e:
+            logger.error(f"Attempt {attempt + 1} failed with error: {e}")
+            if attempt < max_attempts - 1:
+                logger.info("Retrying...")
+            else:
+                logger.error("All attempts failed. Returning None.")
+                return None
 
 
 def _get_installed_build_id(
