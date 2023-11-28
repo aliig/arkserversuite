@@ -14,6 +14,8 @@ server:
   map: "TheIsland_WP" # The map that the server will load
   admin_password: "password2" # Password for admin privileges
   timezone: "America/New_York" # The timezone your server's operating system is set to
+  admin_list: # List of OSS IDs for server admins, check with `whoami` or `cheat listplayers`
+    # - "12345678901234567"
 
 # Launch options for the server
 launch_options:

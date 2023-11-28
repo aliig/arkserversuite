@@ -199,6 +199,7 @@ def _update_from_server_settings():
             "ServerAdminPassword": CONFIG["server"]["admin_password"],
             "RCONPort": CONFIG["server"]["rcon_port"],
             "RCONEnabled": True,
+            "AdminListURL": _write_admin_list(),
         },
         "SessionSettings": {
             "SessionName": CONFIG["server"]["name"],
@@ -211,6 +212,20 @@ def _update_from_server_settings():
     }
     for section, settings in game_user_settings_overrides.items():
         _update_setting("GameUserSettings", section, settings)
+
+
+def _write_admin_list() -> str:
+    file_path = "adminlist.txt"
+    if "admin_list" in CONFIG["server"] and (
+        admin_list := CONFIG["server"]["admin_list"]
+    ):
+        with open(file_path, "w") as file:
+            for admin in admin_list:
+                file.write(f"{admin}\n")
+        logger.debug(f"Created {file_path} with {len(admin_list)} admins")
+
+        return os.path.abspath(file_path)
+    return ""
 
 
 def update_ark_configs():
