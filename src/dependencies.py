@@ -86,14 +86,23 @@ def add_certificate_to_store(crypt32, cert_content):
         return
 
     try:
-        crypt32.CertAddEncodedCertificateToStore(
+        # Ensure the content is in the correct format (bytes)
+        if isinstance(cert_content, str):
+            cert_content = cert_content.encode("utf-8")
+
+        # Using POINTER and create_string_buffer for proper memory handling
+        p_cert_content = ctypes.create_string_buffer(cert_content)
+        result = crypt32.CertAddEncodedCertificateToStore(
             ctypes.c_void_p(store_handle),
             1,  # X509_ASN_ENCODING
-            ctypes.c_char_p(cert_content),
+            ctypes.byref(p_cert_content),
             ctypes.c_int(len(cert_content)),
-            ctypes.c_int(0),  # dwAddDisposition
-            ctypes.byref(ctypes.c_int(0)),  # pCertContext
+            0,  # CERT_STORE_ADD_REPLACE_EXISTING
+            None,  # Not interested in the added cert's context
         )
+
+        if result == 0:  # 0 indicates failure
+            logger.error("Failed to add certificate to store")
     finally:
         crypt32.CertCloseStore(store_handle, 0)
 
