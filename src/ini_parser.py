@@ -199,7 +199,6 @@ def _update_from_server_settings():
             "ServerAdminPassword": CONFIG["server"]["admin_password"],
             "RCONPort": CONFIG["server"]["rcon_port"],
             "RCONEnabled": True,
-            "AdminListURL": _write_admin_list(),
         },
         "SessionSettings": {
             "SessionName": CONFIG["server"]["name"],
@@ -210,6 +209,11 @@ def _update_from_server_settings():
         "/Script/Engine.GameSession": {"MaxPlayers": CONFIG["server"]["max_players"]},
         "MultiHome": {"MULTIHOME": True},
     }
+
+    # Only add AdminListURL if it's not empty
+    if admin_list_url := _write_admin_list():
+        game_user_settings_overrides["ServerSettings"]["AdminListURL"] = admin_list_url
+
     for section, settings in game_user_settings_overrides.items():
         _update_setting("GameUserSettings", section, settings)
 
