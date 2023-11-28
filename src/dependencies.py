@@ -16,8 +16,10 @@ logger = get_logger(__name__)
 
 vc_redist_url = CONFIG["advanced"]["download_url"]["vc_redist"]
 directx_url = CONFIG["advanced"]["download_url"]["directx"]
-AmazonRootCA1_url = CONFIG["advanced"]["download_url"]["AmazonRootCA1"]
-r2m02_url = CONFIG["advanced"]["download_url"]["r2m02"]
+certificate_urls = {
+    "AmazonRootCA1": CONFIG["advanced"]["download_url"]["AmazonRootCA1"],
+    "r2m02": CONFIG["advanced"]["download_url"]["r2m02"],
+}
 
 
 def install_prerequisites():
@@ -33,39 +35,46 @@ def install_prerequisites():
 
 
 def install_certificates_windows():
-    crypt32 = ctypes.WinDLL("Crypt32.dll")
-    store_handle = crypt32.CertOpenSystemStoreW(0, "CA")
-    if not store_handle:
-        logger.error("Failed to open certificate store")
-        return
+    script_path = "install_certificates_windows.ps1"
 
-    try:
-        for cert_url in [AmazonRootCA1_url, r2m02_url]:
-            cert_content = download_file(cert_url, return_content=True)
-            if cert_content:
-                # Add certificate to store
-                result = crypt32.CertAddEncodedCertificateToStore(
-                    ctypes.c_void_p(store_handle),
-                    1,  # X509_ASN_ENCODING
-                    ctypes.c_char_p(cert_content),
-                    ctypes.c_int(len(cert_content)),
-                    0,  # CERT_STORE_ADD_REPLACE_EXISTING
-                    None,  # Not interested in the added cert's context
-                )
-                if result == 0:  # 0 indicates failure
-                    error_code = ctypes.windll.kernel32.GetLastError()
-                    logger.error(f"Failed to add certificate, error code: {error_code}")
+    for cert_name, cert_url in certificate_urls.items():
+        cmd = f'powershell -ExecutionPolicy Bypass -File {script_path} -certUrl "{cert_url}" -certName "{cert_name}"'
+
+        try:
+            # Using run_shell_cmd to execute the PowerShell script for each certificate
+            process = run_shell_cmd(cmd, suppress_output=False)
+            if process.returncode == 0:
+                if "Installed" in process.stdout:
+                    logger.info(
+                        f"Certificate {cert_name} installed successfully using PowerShell."
+                    )
+                elif "Exists" in process.stdout:
+                    logger.debug(f"Certificate {cert_name} already exists.")
                 else:
-                    logger.info(f"Certificate from {cert_url} installed successfully.")
-    except Exception as e:
-        logger.error(f"Error installing certificates: {e}")
-    finally:
-        crypt32.CertCloseStore(store_handle, 0)
+                    logger.error(
+                        f"Unknown response while installing certificate {cert_name} using PowerShell."
+                    )
+            else:
+                logger.error(
+                    f"Failed to install certificate {cert_name} using PowerShell."
+                )
+        except Exception as e:
+            logger.error(
+                f"Exception occurred while installing certificate {cert_name} using PowerShell: {e}"
+            )
 
 
 def install_certificates_linux():
-    # Linux-specific dependency installation logic
-    pass
+    for cert_name, cert_url in certificate_urls.items():
+        cert_path = download_file(cert_url)
+        if cert_path:
+            try:
+                # This is a common path; it might differ between distributions
+                shutil.copy(cert_path, "/usr/local/share/ca-certificates/")
+                run_shell_cmd("sudo update-ca-certificates", suppress_output=False)
+                logger.info(f"Certificate {cert_name} installed successfully on Linux.")
+            except Exception as e:
+                logger.error(f"Failed to install certificate {cert_name} on Linux: {e}")
 
 
 def install_dependencies_windows():
