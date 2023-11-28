@@ -14,9 +14,9 @@ from steamcmd import check_and_download_steamcmd
 logger = get_logger(__name__)
 
 
-vc_redist_url = CONFIG["advanced"]["download_url"]["vc_redist"]
-directx_url = CONFIG["advanced"]["download_url"]["directx"]
-certificate_urls = {
+VC_REDIST_URL = CONFIG["advanced"]["download_url"]["vc_redist"]
+DIRECTX_URL = CONFIG["advanced"]["download_url"]["directx"]
+CERTIFICATE_URLS = {
     "AmazonRootCA1": CONFIG["advanced"]["download_url"]["AmazonRootCA1"],
     "r2m02": CONFIG["advanced"]["download_url"]["r2m02"],
 }
@@ -34,19 +34,53 @@ def install_prerequisites():
     check_and_download_steamcmd()
 
 
-def install_certificates_windows():
-    # Get the directory of the current Python script
+def check_certificate_windows() -> bool:
     current_script_dir = os.path.dirname(os.path.realpath(__file__))
+    script_path = os.path.join(
+        current_script_dir, "utils", "check_certificate_windows.ps1"
+    )
+    logger.debug(f"PowerShell script path for checking certificates: {script_path}")
 
-    # Construct the path to the PowerShell script
-    script_path = os.path.join(current_script_dir, "install_certificates_windows.ps1")
-    logger.debug(f"PowerShell script path: {script_path}")
+    all_certificates_installed = True
 
-    for cert_name, cert_url in certificate_urls.items():
+    for cert_name, cert_url in CERTIFICATE_URLS.items():
+        cmd = f'powershell -ExecutionPolicy Bypass -File "{script_path}" -certUrl "{cert_url}"'
+
+        try:
+            process = run_shell_cmd(cmd, suppress_output=False)
+            if process.returncode == 0:
+                if "Exists" in process.stdout:
+                    logger.debug(f"Certificate {cert_name} already exists.")
+                elif "NotInstalled" in process.stdout:
+                    logger.debug(f"Certificate {cert_name} is not installed.")
+                    all_certificates_installed = False
+                else:
+                    logger.error(
+                        f"Unknown response while checking certificate {cert_name} using PowerShell."
+                    )
+            else:
+                logger.error(
+                    f"Failed to check certificate {cert_name} using PowerShell."
+                )
+        except Exception as e:
+            logger.error(
+                f"Exception occurred while checking certificate {cert_name} using PowerShell: {e}"
+            )
+
+    return all_certificates_installed
+
+
+def install_certificates_windows():
+    current_script_dir = os.path.dirname(os.path.realpath(__file__))
+    script_path = os.path.join(
+        current_script_dir, "utils", "install_certificates_windows.ps1"
+    )
+    logger.debug(f"PowerShell script path for installing certificates: {script_path}")
+
+    for cert_name, cert_url in CERTIFICATE_URLS.items():
         cmd = f'powershell -ExecutionPolicy Bypass -File "{script_path}" -certUrl "{cert_url}" -certName "{cert_name}"'
 
         try:
-            # Using run_shell_cmd to execute the PowerShell script for each certificate
             process = run_shell_cmd(cmd, suppress_output=False)
             if process.returncode == 0:
                 if "Installed" in process.stdout:
@@ -70,7 +104,7 @@ def install_certificates_windows():
 
 
 def install_certificates_linux():
-    for cert_name, cert_url in certificate_urls.items():
+    for cert_name, cert_url in CERTIFICATE_URLS.items():
         cert_path = download_file(cert_url)
         if cert_path:
             try:
@@ -87,7 +121,7 @@ def install_dependencies_windows():
         winreg.HKEY_LOCAL_MACHINE,
         r"Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
     ):
-        install_component(vc_redist_url, "vc_redist.x64.exe", "/passive /norestart")
+        install_component(VC_REDIST_URL, "vc_redist.x64.exe", "/passive /norestart")
         logger.info("Visual C++ Redistributable installed successfully.")
     else:
         logger.debug("Visual C++ Redistributable already installed.")
@@ -95,7 +129,7 @@ def install_dependencies_windows():
     if not is_dependency_installed(
         winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\DirectX"
     ):
-        install_component(directx_url, "dxwebsetup.exe", "/silent")
+        install_component(DIRECTX_URL, "dxwebsetup.exe", "/silent")
         logger.info("DirectX Runtime installed successfully.")
     else:
         logger.debug("DirectX Runtime already installed.")

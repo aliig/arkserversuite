@@ -2,7 +2,7 @@ import threading
 import time
 
 from config import CONFIG
-from dependencies import install_prerequisites
+from dependencies import check_certificate_windows, install_prerequisites
 from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
@@ -45,6 +45,9 @@ class ArkServer:
         self.server_timeout = CONFIG["advanced"].get("server_timeout", 300)
         self.sleep_time = CONFIG["advanced"].get("sleep_time", 60)
         self.log_check_rate = CONFIG["advanced"].get("log_check_rate", 5)
+
+    def need_admin_privileges(self) -> bool:
+        return check_certificate_windows()
 
     def initialize_tasks(self):
         tasks_init = {
@@ -202,19 +205,13 @@ if __name__ == "__main__":
                 return False
             return None
 
-    if is_admin():
-        server = ArkServer()
-        try:
-            server.run()
-        except KeyboardInterrupt:
-            server._exit()
-    else:
-        result = run_as_admin()
-        if result is True:
-            # Successfully relaunched as admin
-            pass
-        elif result is False:
-            print("Failed to gain administrator privileges")
-        else:
-            # Terminating non-admin instance of the script
+    server = ArkServer()
+    if server.need_admin_privileges() and not is_admin():
+        logger.info("Need to run program as administrator")
+        if not run_as_admin():
+            logger.error("Failed to gain administrator privileges")
             sys.exit(0)
+    try:
+        server.run()
+    except KeyboardInterrupt:
+        server._exit()
