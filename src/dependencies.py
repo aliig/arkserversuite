@@ -16,10 +16,8 @@ logger = get_logger(__name__)
 
 vc_redist_url = CONFIG["advanced"]["download_url"]["vc_redist"]
 directx_url = CONFIG["advanced"]["download_url"]["directx"]
-certificate_urls = {
-    "AmazonRootCA1": CONFIG["advanced"]["download_url"]["AmazonRootCA1"],
-    "r2m02": CONFIG["advanced"]["download_url"]["r2m02"],
-}
+AmazonRootCA1_url = CONFIG["advanced"]["download_url"]["AmazonRootCA1"]
+r2m02_url = CONFIG["advanced"]["download_url"]["r2m02"]
 
 
 def install_prerequisites():
@@ -36,23 +34,38 @@ def install_prerequisites():
 
 def install_certificates_windows():
     crypt32 = ctypes.WinDLL("Crypt32.dll")
-    for cert_name, cert_url in certificate_urls.items():
-        cert_content = download_file(cert_url, return_content=True)
-        add_certificate_to_store(crypt32, cert_content)
-        logger.info(f"Certificate {cert_name} installed successfully.")
+    store_handle = crypt32.CertOpenSystemStoreW(0, "CA")
+    if not store_handle:
+        logger.error("Failed to open certificate store")
+        return
+
+    try:
+        for cert_url in [AmazonRootCA1_url, r2m02_url]:
+            cert_content = download_file(cert_url, return_content=True)
+            if cert_content:
+                # Add certificate to store
+                result = crypt32.CertAddEncodedCertificateToStore(
+                    ctypes.c_void_p(store_handle),
+                    1,  # X509_ASN_ENCODING
+                    ctypes.c_char_p(cert_content),
+                    ctypes.c_int(len(cert_content)),
+                    0,  # CERT_STORE_ADD_REPLACE_EXISTING
+                    None,  # Not interested in the added cert's context
+                )
+                if result == 0:  # 0 indicates failure
+                    error_code = ctypes.windll.kernel32.GetLastError()
+                    logger.error(f"Failed to add certificate, error code: {error_code}")
+                else:
+                    logger.info(f"Certificate from {cert_url} installed successfully.")
+    except Exception as e:
+        logger.error(f"Error installing certificates: {e}")
+    finally:
+        crypt32.CertCloseStore(store_handle, 0)
 
 
 def install_certificates_linux():
-    for cert_name, cert_url in certificate_urls.items():
-        cert_path = download_file(cert_url)
-        if cert_path:
-            try:
-                # This is a common path; it might differ between distributions
-                shutil.copy(cert_path, "/usr/local/share/ca-certificates/")
-                run_shell_cmd("sudo update-ca-certificates", suppress_output=False)
-                logger.info(f"Certificate {cert_name} installed successfully on Linux.")
-            except Exception as e:
-                logger.error(f"Failed to install certificate {cert_name} on Linux: {e}")
+    # Linux-specific dependency installation logic
+    pass
 
 
 def install_dependencies_windows():
@@ -77,38 +90,6 @@ def install_dependencies_windows():
 def install_dependencies_linux():
     # Linux-specific dependency installation logic
     pass
-
-
-def add_certificate_to_store(crypt32, cert_content):
-    store_handle = crypt32.CertOpenSystemStoreW(0, "CA")
-    if not store_handle:
-        logger.error("Failed to open certificate store")
-        return
-
-    try:
-        # Ensure the content is in the correct format (bytes)
-        if isinstance(cert_content, str):
-            cert_content = cert_content.encode("utf-8")
-
-        # Using create_string_buffer for memory management
-        p_cert_content = ctypes.create_string_buffer(cert_content)
-
-        result = crypt32.CertAddEncodedCertificateToStore(
-            ctypes.c_void_p(store_handle),
-            1,  # X509_ASN_ENCODING
-            ctypes.byref(p_cert_content),  # Pointer to the certificate content
-            ctypes.c_int(len(cert_content)),
-            0,  # CERT_STORE_ADD_REPLACE_EXISTING
-            None,  # Not interested in the added cert's context
-        )
-
-        if result == 0:  # 0 indicates failure
-            error_code = ctypes.windll.kernel32.GetLastError()
-            logger.error(
-                f"Failed to add certificate to store, error code: {error_code}"
-            )
-    finally:
-        crypt32.CertCloseStore(store_handle, 0)
 
 
 def is_dependency_installed(key, sub_key):
