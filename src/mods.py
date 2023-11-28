@@ -15,14 +15,21 @@ logger = get_logger(__name__)
 
 load_dotenv()  # Load environment variables from .env file
 
-API_KEY = os.getenv("CURSEFORGE_API_KEY")
-
 
 @dataclass
 class Mod:
     name: str
     installed_dt: datetime | None
     latest_dt: datetime | None
+
+
+def _get_api_key() -> str:
+    key = os.getenv("CURSEFORGE_API_KEY")
+    if key:
+        logger.debug("CURSEFORGE_API_KEY found in environment variables")
+    else:
+        logger.warning("CURSEFORGE_API_KEY not found in environment variables")
+    return key
 
 
 @cache
@@ -72,7 +79,7 @@ def _get_latest_mods_timestamps(mod_ids: list[int]) -> dict[int, tuple[str, date
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
-            "x-api-key": API_KEY,
+            "x-api-key": _get_api_key(),
         }
         payload = {"modIds": mod_ids, "filterPcOnly": True}
 
