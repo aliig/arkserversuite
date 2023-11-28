@@ -3,7 +3,7 @@ import os
 import steam.client
 from steam.client import SteamClient
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -11,7 +11,7 @@ logger = get_logger(__name__)
 client = SteamClient()
 
 
-def _get_latest_build_id(steam_app_id: int = DEFAULT_CONFIG["steam_app_id"]) -> str:
+def _get_latest_build_id(steam_app_id: int = CONFIG["steam_app_id"]) -> str:
     if client.anonymous_login():
         app_info = client.get_product_info(apps=[steam_app_id])
         if app_info:
@@ -25,11 +25,11 @@ def _get_latest_build_id(steam_app_id: int = DEFAULT_CONFIG["steam_app_id"]) -> 
 
 
 def _get_installed_build_id(
-    steam_app_id: int = DEFAULT_CONFIG["steam_app_id"],
+    steam_app_id: int = CONFIG["steam_app_id"],
 ) -> str | None:
     appmanifest_name = f"appmanifest_{steam_app_id}.acf"
     appmanifest_path = os.path.join(
-        DEFAULT_CONFIG["server"]["install_path"], "steamapps", appmanifest_name
+        CONFIG["server"]["install_path"], "steamapps", appmanifest_name
     )
 
     if not os.path.isfile(appmanifest_path):

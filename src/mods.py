@@ -1,15 +1,14 @@
+import json
 import os
 import shutil
+from dataclasses import dataclass
+from datetime import datetime
+from functools import cache
 
 import requests
 from dotenv import load_dotenv
-from datetime import datetime
-import json
-from functools import cache
 
-from config import DEFAULT_CONFIG
-
-from dataclasses import dataclass
+from config import CONFIG
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -29,7 +28,7 @@ class Mod:
 @cache
 def _local_mod_file() -> dict:
     file_path = os.path.join(
-        DEFAULT_CONFIG["server"]["install_path"],
+        CONFIG["server"]["install_path"],
         "ShooterGame/Binaries/Win64/ShooterGame/ModsUserData/83374/library.json",
     )
     # load file as json into python dict
@@ -132,11 +131,11 @@ def mods_needing_update() -> list[Mod]:
 
 def delete_mods_folder() -> None:
     mods_folder = os.path.join(
-        DEFAULT_CONFIG["server"]["install_path"],
+        CONFIG["server"]["install_path"],
         "ShooterGame/Binaries/Win64/ShooterGame/Mods",
     )
     mods_user_data_folder = os.path.join(
-        DEFAULT_CONFIG["server"]["install_path"],
+        CONFIG["server"]["install_path"],
         "ShooterGame/Binaries/Win64/ShooterGame/ModsUserData",
     )
 

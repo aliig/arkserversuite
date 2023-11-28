@@ -1,25 +1,24 @@
+import ctypes
 import os
 import platform
-import requests
-import ctypes
-import winreg
 import shutil
+import winreg
 
-from config import DEFAULT_CONFIG
-from steamcmd import check_and_download_steamcmd
-from shell_operations import run_shell_cmd
+import requests
 
-
+from config import CONFIG
 from logger import get_logger
+from shell_operations import run_shell_cmd
+from steamcmd import check_and_download_steamcmd
 
 logger = get_logger(__name__)
 
 
-vc_redist_url = DEFAULT_CONFIG["download_url"]["vc_redist"]
-directx_url = DEFAULT_CONFIG["download_url"]["directx"]
+vc_redist_url = CONFIG["download_url"]["vc_redist"]
+directx_url = CONFIG["download_url"]["directx"]
 certificate_urls = {
-    "AmazonRootCA1": DEFAULT_CONFIG["download_url"]["AmazonRootCA1"],
-    "r2m02": DEFAULT_CONFIG["download_url"]["r2m02"],
+    "AmazonRootCA1": CONFIG["download_url"]["AmazonRootCA1"],
+    "r2m02": CONFIG["download_url"]["r2m02"],
 }
 
 
@@ -34,6 +33,7 @@ def install_prerequisites():
         logger.error("Unsupported operating system.")
     check_and_download_steamcmd()
 
+
 def install_certificates_windows():
     crypt32 = ctypes.WinDLL("Crypt32.dll")
     for cert_name, cert_url in certificate_urls.items():
@@ -41,17 +41,19 @@ def install_certificates_windows():
         add_certificate_to_store(crypt32, cert_content)
         logger.info(f"Certificate {cert_name} installed successfully.")
 
+
 def install_certificates_linux():
     for cert_name, cert_url in certificate_urls.items():
         cert_path = download_file(cert_url)
         if cert_path:
             try:
                 # This is a common path; it might differ between distributions
-                shutil.copy(cert_path, '/usr/local/share/ca-certificates/')
-                run_shell_cmd('sudo update-ca-certificates', suppress_output=False)
+                shutil.copy(cert_path, "/usr/local/share/ca-certificates/")
+                run_shell_cmd("sudo update-ca-certificates", suppress_output=False)
                 logger.info(f"Certificate {cert_name} installed successfully on Linux.")
             except Exception as e:
                 logger.error(f"Failed to install certificate {cert_name} on Linux: {e}")
+
 
 def install_dependencies_windows():
     if not is_dependency_installed(
@@ -70,6 +72,7 @@ def install_dependencies_windows():
         logger.info("DirectX Runtime installed successfully.")
     else:
         logger.debug("DirectX Runtime already installed.")
+
 
 def install_dependencies_linux():
     # Linux-specific dependency installation logic

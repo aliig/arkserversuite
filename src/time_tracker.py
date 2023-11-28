@@ -1,8 +1,8 @@
+import os
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
-import os
 
-from config import DEFAULT_CONFIG
+from config import CONFIG, OUTDIR
 from logger import get_logger
 
 if TYPE_CHECKING:
@@ -18,9 +18,7 @@ class TimeTracker:
         self.interval = task.task_config.get("interval", 4)
         self.blackout_start_time, self.blackout_end_time = self._get_blackout_times()
 
-        outdir = os.path.join(
-            DEFAULT_CONFIG["advanced"].get("output_directory", "output"), "state"
-        )
+        outdir = os.path.join(OUTDIR, "state")
         os.makedirs(outdir, exist_ok=True)
         self.state_file_path = os.path.join(outdir, f"{self.task_name}.txt")
 
@@ -162,7 +160,7 @@ class TimeTracker:
         else:
             time_format: str = "%I:%M %p"
 
-        return f"{time.strftime(time_format)} {DEFAULT_CONFIG['server']['timezone']}"
+        return f"{time.strftime(time_format)} {CONFIG['server']['timezone']}"
 
     def display_next_time(self) -> str:
         return self.display(self.next_time)

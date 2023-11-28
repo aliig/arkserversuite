@@ -2,7 +2,7 @@ import os
 import subprocess
 import sys
 
-from config import DEFAULT_CONFIG
+from config import CONFIG, OUTDIR
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -62,7 +62,7 @@ def get_process_id(expected_port: int) -> int | None:
     return None
 
 
-def is_server_running(ark_port: int = DEFAULT_CONFIG["server"]["port"]) -> bool:
+def is_server_running(ark_port: int = CONFIG["server"]["port"]) -> bool:
     if not (pid := get_process_id(ark_port)):
         return False
 
@@ -77,18 +77,18 @@ def is_server_running(ark_port: int = DEFAULT_CONFIG["server"]["port"]) -> bool:
 
 def generate_batch_file() -> str:
     def _server_config_option(key, format_str):
-        value = DEFAULT_CONFIG["server"].get(key)
+        value = CONFIG["server"].get(key)
         return format_str.format(value) if value else None
 
     base_arg = os.path.join(
-        DEFAULT_CONFIG["server"]["install_path"],
+        CONFIG["server"]["install_path"],
         "ShooterGame",
         "Binaries",
         "Win64",
         "ArkAscendedServer.exe",
     )
     question_mark_options_list = [
-        DEFAULT_CONFIG["server"]["map"],
+        CONFIG["server"]["map"],
         "listen",
         _server_config_option("ip_address", "MultiHome={}"),
         # _server_config_option('name', "SessionName=\"{}\""),
@@ -98,29 +98,27 @@ def generate_batch_file() -> str:
         _server_config_option("max_players", "MaxPlayers={}"),
         # _server_config_option("admin_password", "ServerAdminPassword={}"),
         "RCONEnabled=True",
-        *DEFAULT_CONFIG["launch_options"]["question_mark"],
+        *CONFIG["launch_options"]["question_mark"],
     ]
 
     question_mark_options = "?".join(filter(None, question_mark_options_list))
     logger.debug(f"question_mark_options: {question_mark_options}")
 
     hyphen_options = " ".join(
-        [f"-{opt}" for opt in DEFAULT_CONFIG["launch_options"].get("hyphen", []) if opt]
+        [f"-{opt}" for opt in CONFIG["launch_options"].get("hyphen", []) if opt]
         + [
-            f"-mods={','.join(map(str, DEFAULT_CONFIG['launch_options'].get('mods', [])))}"
-            if DEFAULT_CONFIG["launch_options"].get("mods")
+            f"-mods={','.join(map(str, CONFIG['launch_options'].get('mods', [])))}"
+            if CONFIG["launch_options"].get("mods")
             else ""
         ]
-        + [f"-WinLiveMaxPlayers={DEFAULT_CONFIG['server']['max_players']}"]
+        + [f"-WinLiveMaxPlayers={CONFIG['server']['max_players']}"]
     )
 
     cmd_string = f"{base_arg} {question_mark_options} {hyphen_options}"
     batch_content = f'@echo off\nstart "" {cmd_string}'
 
-    outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
-    os.makedirs(outdir, exist_ok=True)
     with open(
-        (file_path := os.path.join(outdir, ".start_server.bat")), "w"
+        (file_path := os.path.join(OUTDIR, ".start_server.bat")), "w"
     ) as batch_file:
         batch_file.write(batch_content)
 

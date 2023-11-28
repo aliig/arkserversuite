@@ -1,7 +1,7 @@
 import socket
 import struct
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
 from logger import get_logger
 from utils import send_to_discord, time_as_string
 
@@ -56,9 +56,9 @@ class RCON:
 def _rcon_cmd(command) -> str | None:
     try:
         args = (
-            DEFAULT_CONFIG["server"]["ip_address"],
-            DEFAULT_CONFIG["server"]["rcon_port"],
-            DEFAULT_CONFIG["server"]["admin_password"],
+            CONFIG["server"]["ip_address"],
+            CONFIG["server"]["rcon_port"],
+            CONFIG["server"]["admin_password"],
         )
         logger.info(f"Sending RCON command: {command}")
         rcon = RCON(*args)

@@ -4,7 +4,7 @@ from typing import Callable, TypeVar
 
 import requests
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -38,11 +38,11 @@ def send_to_discord(content: str, webhook_type: str = "updates_webhook") -> bool
     """Sends a message to Discord via a webhook."""
     if (
         content
-        and webhook_type in DEFAULT_CONFIG["discord"]
-        and DEFAULT_CONFIG["discord"][webhook_type]
+        and webhook_type in CONFIG["discord"]
+        and CONFIG["discord"][webhook_type]
     ):
         data = {"content": content}
-        response = requests.post(DEFAULT_CONFIG["discord"][webhook_type], json=data)
+        response = requests.post(CONFIG["discord"][webhook_type], json=data)
         logger.info(f"Sent message to Discord: {content}")
         return response.status_code == 204
     return None

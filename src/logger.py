@@ -1,18 +1,18 @@
 import logging
 import os
 import sys
+
 import colorlog
 
-from config import DEFAULT_CONFIG
+from config import CONFIG, OUTDIR
 
 # Retrieve log level from the configuration
-log_level_str = DEFAULT_CONFIG["advanced"].get("log_level", "info")
+log_level_str = CONFIG["advanced"].get("log_level", "info")
 log_level = logging.DEBUG if log_level_str.lower() == "debug" else logging.INFO
 
 # Setting up logging
-outdir = DEFAULT_CONFIG["advanced"].get("output_directory", "output")
-os.makedirs(outdir, exist_ok=True)
-log_path = os.path.join(outdir, "log.txt")
+
+log_path = os.path.join(OUTDIR, "log.txt")
 
 # Define log colors
 log_colors = {

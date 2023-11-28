@@ -1,14 +1,14 @@
 import logging
-import time
 import os
+import time
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
+from mods import Mod, mods_needing_update
 from rcon import destroy_wild_dinos, get_active_players, send_message
 from time_tracker import TimeTracker
 from update import does_server_need_update
-from mods import mods_needing_update, Mod
 
 if TYPE_CHECKING:
     from main import ArkServer
@@ -23,7 +23,7 @@ class Task:
         self.server = server
 
         # config
-        self.task_config = DEFAULT_CONFIG["tasks"][self.task_name]
+        self.task_config = CONFIG["tasks"][self.task_name]
         self.description = self.task_config.get("description", "")
 
         # warning tracking
@@ -33,7 +33,7 @@ class Task:
         # time
         self.time = TimeTracker(self)
 
-    def _warn_before_task(self):
+    def _warn_before_task(self, extra: str = ""):
         """Send warnings if the time for a task is approaching."""
         if not self.warning_times:
             return
@@ -48,15 +48,19 @@ class Task:
                 and warning_minute not in self.warned_times
             ):
                 self.warned_times.add(warning_minute)
-                send_message(
-                    f"Warning: {self.description} will occur in {warning_minute} {'minute' if warning_minute == 1 else 'minutes'} at approximately {self.time.display_next_time()}."
-                )
+                msg = f"Warning: {self.description} will occur in {warning_minute} {'minute' if warning_minute == 1 else 'minutes'} at approximately {self.time.display_next_time()}"
+                if extra:
+                    msg += f", ({extra})"
+                msg += "."
+                send_message(msg)
 
-    def _warn_then_wait(self):
+    def _warn_then_wait(self, extra: str = ""):
         for cnt, warning_minute in enumerate(self.warning_times):
-            send_message(
-                f"Warning: {self.description} will occur in {warning_minute} minutes at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}."
-            )
+            msg = f"Warning: {self.description} will occur in {warning_minute} {'minute' if warning_minute == 1 else 'minutes'} at approximately {self.time.display(datetime.now() + timedelta(minutes=warning_minute))}"
+            if extra:
+                msg += f", ({extra})"
+            msg += "."
+            send_message(msg)
             if cnt < len(self.warning_times) - 1:
                 time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)
             else:
@@ -156,9 +160,9 @@ class CheckForModUpdatesAndRestart(Task):
     def _run_task(self) -> bool:
         mods: list[Mod] = mods_needing_update()
         if len(mods) > 0:
-            self._warn_then_wait()
             # make a string of all the mod names needing update
             mod_names = ", ".join([mod.name for mod in mods])
+            self._warn_then_wait(extra=mod_names)
             self.server.restart(f"mod update ({mod_names})")
             return True
         return False

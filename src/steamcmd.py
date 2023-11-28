@@ -2,7 +2,7 @@ import os
 import urllib.request
 import zipfile
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
 from logger import get_logger
 from shell_operations import run_shell_cmd
 
@@ -10,7 +10,7 @@ logger = get_logger(__name__)
 
 
 STEAMCMD_DIR = os.path.join(
-    DEFAULT_CONFIG["advanced"].get("output_directory", "output"), "steamcmd"
+    CONFIG["advanced"].get("output_directory", "output"), "steamcmd"
 )
 STEAMCMD_PATH = os.path.join(STEAMCMD_DIR, "steamcmd.exe")
 
@@ -28,11 +28,11 @@ def check_and_download_steamcmd():
     if not is_steam_cmd_installed():
         logger.info("steamcmd.exe not found, downloading...")
         zip_path = os.path.join(
-            DEFAULT_CONFIG["advanced"].get("output_directory", "output"), "steamcmd.zip"
+            CONFIG["advanced"].get("output_directory", "output"), "steamcmd.zip"
         )
         try:
             urllib.request.urlretrieve(
-                DEFAULT_CONFIG["download_url"]["steamcmd"],
+                CONFIG["download_url"]["steamcmd"],
                 zip_path,
             )
             logger.debug("Downloaded steamcmd.zip")
@@ -57,7 +57,7 @@ def check_and_download_steamcmd():
 def update_server(msg: str = "Updating the Ark server...") -> None:
     logger.info(msg)
     check_and_download_steamcmd()
-    args = f"+force_install_dir {os.path.join(DEFAULT_CONFIG['server']['install_path'])} +login anonymous +app_update {DEFAULT_CONFIG['steam_app_id']} validate +quit"
+    args = f"+force_install_dir {os.path.join(CONFIG['server']['install_path'])} +login anonymous +app_update {CONFIG['steam_app_id']} validate +quit"
     _run_steamcmd(args)
 
 

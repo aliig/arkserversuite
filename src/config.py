@@ -1,8 +1,8 @@
 import os
 from functools import cached_property
-from tzlocal import get_localzone
 
 import yaml
+from tzlocal import get_localzone
 
 
 class ConfigLoader:
@@ -22,7 +22,6 @@ class ConfigLoader:
             return yaml.safe_load(file_content)
         except yaml.YAMLError as e:
             raise RuntimeError(f"Error loading YAML file {file_path}: {e}")
-
 
     @cached_property
     def default_config(self):
@@ -53,23 +52,26 @@ class ConfigLoader:
     def validate_tasks(self, tasks_config):
         """Validate the tasks configuration."""
         for task_name, task in tasks_config.items():
-            if not task.get('enable', False):
+            if not task.get("enable", False):
                 continue  # Skip validation if the task is not enable
 
             # Validate warning times
-            interval_hours = task.get('interval', 0)
-            if "warnings" in task and task.get('enable', False):
-                max_warning_minutes = max(task.get('warnings', []), default=0)
+            interval_hours = task.get("interval", 0)
+            if "warnings" in task and task.get("enable", False):
+                max_warning_minutes = max(task.get("warnings", []), default=0)
                 if max_warning_minutes and max_warning_minutes >= interval_hours * 60:
-                    raise ValueError(f"Maximum warning time for '{task_name}' exceeds the interval time.")
+                    raise ValueError(
+                        f"Maximum warning time for '{task_name}' exceeds the interval time."
+                    )
 
             # Validate blackout period
-            blackout = task.get('blackout_period', {})
-            start = blackout.get('start')
-            end = blackout.get('end')
+            blackout = task.get("blackout_period", {})
+            start = blackout.get("start")
+            end = blackout.get("end")
             if start and end and start == end:
-                raise ValueError(f"Blackout period start and end are the same for '{task_name}'.")
-
+                raise ValueError(
+                    f"Blackout period start and end are the same for '{task_name}'."
+                )
 
     def validate_config(self, config):
         """Validate the merged configuration."""
@@ -93,7 +95,9 @@ class ConfigLoader:
 
             for field in fields:
                 if field not in config[section]:
-                    raise ValueError(f"Required field '{field}' is missing in the '{section}' section.")
+                    raise ValueError(
+                        f"Required field '{field}' is missing in the '{section}' section."
+                    )
 
         for section, fields in optional_fields_with_defaults.items():
             if section in config:
@@ -101,14 +105,15 @@ class ConfigLoader:
                     config[section].setdefault(field, default)
 
         # Validate tasks
-        if 'tasks' in config:
-            self.validate_tasks(config['tasks'])
+        if "tasks" in config:
+            self.validate_tasks(config["tasks"])
 
     @cached_property
     def merged_config(self):
         merged = self.recursive_update(self.default_config, self.custom_config)
         self.validate_config(merged)
         return merged
+
 
 class TestLoader(ConfigLoader):
     @property
@@ -119,7 +124,13 @@ class TestLoader(ConfigLoader):
     @property
     def custom_config(self):
         print(f"Loading custom config from {self.custom_config_path}")
-        return self.load_yaml_with_backslash_handling(self.custom_config_path) if os.path.exists(self.custom_config_path) else {}
+        return (
+            self.load_yaml_with_backslash_handling(self.custom_config_path)
+            if os.path.exists(self.custom_config_path)
+            else {}
+        )
 
 
-DEFAULT_CONFIG = ConfigLoader().merged_config
+CONFIG = ConfigLoader().merged_config
+OUTDIR = CONFIG["advanced"].get("output_directory", "output")
+os.makedirs(OUTDIR, exist_ok=True)

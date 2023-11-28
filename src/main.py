@@ -1,10 +1,12 @@
 import threading
 import time
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
+from dependencies import install_prerequisites
 from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
+from mods import delete_mods_folder
 from rcon import save_world, send_message
 from shell_operations import (
     generate_batch_file,
@@ -24,7 +26,6 @@ from tasks import (
 )
 from update import does_server_need_update, is_server_installed
 from utils import wait_until
-from mods import delete_mods_folder
 
 logger = get_logger(__name__)
 
@@ -41,9 +42,9 @@ class ArkServer:
     def __init__(self):
         self.tasks: dict[str, Task] = self.initialize_tasks()
         self.running = True
-        self.server_timeout = DEFAULT_CONFIG["advanced"].get("server_timeout", 300)
-        self.sleep_time = DEFAULT_CONFIG["advanced"].get("sleep_time", 60)
-        self.log_check_rate = DEFAULT_CONFIG["advanced"].get("log_check_rate", 5)
+        self.server_timeout = CONFIG["advanced"].get("server_timeout", 300)
+        self.sleep_time = CONFIG["advanced"].get("sleep_time", 60)
+        self.log_check_rate = CONFIG["advanced"].get("log_check_rate", 5)
 
     def initialize_tasks(self):
         tasks_init = {
@@ -57,7 +58,7 @@ class ArkServer:
 
         tasks = {}
         for task_name, task_class in tasks_init.items():
-            if DEFAULT_CONFIG["tasks"][task_name].get('enable', False):
+            if CONFIG["tasks"][task_name].get("enable", False):
                 logger.debug(f"Initializing task: {task_name}")
                 tasks[task_name] = task_class(self, task_name)
             else:
@@ -71,7 +72,6 @@ class ArkServer:
                 update_server()
 
             delete_mods_folder()
-
             batch_file_path = generate_batch_file()
             cmd = ["cmd", "/c", batch_file_path]
             logger.debug(f"Starting Ark server with cmd: {cmd}")
@@ -88,6 +88,7 @@ class ArkServer:
                 raise ArkServerStartError("Failed to start the Ark server.")
             else:
                 logger.info("Ark server started")
+                self._reset_states()
             return success
         else:
             logger.info("Ark server is already running")
@@ -118,14 +119,13 @@ class ArkServer:
     def restart(self, reason: str = "other") -> None:
         if is_server_running():
             send_message(f"Server is restarting for {reason}.")
-            self.tasks["restart"].time.reset()
-            self.tasks["update"].time.reset()
             time.sleep(5)
             self.stop()
             time.sleep(5)
         self.start()
 
     def _pre_run(self) -> None:
+        install_prerequisites()
         if not is_server_installed():
             update_server("Installing the Ark server...")
             logger.info("Ark server installed")
@@ -140,6 +140,12 @@ class ArkServer:
     def _exit(self) -> None:
         logger.info("Exiting...")
         self.running = False
+
+    def _reset_states(self) -> None:
+        for task_key in ["restart", "update", "mod_update"]:
+            if task_key in self.tasks:
+                self.tasks[task_key].time.reset()
+                self.tasks[task_key].time.save_state()
 
     def run(self) -> None:
         self._pre_run()

@@ -5,7 +5,7 @@ from configparser import RawConfigParser
 from datetime import datetime
 from typing import Any
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
 from logger import get_logger
 
 logger = get_logger(__name__)
@@ -127,7 +127,7 @@ class CustomConfigParser(RawConfigParser):
 
 def ini_file(file) -> tuple[bool, str]:
     path = os.path.join(
-        DEFAULT_CONFIG["server"]["install_path"],
+        CONFIG["server"]["install_path"],
         "ShooterGame/Saved/Config/WindowsServer",
         f"{file}.ini",
     )
@@ -143,7 +143,7 @@ def _save_backup(file):
         # Save a backup of the current configuration
         file_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_filepath = os.path.join(
-            DEFAULT_CONFIG["advanced"].get("output_directory", "output"),
+            CONFIG["advanced"].get("output_directory", "output"),
             "backup",
             "config",
             f"{file}.ini_{file_timestamp}",
@@ -186,8 +186,8 @@ def _update_setting(file, section, settings):
 
 
 def _update_from_config_overrides():
-    if "config_overrides" in DEFAULT_CONFIG:
-        for file, sections in DEFAULT_CONFIG["config_overrides"].items():
+    if "config_overrides" in CONFIG:
+        for file, sections in CONFIG["config_overrides"].items():
             for section, settings in sections.items():
                 _update_setting(file, section, settings)
 
@@ -195,20 +195,18 @@ def _update_from_config_overrides():
 def _update_from_server_settings():
     game_user_settings_overrides: dict[str, dict[str, Any]] = {
         "ServerSettings": {
-            "ServerPassword": DEFAULT_CONFIG["server"]["password"],
-            "ServerAdminPassword": DEFAULT_CONFIG["server"]["admin_password"],
-            "RCONPort": DEFAULT_CONFIG["server"]["rcon_port"],
+            "ServerPassword": CONFIG["server"]["password"],
+            "ServerAdminPassword": CONFIG["server"]["admin_password"],
+            "RCONPort": CONFIG["server"]["rcon_port"],
             "RCONEnabled": True,
         },
         "SessionSettings": {
-            "SessionName": DEFAULT_CONFIG["server"]["name"],
-            "MULTIHOME": DEFAULT_CONFIG["server"]["ip_address"],
-            "Port": DEFAULT_CONFIG["server"]["port"],
-            "QueryPort": DEFAULT_CONFIG["server"]["query_port"],
+            "SessionName": CONFIG["server"]["name"],
+            "MULTIHOME": CONFIG["server"]["ip_address"],
+            "Port": CONFIG["server"]["port"],
+            "QueryPort": CONFIG["server"]["query_port"],
         },
-        "/Script/Engine.GameSession": {
-            "MaxPlayers": DEFAULT_CONFIG["server"]["max_players"]
-        },
+        "/Script/Engine.GameSession": {"MaxPlayers": CONFIG["server"]["max_players"]},
         "MultiHome": {"MULTIHOME": True},
     }
     for section, settings in game_user_settings_overrides.items():

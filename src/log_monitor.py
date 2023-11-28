@@ -2,7 +2,7 @@ import os
 import re
 from collections import namedtuple
 
-from config import DEFAULT_CONFIG
+from config import CONFIG
 from logger import get_logger
 from rcon import send_message_to_player, send_to_discord
 
@@ -61,7 +61,7 @@ class PlayerConnectEvent(LogEvent):
         if self.event_type == "joined":
             send_message_to_player(
                 self.player_name,
-                f'Welcome {self.player_name}! {DEFAULT_CONFIG["tasks"]["announcement"]["description"]}',
+                f'Welcome {self.player_name}! {CONFIG["tasks"]["announcement"]["description"]}',
             )
         elif self.event_type == "left":
             pass
@@ -186,21 +186,21 @@ class GlobalChatMessage(LogEvent):
         return f"GlobalChatMessage Event: {self.event_info.account_name} ({self.event_info.player_name}): {self.event_info.message}"
 
 
-if DEFAULT_CONFIG["discord"]["events"]["player_connect"]:
+if CONFIG["discord"]["events"]["player_connect"]:
     LogEventFactory.register_event_type(PlayerJoined)
     LogEventFactory.register_event_type(PlayerLeft)
-if DEFAULT_CONFIG["discord"]["events"]["player_died"]:
+if CONFIG["discord"]["events"]["player_died"]:
     LogEventFactory.register_event_type(PlayerDied)
-if DEFAULT_CONFIG["discord"]["events"]["dino_tamed"]:
+if CONFIG["discord"]["events"]["dino_tamed"]:
     LogEventFactory.register_event_type(DinoTamed)
-if DEFAULT_CONFIG["discord"]["events"]["global_chat"]:
+if CONFIG["discord"]["events"]["global_chat"]:
     LogEventFactory.register_event_type(GlobalChatMessage)
 
 
 class LogMonitor:
     def __init__(self):
         self.filepath = os.path.join(
-            DEFAULT_CONFIG["server"]["install_path"],
+            CONFIG["server"]["install_path"],
             "ShooterGame",
             "Saved",
             "Logs",
