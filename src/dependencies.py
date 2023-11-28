@@ -14,11 +14,11 @@ from steamcmd import check_and_download_steamcmd
 logger = get_logger(__name__)
 
 
-vc_redist_url = CONFIG["download_url"]["vc_redist"]
-directx_url = CONFIG["download_url"]["directx"]
+vc_redist_url = CONFIG["advanced"]["download_url"]["vc_redist"]
+directx_url = CONFIG["advanced"]["download_url"]["directx"]
 certificate_urls = {
-    "AmazonRootCA1": CONFIG["download_url"]["AmazonRootCA1"],
-    "r2m02": CONFIG["download_url"]["r2m02"],
+    "AmazonRootCA1": CONFIG["advanced"]["download_url"]["AmazonRootCA1"],
+    "r2m02": CONFIG["advanced"]["download_url"]["r2m02"],
 }
 
 
