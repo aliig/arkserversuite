@@ -90,10 +90,13 @@ def add_certificate_to_store(crypt32, cert_content):
         if isinstance(cert_content, str):
             cert_content = cert_content.encode("utf-8")
 
+        # Using create_string_buffer for memory management
+        p_cert_content = ctypes.create_string_buffer(cert_content)
+
         result = crypt32.CertAddEncodedCertificateToStore(
             ctypes.c_void_p(store_handle),
             1,  # X509_ASN_ENCODING
-            cert_content,  # Directly passing the byte content
+            ctypes.byref(p_cert_content),  # Pointer to the certificate content
             ctypes.c_int(len(cert_content)),
             0,  # CERT_STORE_ADD_REPLACE_EXISTING
             None,  # Not interested in the added cert's context
@@ -131,7 +134,7 @@ def install_component(url, output_file, arguments):
 
 def download_file(url, target_path=None, return_content=False):
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url)
         response.raise_for_status()
     except requests.RequestException as e:
         logger.error(f"Error downloading file: {e}")
@@ -145,7 +148,6 @@ def download_file(url, target_path=None, return_content=False):
         target_path = os.path.join(os.environ["TEMP"], file_name)
 
     with open(target_path, "wb") as file:
-        for chunk in response.iter_content(chunk_size=1024):
-            if chunk:
-                file.write(chunk)
+        file.write(response.content)
+
     return target_path
