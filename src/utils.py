@@ -1,3 +1,5 @@
+import os
+import sys
 import time
 from datetime import datetime
 from typing import Callable, TypeVar
@@ -46,3 +48,9 @@ def send_to_discord(content: str, webhook_type: str = "updates_webhook") -> bool
         logger.info(f"Sent message to Discord: {content}")
         return response.status_code == 204
     return None
+
+
+def resource_path(relative_path):
+    """Get absolute path to resource, works for dev and for PyInstaller"""
+    base_path = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(base_path, relative_path)

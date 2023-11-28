@@ -10,6 +10,7 @@ from config import CONFIG
 from logger import get_logger
 from shell_operations import run_shell_cmd
 from steamcmd import check_and_download_steamcmd
+from utils import resource_path
 
 logger = get_logger(__name__)
 
@@ -42,11 +43,7 @@ def install_prerequisites():
 
 
 def check_certificate_windows() -> bool:
-    current_script_dir = os.path.dirname(os.path.realpath(__file__))
-    script_path = os.path.join(
-        current_script_dir, "utils", "check_certificates_windows.ps1"
-    )
-    # logger.debug(f"PowerShell script path for checking certificates: {script_path}")
+    script_path = resource_path(os.path.join("ps", "check_certificates_windows.ps1"))
 
     all_certificates_installed = True
 
@@ -78,10 +75,7 @@ def check_certificate_windows() -> bool:
 
 
 def install_certificates_windows():
-    current_script_dir = os.path.dirname(os.path.realpath(__file__))
-    script_path = os.path.join(
-        current_script_dir, "utils", "install_certificates_windows.ps1"
-    )
+    script_path = resource_path(os.path.join("ps", "install_certificates_windows.ps1"))
     logger.debug(f"PowerShell script path for installing certificates: {script_path}")
 
     for cert_name, cert_url in CERTIFICATE_URLS.items():
