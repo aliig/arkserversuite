@@ -46,7 +46,7 @@ def check_certificate_windows() -> bool:
     script_path = os.path.join(
         current_script_dir, "utils", "check_certificates_windows.ps1"
     )
-    logger.debug(f"PowerShell script path for checking certificates: {script_path}")
+    # logger.debug(f"PowerShell script path for checking certificates: {script_path}")
 
     all_certificates_installed = True
 
@@ -54,7 +54,7 @@ def check_certificate_windows() -> bool:
         cmd = f'powershell -ExecutionPolicy Bypass -File "{script_path}" -certUrl "{cert_url}"'
 
         try:
-            process = run_shell_cmd(cmd, suppress_output=False)
+            process = run_shell_cmd(cmd, suppress_output=True)
             if process.returncode == 0:
                 if "Exists" in process.stdout:
                     logger.debug(f"Certificate {cert_name} already exists.")
@@ -88,7 +88,7 @@ def install_certificates_windows():
         cmd = f'powershell -ExecutionPolicy Bypass -File "{script_path}" -certUrl "{cert_url}" -certName "{cert_name}"'
 
         try:
-            process = run_shell_cmd(cmd, suppress_output=False)
+            process = run_shell_cmd(cmd, suppress_output=True)
             if process.returncode == 0:
                 if "Installed" in process.stdout:
                     logger.info(
