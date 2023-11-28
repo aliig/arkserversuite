@@ -90,12 +90,10 @@ def add_certificate_to_store(crypt32, cert_content):
         if isinstance(cert_content, str):
             cert_content = cert_content.encode("utf-8")
 
-        # Using POINTER and create_string_buffer for proper memory handling
-        p_cert_content = ctypes.create_string_buffer(cert_content)
         result = crypt32.CertAddEncodedCertificateToStore(
             ctypes.c_void_p(store_handle),
             1,  # X509_ASN_ENCODING
-            ctypes.byref(p_cert_content),
+            cert_content,  # Directly passing the byte content
             ctypes.c_int(len(cert_content)),
             0,  # CERT_STORE_ADD_REPLACE_EXISTING
             None,  # Not interested in the added cert's context
