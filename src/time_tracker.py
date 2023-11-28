@@ -122,8 +122,9 @@ class TimeTracker:
                     logger.error(f"Invalid datetime in {self.state_file_path}")
         else:
             logger.debug(
-                f"No {self.task_name} state file found: {self.state_file_path}"
+                f"No {self.task_name} state file found: {self.state_file_path}, create one now."
             )
+            self.save_state()
         return None
 
     def save_state(self) -> None:
