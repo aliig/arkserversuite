@@ -4,7 +4,7 @@ from collections import namedtuple
 
 from config import CONFIG
 from logger import get_logger
-from rcon import send_message_to_player, send_to_discord
+from rcon import get_active_players, send_message_to_player, send_to_discord
 
 logger = get_logger(__name__)
 
@@ -65,8 +65,13 @@ class PlayerConnectEvent(LogEvent):
             )
         elif self.event_type == "left":
             pass
+        else:
+            return
+        count = get_active_players()
+        player_str = f"({count} player{'s' if count != 1 else ''} {'online' if self.event_type == 'joined' else 'remaining'})"
         send_to_discord(
-            f"{self.player_name} has {self.event_type} the server", "log_webhook"
+            f"{self.player_name} has {self.event_type} the server {player_str}",
+            "log_webhook",
         )
 
     def __str__(self):
