@@ -224,7 +224,7 @@ def _write_admin_list() -> str:
                 file.write(f"{admin}\n")
         logger.debug(f"Created {file_path} with {len(admin_list)} admins")
 
-        return f'"{os.path.abspath(file_path)}"'
+        return f'"file:///{os.path.abspath(file_path)}"'
     return ""
 
 
