@@ -37,7 +37,7 @@ def install_prerequisites():
 def check_certificate_windows() -> bool:
     current_script_dir = os.path.dirname(os.path.realpath(__file__))
     script_path = os.path.join(
-        current_script_dir, "utils", "check_certificate_windows.ps1"
+        current_script_dir, "utils", "check_certificates_windows.ps1"
     )
     logger.debug(f"PowerShell script path for checking certificates: {script_path}")
 
