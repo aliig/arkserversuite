@@ -37,7 +37,7 @@ def install_prerequisites():
 def install_certificates_windows():
     crypt32 = ctypes.WinDLL("Crypt32.dll")
     for cert_name, cert_url in certificate_urls.items():
-        cert_content = download_file(cert_url)
+        cert_content = download_file(cert_url, return_content=True)
         add_certificate_to_store(crypt32, cert_content)
         logger.info(f"Certificate {cert_name} installed successfully.")
 
@@ -119,13 +119,16 @@ def install_component(url, output_file, arguments):
             logger.warning(f"Could not delete temporary file {component_path}: {e}")
 
 
-def download_file(url, target_path=None):
+def download_file(url, target_path=None, return_content=False):
     try:
         response = requests.get(url, stream=True)
         response.raise_for_status()
     except requests.RequestException as e:
         logger.error(f"Error downloading file: {e}")
         return None
+
+    if return_content:
+        return response.content
 
     if not target_path:
         file_name = url.split("/")[-1]
