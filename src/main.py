@@ -2,7 +2,11 @@ import threading
 import time
 
 from config import CONFIG
-from dependencies import check_certificate_windows, install_prerequisites
+from dependencies import (
+    check_certificate_windows,
+    install_certificates,
+    install_prerequisites,
+)
 from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
@@ -45,9 +49,10 @@ class ArkServer:
         self.server_timeout = CONFIG["advanced"].get("server_timeout", 300)
         self.sleep_time = CONFIG["advanced"].get("sleep_time", 60)
         self.log_check_rate = CONFIG["advanced"].get("log_check_rate", 5)
+        self.need_certificates = not check_certificate_windows()
 
     def need_admin_privileges(self) -> bool:
-        return not check_certificate_windows()
+        return self.need_certificates
 
     def initialize_tasks(self):
         tasks_init = {
@@ -128,6 +133,8 @@ class ArkServer:
         self.start()
 
     def _pre_run(self) -> None:
+        if self.need_certificates:
+            install_certificates()
         install_prerequisites()
         if not is_server_installed():
             update_server("Installing the Ark server...")

@@ -22,12 +22,19 @@ CERTIFICATE_URLS = {
 }
 
 
-def install_prerequisites():
+def install_certificates():
     if platform.system() == "Windows":
         install_certificates_windows()
-        install_dependencies_windows()
     elif platform.system() == "Linux":
         install_certificates_linux()
+    else:
+        logger.error("Unsupported operating system.")
+
+
+def install_prerequisites():
+    if platform.system() == "Windows":
+        install_dependencies_windows()
+    elif platform.system() == "Linux":
         install_dependencies_linux()
     else:
         logger.error("Unsupported operating system.")
