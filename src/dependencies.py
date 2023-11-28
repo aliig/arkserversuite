@@ -35,10 +35,14 @@ def install_prerequisites():
 
 
 def install_certificates_windows():
-    script_path = "install_certificates_windows.ps1"
+    # Get the directory of the current Python script
+    current_script_dir = os.path.dirname(os.path.realpath(__file__))
+
+    # Construct the path to the PowerShell script
+    script_path = os.path.join(current_script_dir, "install_certificates_windows.ps1")
 
     for cert_name, cert_url in certificate_urls.items():
-        cmd = f'powershell -ExecutionPolicy Bypass -File {script_path} -certUrl "{cert_url}" -certName "{cert_name}"'
+        cmd = f'powershell -ExecutionPolicy Bypass -File "{script_path}" -certUrl "{cert_url}" -certName "{cert_name}"'
 
         try:
             # Using run_shell_cmd to execute the PowerShell script for each certificate
