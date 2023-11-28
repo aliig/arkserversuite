@@ -47,7 +47,7 @@ class ArkServer:
         self.log_check_rate = CONFIG["advanced"].get("log_check_rate", 5)
 
     def need_admin_privileges(self) -> bool:
-        return check_certificate_windows()
+        return not check_certificate_windows()
 
     def initialize_tasks(self):
         tasks_init = {
