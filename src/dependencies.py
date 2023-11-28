@@ -100,7 +100,7 @@ def add_certificate_to_store(crypt32, cert_content):
         )
 
         if result == 0:  # 0 indicates failure
-            error_code = windll.kernel32.GetLastError()
+            error_code = ctypes.windll.kernel32.GetLastError()
             logger.error(
                 f"Failed to add certificate to store, error code: {error_code}"
             )
