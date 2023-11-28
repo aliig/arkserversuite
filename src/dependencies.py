@@ -40,6 +40,7 @@ def install_certificates_windows():
 
     # Construct the path to the PowerShell script
     script_path = os.path.join(current_script_dir, "install_certificates_windows.ps1")
+    logger.debug(f"PowerShell script path: {script_path}")
 
     for cert_name, cert_url in certificate_urls.items():
         cmd = f'powershell -ExecutionPolicy Bypass -File "{script_path}" -certUrl "{cert_url}" -certName "{cert_name}"'
