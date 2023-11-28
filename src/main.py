@@ -168,8 +168,53 @@ class ArkServer:
 
 
 if __name__ == "__main__":
-    server = ArkServer()
-    try:
-        server.run()
-    except KeyboardInterrupt:
-        server._exit()
+    import ctypes
+    import os
+    import sys
+
+    def is_admin():
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+
+    def run_as_admin(argv=None, debug=False):
+        shell32 = ctypes.windll.shell32
+        if argv is None and shell32.IsUserAnAdmin():
+            # Already running as admin
+            return True
+        else:
+            if argv is None:
+                argv = sys.argv
+            if hasattr(sys, "_MEIPASS"):
+                # Support pyinstaller wrapped program.
+                arguments = map(str, argv[1:])
+            else:
+                arguments = map(str, argv)
+            argument_line = " ".join(arguments)
+            executable = str(sys.executable)
+            if debug:
+                print("Command line:", executable, argument_line)
+            ret = shell32.ShellExecuteW(
+                None, "runas", executable, argument_line, None, 1
+            )
+            if int(ret) <= 32:
+                return False
+            return None
+
+    if is_admin():
+        server = ArkServer()
+        try:
+            server.run()
+        except KeyboardInterrupt:
+            server._exit()
+    else:
+        result = run_as_admin()
+        if result is True:
+            # Successfully relaunched as admin
+            pass
+        elif result is False:
+            print("Failed to gain administrator privileges")
+        else:
+            # Terminating non-admin instance of the script
+            sys.exit(0)

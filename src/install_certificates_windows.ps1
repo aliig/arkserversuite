@@ -8,17 +8,32 @@ Invoke-WebRequest -Uri $certUrl -OutFile $cert_path -UseBasicParsing -ErrorActio
 
 $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
 $cert.Import($cert_path)
-$store = New-Object System.Security.Cryptography.X509Certificates.X509Store('CA', 'LocalMachine')
-$store.Open('ReadOnly')
 
-$existing = $store.Certificates.Find([System.Security.Cryptography.X509Certificates.X509FindType]::FindByThumbprint, $cert.Thumbprint, $false)
-if ($existing.Count -eq 0) {
-    $store.Close()
+# Function to add certificate to a specified store
+function Add-CertificateToStore {
+    param (
+        [System.Security.Cryptography.X509Certificates.X509Certificate2]$certificate,
+        [string]$storeName,
+        [string]$storeLocation
+    )
+
+    $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($storeName, $storeLocation)
     $store.Open('ReadWrite')
-    $store.Add($cert)
+
+    $existing = $store.Certificates.Find([System.Security.Cryptography.X509Certificates.X509FindType]::FindByThumbprint, $certificate.Thumbprint, $false)
+    if ($existing.Count -eq 0) {
+        $store.Add($certificate)
+        Write-Output "Installed in $storeLocation"
+    }
+    else {
+        Write-Output "Exists in $storeLocation"
+    }
+
     $store.Close()
-    Write-Output 'Installed'
-} else {
-    $store.Close()
-    Write-Output 'Exists'
 }
+
+# Add certificate to CurrentUser store
+Add-CertificateToStore -certificate $cert -storeName "CA" -storeLocation "CurrentUser"
+
+# Add certificate to LocalMachine store
+Add-CertificateToStore -certificate $cert -storeName "CA" -storeLocation "LocalMachine"
