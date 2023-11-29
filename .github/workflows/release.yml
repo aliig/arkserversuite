@@ -15,7 +15,7 @@ jobs:
 
     - name: Set up API Key
       run: |
-        echo "API_KEY=${{ secrets.CURSEFORGE_API_KEY }}" >> $GITHUB_ENV
+        echo "CURSEFORGE_API_KEY=${{ secrets.CURSEFORGE_API_KEY }}" >> $GITHUB_ENV
 
     - name: Cache conda
       uses: actions/cache@v2
