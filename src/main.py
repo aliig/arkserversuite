@@ -22,6 +22,7 @@ from steamcmd import update_server
 from tasks import (
     CheckForArkUpdatesAndRestart,
     CheckForModUpdatesAndRestart,
+    CheckForServerAPIUpdateAndRestart,
     DestroyWildDinos,
     HandleEmptyServerRestart,
     PerformRoutineRestart,
@@ -30,6 +31,7 @@ from tasks import (
 )
 from update import does_server_need_update, is_server_installed
 from utils import wait_until
+from serverapi import install_serverapi, use_serverapi, serverapi_needs_update
 
 logger = get_logger(__name__)
 
@@ -62,6 +64,7 @@ class ArkServer:
             "mod_update": CheckForModUpdatesAndRestart,
             "restart": PerformRoutineRestart,
             "stale": HandleEmptyServerRestart,
+            "server_api_update": CheckForServerAPIUpdateAndRestart,
         }
 
         tasks = {}
@@ -78,6 +81,9 @@ class ArkServer:
         if not is_server_running():
             if does_server_need_update():
                 update_server()
+
+            if use_serverapi() and serverapi_needs_update():
+                install_serverapi()
 
             delete_mods_folder()
             batch_file_path = generate_batch_file()
