@@ -13,10 +13,6 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Set up API Key
-      run: |
-        echo "CURSEFORGE_API_KEY=${{ secrets.CURSEFORGE_API_KEY }}" >> $GITHUB_ENV
-
     - name: Cache conda
       uses: actions/cache@v2
       with:
@@ -43,6 +39,13 @@ jobs:
       run: |
         conda env update --name ark --file environment.yml
 
+    - name: Encryption
+      run: |
+        echo "PASSPHRASE=$(openssl rand -base64 32)" >> $GITHUB_ENV
+        python src/crypto_script.py --mode encrypt --input "${{ secrets.CURSEFORGE_API_KEY }}" --output encrypted_key.enc --passphrase "${{ env.PASSPHRASE }}"
+        echo "${{ env.PASSPHRASE }}" > passphrase.txt
+
+      # Install
     - name: Install PyInstaller
       shell: bash -l {0}
       run: |
@@ -53,7 +56,7 @@ jobs:
       run: |
         cd src
         rm -f __init__.py
-        pyinstaller --onefile --name=arkserversuite --add-data "ps;ps" main.py
+        pyinstaller --onefile --name=arkserversuite --add-data "ps;ps" --add-data "../encrypted_key.enc;." --add-data "../passphrase.txt;." main.py
         cd ..
         mkdir -p dist
         mv src/dist/arkserversuite.exe dist/arkserversuite.exe

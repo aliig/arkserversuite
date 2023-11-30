@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 
 from config import CONFIG
 from logger import get_logger
+from crypto_script import decrypt_data
 
 logger = get_logger(__name__)
 
@@ -23,12 +24,28 @@ class Mod:
     latest_dt: datetime | None
 
 
+@cache
+def _decrypt_api_key() -> str:
+    try:
+        with open("encrypted_key.enc", "rb") as file:
+            encrypted_data_with_salt = file.read()
+        with open("passphrase.txt", "r") as file:
+            passphrase = file.read().strip()
+        return decrypt_data(encrypted_data_with_salt, passphrase).decode()
+    except Exception as e:
+        logger.error(f"Error decrypting CURSEFORGE_API_KEY: {e}")
+        return None
+
+
 def _get_api_key() -> str:
-    key = os.getenv("CURSEFORGE_API_KEY")
-    if key:
+    if key := os.getenv("CURSEFORGE_API_KEY"):
         logger.debug("CURSEFORGE_API_KEY found in environment variables")
     else:
-        logger.warning("CURSEFORGE_API_KEY not found in environment variables")
+        # get key from file with decryption
+        if key := _decrypt_api_key():
+            logger.debug("CURSEFORGE_API_KEY decrypted successfully")
+        else:
+            logger.warning("CURSEFORGE_API_KEY failed to decrypt or returned None")
     return key
 
 
