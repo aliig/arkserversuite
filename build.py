@@ -7,6 +7,7 @@ import secrets
 import tempfile
 import zipfile
 import stat
+import fnmatch
 
 from dotenv import load_dotenv
 
@@ -90,28 +91,39 @@ def build_executable():
     # shutil.move(built_exe_path, os.path.join(dist_dir_temp, "arkserversuite.exe"))
 
 
+def read_gitignore_patterns():
+    gitignore_path = os.path.join(project_dir, ".gitignore")
+    patterns = []
+    if os.path.exists(gitignore_path):
+        with open(gitignore_path, "r") as file:
+            for line in file:
+                stripped_line = line.strip()
+                if stripped_line and not stripped_line.startswith("#"):
+                    patterns.append(stripped_line)
+    return patterns
+
+
+def should_exclude(file, exclude_patterns):
+    return any(fnmatch.fnmatch(file, pattern) for pattern in exclude_patterns)
+
+
 def zip_artifacts():
-    # Define the paths
-    exe_path = os.path.join(
-        temp_dir, "src", "dist", "arkserversuite.exe"
-    )  # Adjusted path
+    exclude_patterns = read_gitignore_patterns()
+
+    exe_path = os.path.join(temp_dir, "src", "dist", "arkserversuite.exe")
     config_path = os.path.join(temp_dir, "config")
     zip_path = os.path.join(temp_dir, "release.zip")
 
-    # Create a zip file and add the executable and config directory
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
         zipf.write(exe_path, os.path.basename(exe_path))
         for folder, subfolders, files in os.walk(config_path):
             for file in files:
                 file_path = os.path.join(folder, file)
-                zipf.write(file_path, os.path.relpath(file_path, temp_dir))
+                relative_path = os.path.relpath(file_path, temp_dir)
+                if not should_exclude(relative_path, exclude_patterns):
+                    zipf.write(file_path, relative_path)
 
-    # Move the zip file back to the original dist directory in the project
-    if not os.path.exists(dist_dir):
-        os.makedirs(dist_dir)
-    shutil.move(zip_path, os.path.join(dist_dir, "release.zip"))
-
-    print("Artifacts zipped and moved to dist directory.")
+    print(f"Artifacts zipped and moved to dist directory.")
 
 
 def onerror(func, path, exc_info):
@@ -140,12 +152,15 @@ def main():
 
     # Copy the final artifacts back to the dist directory
     # shutil.copytree(os.path.join(temp_dir, "dist"), dist_dir, dirs_exist_ok=True)
-    shutil.move(
+    os.makedirs(dist_dir, exist_ok=True)
+    shutil.copy(
         os.path.join(temp_dir, "release.zip"), os.path.join(dist_dir, "release.zip")
     )
 
-    # Optionally, clean up the temporary directory
-    shutil.rmtree(temp_dir, onerror=onerror)
+    try:
+        shutil.rmtree(temp_dir, onerror=onerror)
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":

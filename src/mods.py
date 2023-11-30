@@ -49,6 +49,7 @@ def _get_api_key() -> str:
         # get key from file with decryption
         if key := _decrypt_api_key():
             logger.debug("CURSEFORGE_API_KEY decrypted successfully")
+            logger.debug(key)
         else:
             logger.warning("CURSEFORGE_API_KEY failed to decrypt or returned None")
     return key
