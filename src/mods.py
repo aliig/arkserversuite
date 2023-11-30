@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 from config import CONFIG
 from logger import get_logger
 from crypto_script import decrypt_data
+from utils import resource_path
 
 logger = get_logger(__name__)
 
@@ -27,10 +28,14 @@ class Mod:
 @cache
 def _decrypt_api_key() -> str:
     try:
-        with open("encrypted_key.enc", "rb") as file:
+        encrypted_key_path = resource_path("encrypted_key.enc")
+        passphrase_path = resource_path("passphrase.txt")
+
+        with open(encrypted_key_path, "rb") as file:
             encrypted_data_with_salt = file.read()
-        with open("passphrase.txt", "r") as file:
+        with open(passphrase_path, "r") as file:
             passphrase = file.read().strip()
+
         return decrypt_data(encrypted_data_with_salt, passphrase).decode()
     except Exception as e:
         logger.error(f"Error decrypting CURSEFORGE_API_KEY: {e}")
