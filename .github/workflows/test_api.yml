@@ -1,0 +1,16 @@
+name: Check API Key
+
+on:
+  workflow_dispatch:
+
+jobs:
+  check-api-key:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check API Key Length
+      run: |
+        if [ -z "${{ secrets.CURSEFORGE_API_KEY }}" ]; then
+          echo "CURSEFORGE_API_KEY is not set."
+        else
+          echo "Length of CURSEFORGE_API_KEY: ${#CURSEFORGE_API_KEY}"
+        fi
