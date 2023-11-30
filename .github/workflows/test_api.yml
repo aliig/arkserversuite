@@ -8,10 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Check API Key Length
+      env:
+        CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
       run: |
-        if [ -z "${{ secrets.CURSEFORGE_API_KEY }}" ]; then
+        if [ -z "$CURSEFORGE_API_KEY" ]; then
           echo "CURSEFORGE_API_KEY is not set."
         else
-          API_KEY="${{ secrets.CURSEFORGE_API_KEY }}"
-          echo "Length of CURSEFORGE_API_KEY: ${#API_KEY}"
+          echo "Length of CURSEFORGE_API_KEY: ${#CURSEFORGE_API_KEY}"
         fi
