@@ -41,6 +41,12 @@ jobs:
 
     - name: Encryption
       run: |
+        if [ -z "${{ secrets.CURSEFORGE_API_KEY }}" ]; then
+          echo "CURSEFORGE_API_KEY is not set."
+        else
+          API_KEY="${{ secrets.CURSEFORGE_API_KEY }}"
+          echo "Length of CURSEFORGE_API_KEY: ${#API_KEY}"
+        fi
         echo "PASSPHRASE=$(openssl rand -base64 32)" >> $GITHUB_ENV
         python src/crypto_script.py --mode encrypt --input "${{ secrets.CURSEFORGE_API_KEY }}" --output encrypted_key.enc --passphrase "${{ env.PASSPHRASE }}"
         echo "${{ env.PASSPHRASE }}" > passphrase.txt
