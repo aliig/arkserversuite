@@ -12,5 +12,6 @@ jobs:
         if [ -z "${{ secrets.CURSEFORGE_API_KEY }}" ]; then
           echo "CURSEFORGE_API_KEY is not set."
         else
-          echo "Length of CURSEFORGE_API_KEY: ${#CURSEFORGE_API_KEY}"
+          API_KEY="${{ secrets.CURSEFORGE_API_KEY }}"
+          echo "Length of CURSEFORGE_API_KEY: ${#API_KEY}"
         fi
