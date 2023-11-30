@@ -34,17 +34,18 @@ jobs:
     - name: Configure conda package dir
       run: conda config --add pkgs_dirs ~/conda_pkgs_dir
 
-    - name: Install Dependencies
+    - name: Generate Passphrase
       shell: bash -l {0}
-      run: |
-        conda env update --name ark --file environment.yml
+      run: echo "PASSPHRASE=$(openssl rand -base64 32)" >> $GITHUB_ENV
 
     - name: Encryption
+      env:
+        CURSEFORGE_API_KEY: ${{ secrets.CURSEFORGE_API_KEY }}
+        PASSPHRASE: ${{ env.PASSPHRASE }}
       shell: bash -l {0}
       run: |
-        echo "PASSPHRASE=$(openssl rand -base64 32)" >> $GITHUB_ENV
-        python src/crypto_script.py --mode encrypt --input "${{ secrets.CURSEFORGE_API_KEY }}" --output encrypted_key.enc --passphrase "${{ env.PASSPHRASE }}"
-        echo "${{ env.PASSPHRASE }}" > passphrase.txt
+        python src/crypto_script.py --mode encrypt --input "$CURSEFORGE_API_KEY" --output encrypted_key.enc --passphrase "$PASSPHRASE"
+        echo "$PASSPHRASE" > passphrase.txt
 
 
     - name: Install PyInstaller
