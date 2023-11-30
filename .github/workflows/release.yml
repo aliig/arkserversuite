@@ -40,6 +40,7 @@ jobs:
         conda env update --name ark --file environment.yml
 
     - name: Encryption
+      shell: bash -l {0}
       run: |
         if [ -z "${{ secrets.CURSEFORGE_API_KEY }}" ]; then
           echo "CURSEFORGE_API_KEY is not set."
@@ -50,6 +51,7 @@ jobs:
         echo "PASSPHRASE=$(openssl rand -base64 32)" >> $GITHUB_ENV
         python src/crypto_script.py --mode encrypt --input "${{ secrets.CURSEFORGE_API_KEY }}" --output encrypted_key.enc --passphrase "${{ env.PASSPHRASE }}"
         echo "${{ env.PASSPHRASE }}" > passphrase.txt
+
 
       # Install
     - name: Install PyInstaller
