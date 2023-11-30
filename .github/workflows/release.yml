@@ -47,7 +47,6 @@ jobs:
         echo "${{ env.PASSPHRASE }}" > passphrase.txt
 
 
-      # Install
     - name: Install PyInstaller
       shell: bash -l {0}
       run: |
