@@ -13,3 +13,4 @@ dependencies:
     - python-dotenv
     - colorlog
     - tzlocal
+    - cryptography
