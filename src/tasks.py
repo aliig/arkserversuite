@@ -183,9 +183,9 @@ class CheckForServerAPIUpdateAndRestart(Task):
         super().__init__(server, task_name)
 
     def _run_task(self) -> bool:
-        if use_serverapi() and serverapi_needs_update():
+        if use_serverapi() and (res := serverapi_needs_update()):
             # make a string of all the mod names needing update
-            self._warn_then_wait()
+            self._warn_then_wait(f"upgrade to version {res['name']}")
             self.server.restart(f"ServerAPI update")
             return True
         return False

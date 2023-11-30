@@ -68,14 +68,15 @@ def _download_latest_github_release(
         return None
 
 
-def _needs_update(latest_timestamp: str, local_version_file: str) -> bool:
+def _needs_update(latest_release_info: dict, local_version_file: str) -> bool:
+    latest_timestamp = latest_release_info["updated_at"]
     if os.path.exists(local_version_file):
         with open(local_version_file, "r") as file:
             local_timestamp = file.read().strip()
-        return local_timestamp != latest_timestamp
+        return latest_release_info if local_timestamp != latest_timestamp else False
     else:
         logger.debug(f"Local version file {local_version_file} does not exist.")
-    return True
+    return latest_release_info
 
 
 def use_serverapi() -> bool:
@@ -84,7 +85,7 @@ def use_serverapi() -> bool:
 
 def serverapi_needs_update() -> bool:
     return _needs_update(
-        latest_timestamp=_get_latest_release_info(OWNER, REPO)["updated_at"],
+        latest_release_info=_get_latest_release_info(OWNER, REPO),
         local_version_file=LOCAL_VERSION_FILE,
     )
 
