@@ -32,7 +32,7 @@ def check_and_download_steamcmd():
         )
         try:
             urllib.request.urlretrieve(
-                CONFIG["download_url"]["steamcmd"],
+                CONFIG["advanced"]["download_url"]["steamcmd"],
                 zip_path,
             )
             logger.debug("Downloaded steamcmd.zip")
