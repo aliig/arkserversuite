@@ -114,10 +114,13 @@ def is_server_api_ready() -> bool:
     files = [file for file in files if file not in log_filenames]
     # Filter files by modification time (consider only newer files)
     files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-    with open(files[0], "r") as f:
-        contents = f.read()
-        if "InitGame was called" in contents:
-            return True
+    try:
+        with open(files[0], "r") as f:
+            contents = f.read()
+            if "InitGame was called" in contents:
+                return True
+    except IndexError:
+        pass
     return False
 
 
