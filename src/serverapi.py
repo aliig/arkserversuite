@@ -21,7 +21,6 @@ API_OUTDIR = os.path.join(
 API_LOG_OUTDIR = os.path.join(API_OUTDIR, "logs")
 
 log_filenames = []
-last_update_time = 0  # Timestamp to track the last update
 
 
 def _extract_zip_and_move(zip_path: str, outdir: str):
@@ -95,18 +94,12 @@ def _get_log_filenames() -> list[str]:
     files = [os.path.join(directory, file) for file in os.listdir(directory)]
     files = [file for file in files if os.path.isfile(file)]
 
-    # Filter files by modification time (consider only newer files)
-    files = [file for file in files if os.path.getmtime(file) > last_update_time]
-    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-
     return files
 
 
-def set_log_filenames() -> list[str]:
-    global log_filenames, last_update_time
-    last_update_time = time.time()  # Update the timestamp
+def set_log_filenames() -> None:
+    global log_filenames
     log_filenames = _get_log_filenames()
-    return log_filenames
 
 
 def is_server_api_running() -> bool:
@@ -117,12 +110,14 @@ def is_server_api_running() -> bool:
 
 
 def is_server_api_ready() -> bool:
-    files = log_filenames  # Use the global variable
-    for file in files:
-        with open(file, "r") as f:
-            contents = f.read()
-            if "InitGame was called" in contents:
-                return True
+    files = _get_log_filenames()
+    files = [file for file in files if file not in log_filenames]
+    # Filter files by modification time (consider only newer files)
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+    with open(files[0], "r") as f:
+        contents = f.read()
+        if "InitGame was called" in contents:
+            return True
     return False
 
 
