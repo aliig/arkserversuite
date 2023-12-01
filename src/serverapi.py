@@ -3,6 +3,7 @@ import zipfile
 import shutil
 
 import requests
+import time
 
 from config import CONFIG, OUTDIR
 from utils import download_file
@@ -18,6 +19,9 @@ API_OUTDIR = os.path.join(
     CONFIG["server"]["install_path"], "ShooterGame", "Binaries", "Win64"
 )
 API_LOG_OUTDIR = os.path.join(API_OUTDIR, "logs")
+
+log_filenames = []
+last_update_time = 0  # Timestamp to track the last update
 
 
 def _extract_zip_and_move(zip_path: str, outdir: str):
@@ -81,6 +85,30 @@ def _needs_update(latest_release_info: dict, local_version_file: str) -> bool:
     return latest_release_info
 
 
+def _get_log_filenames() -> list[str]:
+    global last_update_time
+    directory = API_LOG_OUTDIR
+
+    if not os.path.exists(directory):
+        return []
+
+    files = [os.path.join(directory, file) for file in os.listdir(directory)]
+    files = [file for file in files if os.path.isfile(file)]
+
+    # Filter files by modification time (consider only newer files)
+    files = [file for file in files if os.path.getmtime(file) > last_update_time]
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+
+    return files
+
+
+def set_log_filenames() -> list[str]:
+    global log_filenames, last_update_time
+    last_update_time = time.time()  # Update the timestamp
+    log_filenames = _get_log_filenames()
+    return log_filenames
+
+
 def is_server_api_running() -> bool:
     process_name = "AsaApiLoader.exe"
     cmd = f'tasklist /FI "IMAGENAME eq {process_name}"'
@@ -89,30 +117,13 @@ def is_server_api_running() -> bool:
 
 
 def is_server_api_ready() -> bool:
-    directory = API_LOG_OUTDIR
-    # Ensure the directory exists
-    if not os.path.exists(directory):
-        return False
-
-    # List all files in the directory
-    files = [os.path.join(directory, file) for file in os.listdir(directory)]
-
-    # Filter out directories, keep only files
-    files = [file for file in files if os.path.isfile(file)]
-
-    # Sort files by modification time in descending order
-    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
-
-    # Check if there are any files
-    if not files:
-        return False
-
-    # Read the most recent file
-    with open(files[0], "r") as f:
-        contents = f.read()
-
-    # Check if the specific string is in the file
-    return "InitGame was called" in contents
+    files = log_filenames  # Use the global variable
+    for file in files:
+        with open(file, "r") as f:
+            contents = f.read()
+            if "InitGame was called" in contents:
+                return True
+    return False
 
 
 def use_serverapi() -> bool:

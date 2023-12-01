@@ -37,6 +37,7 @@ from serverapi import (
     serverapi_needs_update,
     is_server_api_ready,
     is_server_api_running,
+    set_log_filenames,
 )
 
 logger = get_logger(__name__)
@@ -89,8 +90,10 @@ class ArkServer:
             if does_server_need_update():
                 update_server()
 
-            if use_serverapi() and serverapi_needs_update():
-                install_serverapi()
+            if use_serverapi():
+                if serverapi_needs_update():
+                    install_serverapi()
+                set_log_filenames()
 
             delete_mods_folder()
             batch_file_path = generate_batch_file()
