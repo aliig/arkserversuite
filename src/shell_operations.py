@@ -85,12 +85,12 @@ def generate_batch_file() -> str:
         "ShooterGame",
         "Binaries",
         "Win64",
-        {
+        (
             "AsaApiLoader.exe"
             if "use_server_api" in CONFIG["server"]
             and CONFIG["server"]["use_server_api"]
             else "ArkAscendedServer.exe"
-        },
+        ),
     )
     question_mark_options_list = [
         CONFIG["server"]["map"],
