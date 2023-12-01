@@ -38,7 +38,7 @@ def run_shell_cmd(
 
 def kill_server() -> None:
     run_shell_cmd("taskkill /IM ArkAscendedServer.exe /F", suppress_output=True)
-    run_shell_cmd("taskkill /IM ShooterGameServer.exe /F", suppress_output=True)
+    run_shell_cmd("taskkill /IM AsaApiLoader.exe /F", suppress_output=True)
 
 
 def get_process_id(expected_port: int) -> int | None:

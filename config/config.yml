@@ -106,6 +106,7 @@ advanced:
   log_level: info
   sleep_time: 60  # seconds to sleep between server state checks
   server_timeout: 60  # seconds to wait for server to start or stop before exiting
+  server_api_timeout: 1800  # seconds to wait for server API to start or stop before exiting
   output_directory: "output"
   log_check_rate: 2  # seconds to wait between log file checks
   download_url:

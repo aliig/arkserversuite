@@ -7,6 +7,7 @@ import requests
 from config import CONFIG, OUTDIR
 from utils import download_file
 from logger import get_logger
+from shell_operations import run_shell_cmd
 
 logger = get_logger(__name__)
 
@@ -16,6 +17,7 @@ LOCAL_VERSION_FILE = os.path.join(OUTDIR, f"{OWNER}_{REPO}_timestamp.txt")
 API_OUTDIR = os.path.join(
     CONFIG["server"]["install_path"], "ShooterGame", "Binaries", "Win64"
 )
+API_LOG_OUTDIR = os.path.join(API_OUTDIR, "logs")
 
 
 def _extract_zip_and_move(zip_path: str, outdir: str):
@@ -77,6 +79,40 @@ def _needs_update(latest_release_info: dict, local_version_file: str) -> bool:
     else:
         logger.debug(f"Local version file {local_version_file} does not exist.")
     return latest_release_info
+
+
+def is_server_api_running() -> bool:
+    process_name = "AsaApiLoader.exe"
+    cmd = f'tasklist /FI "IMAGENAME eq {process_name}"'
+    process = run_shell_cmd(cmd, suppress_output=True)
+    return process.returncode == 0 and process_name in process.stdout
+
+
+def is_server_api_ready() -> bool:
+    directory = API_LOG_OUTDIR
+    # Ensure the directory exists
+    if not os.path.exists(directory):
+        return False
+
+    # List all files in the directory
+    files = [os.path.join(directory, file) for file in os.listdir(directory)]
+
+    # Filter out directories, keep only files
+    files = [file for file in files if os.path.isfile(file)]
+
+    # Sort files by modification time in descending order
+    files.sort(key=lambda x: os.path.getmtime(x), reverse=True)
+
+    # Check if there are any files
+    if not files:
+        return False
+
+    # Read the most recent file
+    with open(files[0], "r") as f:
+        contents = f.read()
+
+    # Check if the specific string is in the file
+    return "InitGame was called" in contents
 
 
 def use_serverapi() -> bool:
