@@ -57,7 +57,7 @@ class ConfigLoader:
 
             # Validate warning times
             interval_hours = task.get("interval", 0)
-            if "warnings" in task and task.get("enable", False):
+            if "warnings" in task and task["warnings"] and task.get("enable", False):
                 max_warning_minutes = max(task.get("warnings", []), default=0)
                 if max_warning_minutes and max_warning_minutes >= interval_hours * 60:
                     raise ValueError(
