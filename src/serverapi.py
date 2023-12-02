@@ -129,10 +129,17 @@ def use_serverapi() -> bool:
 
 
 def serverapi_needs_update() -> bool:
-    return _needs_update(
+    logger.info("Checking if the Ark server API needs an update...")
+    res = _needs_update(
         latest_release_info=_get_latest_release_info(OWNER, REPO),
         local_version_file=LOCAL_VERSION_FILE,
     )
+    if res:
+        logger.info(f"Latest {OWNER}/{REPO} release is newer than the local version.")
+        return True
+    else:
+        logger.debug(f"Latest {OWNER}/{REPO} release is already downloaded.")
+        return False
 
 
 def install_serverapi() -> None:
