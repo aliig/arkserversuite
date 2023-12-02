@@ -38,7 +38,7 @@ def run_shell_cmd(
 
 def kill_server() -> None:
     run_shell_cmd("taskkill /IM ArkAscendedServer.exe /F", suppress_output=True)
-    run_shell_cmd("taskkill /IM ShooterGameServer.exe /F", suppress_output=True)
+    run_shell_cmd("taskkill /IM AsaApiLoader.exe /F", suppress_output=True)
 
 
 def get_process_id(expected_port: int) -> int | None:
@@ -85,7 +85,12 @@ def generate_batch_file() -> str:
         "ShooterGame",
         "Binaries",
         "Win64",
-        "ArkAscendedServer.exe",
+        (
+            "AsaApiLoader.exe"
+            if "use_server_api" in CONFIG["server"]
+            and CONFIG["server"]["use_server_api"]
+            else "ArkAscendedServer.exe"
+        ),
     )
     question_mark_options_list = [
         CONFIG["server"]["map"],

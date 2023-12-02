@@ -22,6 +22,7 @@ from steamcmd import update_server
 from tasks import (
     CheckForArkUpdatesAndRestart,
     CheckForModUpdatesAndRestart,
+    CheckForServerAPIUpdateAndRestart,
     DestroyWildDinos,
     HandleEmptyServerRestart,
     PerformRoutineRestart,
@@ -30,6 +31,14 @@ from tasks import (
 )
 from update import does_server_need_update, is_server_installed
 from utils import wait_until
+from serverapi import (
+    install_serverapi,
+    use_serverapi,
+    serverapi_needs_update,
+    is_server_api_ready,
+    is_server_api_running,
+    set_log_filenames,
+)
 
 logger = get_logger(__name__)
 
@@ -47,6 +56,7 @@ class ArkServer:
         self.tasks: dict[str, Task] = self.initialize_tasks()
         self.running = True
         self.server_timeout = CONFIG["advanced"].get("server_timeout", 300)
+        self.server_api_timeout = CONFIG["advanced"].get("server_api_timeout", 300)
         self.sleep_time = CONFIG["advanced"].get("sleep_time", 60)
         self.log_check_rate = CONFIG["advanced"].get("log_check_rate", 5)
         self.need_certificates = not check_certificate_windows()
@@ -62,6 +72,7 @@ class ArkServer:
             "mod_update": CheckForModUpdatesAndRestart,
             "restart": PerformRoutineRestart,
             "stale": HandleEmptyServerRestart,
+            "server_api_update": CheckForServerAPIUpdateAndRestart,
         }
 
         tasks = {}
@@ -79,12 +90,47 @@ class ArkServer:
             if does_server_need_update():
                 update_server()
 
+            if use_serverapi():
+                if serverapi_needs_update():
+                    install_serverapi()
+                set_log_filenames()
+
             delete_mods_folder()
             batch_file_path = generate_batch_file()
             cmd = ["cmd", "/c", batch_file_path]
             logger.debug(f"Starting Ark server with cmd: {cmd}")
             run_shell_cmd(cmd, use_shell=False, use_popen=True, suppress_output=True)
 
+            if use_serverapi():
+                # wait for server API to launch
+                logger.info("Waiting for server API to start...")
+                _, success = wait_until(
+                    is_server_api_running,
+                    lambda x: x,
+                    timeout=self.server_timeout,
+                    sleep_interval=3,
+                )
+                if not success:
+                    logger.error("Failed to start the Ark server API")
+                    raise ArkServerStartError("Failed to start the Ark server API.")
+                else:
+                    logger.info("Ark server API started")
+
+                # wait for server API status to be ready (often long delay for PDB dumping)
+                logger.info("Waiting for server API to be ready...")
+                _, success = wait_until(
+                    is_server_api_ready,
+                    lambda x: x,
+                    timeout=self.server_api_timeout,
+                    sleep_interval=3,
+                )
+                if not success:
+                    logger.error("Ark server API never became ready")
+                    raise ArkServerStartError("Ark server API never became ready")
+                else:
+                    logger.info("Ark server API ready")
+
+            # wait for ark server process to start
             _, success = wait_until(
                 is_server_running,
                 lambda x: x,

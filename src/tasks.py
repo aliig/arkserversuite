@@ -9,6 +9,7 @@ from mods import Mod, mods_needing_update
 from rcon import destroy_wild_dinos, get_active_players, send_message
 from time_tracker import TimeTracker
 from update import does_server_need_update
+from serverapi import use_serverapi, serverapi_needs_update
 
 if TYPE_CHECKING:
     from main import ArkServer
@@ -164,6 +165,28 @@ class CheckForModUpdatesAndRestart(Task):
             mod_names = ", ".join([mod.name for mod in mods])
             self._warn_then_wait(extra=mod_names)
             self.server.restart(f"mod update ({mod_names})")
+            return True
+        return False
+
+    def execute(self) -> bool:
+        """Execute the task if it's time."""
+        self.time.current_time = datetime.now()
+        if self.time.is_time_to_execute():
+            res = self._run_task()
+            self._post_run()
+            return res
+        return False
+
+
+class CheckForServerAPIUpdateAndRestart(Task):
+    def __init__(self, server: "ArkServer", task_name: str):
+        super().__init__(server, task_name)
+
+    def _run_task(self) -> bool:
+        if use_serverapi() and (res := serverapi_needs_update()):
+            # make a string of all the mod names needing update
+            self._warn_then_wait(f"upgrade to version {res['name']}")
+            self.server.restart(f"ServerAPI update")
             return True
         return False
 

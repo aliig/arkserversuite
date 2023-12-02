@@ -14,8 +14,9 @@ server:
   map: "TheIsland_WP" # The map that the server will load
   admin_password: "password2" # Password for admin privileges
   timezone: "America/New_York" # The timezone your server's operating system is set to
-  admin_list: # List of OSS IDs for server admins, check with `whoami` or `cheat listplayers`
+  admin_list: # optional list of OSS IDs for server admins, check with `whoami` or `cheat listplayers`
     # - "12345678901234567"
+  use_server_api: True # set to True to use the Ark Server API to enable plugins. https://gameservershub.com/forums/resources/ark-survival-ascended-serverapi-crossplay-supported.683/
 
 # Launch options for the server
 launch_options:
@@ -85,8 +86,13 @@ tasks:
   mod_update:
     enable: True
     description: "Mod update"
-    interval: 6 # Frequency of mod update checks in hours
+    interval: 24 # Frequency of mod update checks in hours
     warnings: [10, 5, 1] # Warnings before restart for mod update at these minute intervals
+  server_api_update:
+    enable: True
+    description: "ARK Server API update"
+    interval: 24 # Frequency of server API update checks in hours
+    warnings: [10, 5, 1] # Warnings before restart for server API update at these minute intervals
 
 
 # Configuration ini file overrides for game settings
@@ -100,6 +106,7 @@ advanced:
   log_level: info
   sleep_time: 60  # seconds to sleep between server state checks
   server_timeout: 60  # seconds to wait for server to start or stop before exiting
+  server_api_timeout: 1800  # seconds to wait for server API to start or stop before exiting
   output_directory: "output"
   log_check_rate: 2  # seconds to wait between log file checks
   download_url:

@@ -1,16 +1,13 @@
-import ctypes
 import os
 import platform
 import shutil
 import winreg
 
-import requests
-
 from config import CONFIG
 from logger import get_logger
 from shell_operations import run_shell_cmd
 from steamcmd import check_and_download_steamcmd
-from utils import resource_path
+from utils import resource_path, download_file
 
 logger = get_logger(__name__)
 
@@ -118,6 +115,7 @@ def install_certificates_linux():
 
 
 def install_dependencies_windows():
+    # VS Studio
     if not is_dependency_installed(
         winreg.HKEY_LOCAL_MACHINE,
         r"Software\Microsoft\VisualStudio\14.0\VC\Runtimes\x64",
@@ -127,6 +125,7 @@ def install_dependencies_windows():
     else:
         logger.debug("Visual C++ Redistributable already installed.")
 
+    # DirectX
     if not is_dependency_installed(
         winreg.HKEY_LOCAL_MACHINE, r"Software\Microsoft\DirectX"
     ):
@@ -160,24 +159,3 @@ def install_component(url, output_file, arguments):
             logger.debug(f"Temporary file {component_path} deleted.")
         except OSError as e:
             logger.warning(f"Could not delete temporary file {component_path}: {e}")
-
-
-def download_file(url, target_path=None, return_content=False):
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        logger.error(f"Error downloading file: {e}")
-        return None
-
-    if return_content:
-        return response.content
-
-    if not target_path:
-        file_name = url.split("/")[-1]
-        target_path = os.path.join(os.environ["TEMP"], file_name)
-
-    with open(target_path, "wb") as file:
-        file.write(response.content)
-
-    return target_path
