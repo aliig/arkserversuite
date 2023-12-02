@@ -95,22 +95,28 @@ def _get_installed_mod_timestamp(mod_id: int) -> tuple[str, datetime | None]:
     return "", None
 
 
+def _get_remote_mod_info(mod_ids: list[int]) -> dict:
+    # Get mod info from curseforge
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "x-api-key": _get_api_key(),
+    }
+    payload = {"modIds": mod_ids, "filterPcOnly": True}
+
+    r = requests.post(
+        "https://api.curseforge.com/v1/mods", headers=headers, json=payload
+    )
+    r.raise_for_status()
+    response_data = r.json()
+    return response_data
+
+
 def _get_latest_mods_timestamps(mod_ids: list[int]) -> dict[int, tuple[str, datetime]]:
     try:
+        response_data = _get_remote_mod_info(mod_ids)
+
         date_format = "%Y-%m-%dT%H:%M"
-        headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            "x-api-key": _get_api_key(),
-        }
-        payload = {"modIds": mod_ids, "filterPcOnly": True}
-
-        r = requests.post(
-            "https://api.curseforge.com/v1/mods", headers=headers, json=payload
-        )
-        r.raise_for_status()
-
-        response_data = r.json()
         latest_timestamps = {}
         for mod in response_data["data"]:
             mod_id = int(mod["id"])
@@ -180,4 +186,5 @@ def delete_mods_folder() -> None:
 
 
 if __name__ == "__main__":
-    print(mods_needing_update())
+    # print(mods_needing_update())
+    print(_get_remote_mod_info([930601]))
