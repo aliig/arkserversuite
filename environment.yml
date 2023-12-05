@@ -14,3 +14,5 @@ dependencies:
     - colorlog
     - tzlocal
     - cryptography
+    - customtkinter
+    - CTkMessagebox
