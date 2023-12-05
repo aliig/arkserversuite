@@ -1,7 +1,9 @@
-import customtkinter
+import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 
 
-class BaseDialog(customtkinter.CTkToplevel):
+class BaseDialog(tk.Toplevel):
     """
     Base class for modal dialog windows.
     """

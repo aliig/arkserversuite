@@ -1,7 +1,9 @@
 import re
-import customtkinter
+import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from .base import BaseDialog
-from CTkMessagebox import CTkMessagebox
+from tkinter import messagebox
 
 
 class AddServerDialog(BaseDialog):
@@ -14,17 +16,33 @@ class AddServerDialog(BaseDialog):
         self.existing_server_names = existing_server_names
         self.server_name = None
 
-        self.label = customtkinter.CTkLabel(self, text="Enter Server Name:")
+        self.label = ttk.Label(self, text="Enter Server Name:")
         self.label.pack(pady=10)
 
-        self.entry = customtkinter.CTkEntry(self)
+        # Register the validation callback
+        validate_command = self.register(self.validate_server_name)
+
+        self.entry = ttk.Entry(
+            self, validate="focusout", validatecommand=(validate_command, "%P")
+        )
         self.entry.pack(pady=10)
         self.entry.focus_set()
 
-        self.confirm_button = customtkinter.CTkButton(
-            self, text="Confirm", command=self.on_confirm
+        self.confirm_button = ttk.Button(
+            self, text="Confirm", command=self.on_confirm, bootstyle=PRIMARY
         )
         self.confirm_button.pack(pady=10)
+
+    def validate_server_name(self, name: str) -> bool:
+        """
+        Validates the server name.
+        """
+        is_valid, _ = self.is_valid_server_name(name)
+        if not is_valid:
+            self.entry.configure(bootstyle=DANGER)
+        else:
+            self.entry.configure(bootstyle=DEFAULT)
+        return is_valid
 
     def on_confirm(self):
         entered_name = self.entry.get().strip()
@@ -33,7 +51,7 @@ class AddServerDialog(BaseDialog):
             self.server_name = entered_name
             self.destroy()
         else:
-            CTkMessagebox(title="Invalid Server Name", message=message, icon="cancel")
+            messagebox.showerror("Invalid Server Name", message)
 
     def is_valid_server_name(self, name: str) -> (bool, str):
         """

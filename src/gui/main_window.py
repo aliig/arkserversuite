@@ -1,4 +1,5 @@
-import customtkinter
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from .server_tab import ServerTab
 from .dialog.add_server import AddServerDialog
 from .dialog.copy_settings import CopySettingsDialog
@@ -6,25 +7,25 @@ from .dialog.select_server import SelectServerDialog
 from typing import Dict
 
 
-class MainWindow(customtkinter.CTk):
+class MainWindow(ttk.Window):
     """
     Main window of the application, hosting the server tabs and other controls.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         """
         Initialize the main window with necessary components.
         """
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.title("Ark Cluster Manager")
         self.geometry("800x600")
 
         self.server_tabs: Dict[str, ServerTab] = {}
-        self.tab_control = customtkinter.CTkTabview(self)
+        self.tab_control = ttk.Notebook(self)  # ttk.Notebook for tab control
         self.tab_control.pack(expand=True, fill="both", padx=20, pady=20)
 
-        self.add_server_button = customtkinter.CTkButton(
-            self, text="Add Server", command=self.prompt_new_server
+        self.add_server_button = ttk.Button(
+            self, text="Add Server", command=self.prompt_new_server, bootstyle=PRIMARY
         )
         self.add_server_button.pack(pady=10)
 
@@ -38,13 +39,10 @@ class MainWindow(customtkinter.CTk):
 
         server_name = add_server_dialog.get_server_name()
         if server_name:
+            print(f"Adding new server '{server_name}'.")
             if len(self.server_tabs) > 0:
-                print(
-                    f"Server '{server_name}' already exists. Prompting for copy settings."
-                )
                 self.prompt_copy_settings(server_name)
             else:
-                print(f"Adding new server '{server_name}'.")
                 self.add_server_tab(server_name, {"config": "new_server_config"})
 
     def prompt_copy_settings(self, new_server_name: str) -> None:
@@ -56,6 +54,8 @@ class MainWindow(customtkinter.CTk):
 
         if copy_settings_dialog.should_copy_settings():
             self.prompt_select_server(new_server_name)
+        else:
+            self.add_server_tab(new_server_name, {"config": "new_server_config"})
 
     def prompt_select_server(self, new_server_name: str) -> None:
         """
@@ -78,7 +78,13 @@ class MainWindow(customtkinter.CTk):
         Adds a new tab for a server instance.
         """
         if server_name not in self.server_tabs:
-            new_tab = ServerTab(self.tab_control.add(server_name), server_config)
+            # Create a new ServerTab instance
+            new_tab = ServerTab(self.tab_control, server_config)
+
+            # Add the new tab to the Notebook widget
+            self.tab_control.add(new_tab, text=server_name)
+
+            # Keep track of the new tab in the server_tabs dictionary
             self.server_tabs[server_name] = new_tab
 
     def delete_server_tab(self, server_name: str) -> None:

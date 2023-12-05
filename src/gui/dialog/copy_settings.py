@@ -1,4 +1,5 @@
-import customtkinter
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from .base import BaseDialog
 
 
@@ -12,15 +13,17 @@ class CopySettingsDialog(BaseDialog):
 
         self.copy_settings = False
 
-        self.label = customtkinter.CTkLabel(
-            self, text="Copy settings from another server?"
-        )
+        self.label = ttk.Label(self, text="Copy settings from another server?")
         self.label.pack(pady=10)
 
-        self.yes_button = customtkinter.CTkButton(self, text="Yes", command=self.on_yes)
+        self.yes_button = ttk.Button(
+            self, text="Yes", command=self.on_yes, bootstyle=SUCCESS
+        )
         self.yes_button.pack(pady=5)
 
-        self.no_button = customtkinter.CTkButton(self, text="No", command=self.on_no)
+        self.no_button = ttk.Button(
+            self, text="No", command=self.on_no, bootstyle=DANGER
+        )
         self.no_button.pack(pady=5)
 
     def on_yes(self):

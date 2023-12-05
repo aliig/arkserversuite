@@ -1,4 +1,6 @@
-import customtkinter
+import tkinter as tk
+import ttkbootstrap as ttk
+from ttkbootstrap.constants import *
 from .base import BaseDialog
 
 
@@ -12,20 +14,21 @@ class SelectServerDialog(BaseDialog):
 
         self.selected_server = None
 
-        self.label = customtkinter.CTkLabel(self, text="Select a server:")
+        self.label = ttk.Label(self, text="Select a server:")
         self.label.pack(pady=10)
 
-        self.dropdown = customtkinter.CTkOptionMenu(self, values=server_names)
+        self.server_var = tk.StringVar(self)
+        self.dropdown = ttk.OptionMenu(self, self.server_var, *server_names)
         self.dropdown.pack(pady=10)
         self.dropdown.focus_set()
 
-        self.confirm_button = customtkinter.CTkButton(
-            self, text="Confirm", command=self.on_confirm
+        self.confirm_button = ttk.Button(
+            self, text="Confirm", command=self.on_confirm, bootstyle=PRIMARY
         )
         self.confirm_button.pack(pady=10)
 
     def on_confirm(self):
-        self.selected_server = self.dropdown.get()
+        self.selected_server = self.server_var.get()
         self.destroy()
 
     def get_selected_server(self):
