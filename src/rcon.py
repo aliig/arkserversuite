@@ -86,6 +86,14 @@ def send_message(message: str, discord_msg: bool = True) -> str:
     return _rcon_cmd(f"serverchat {message}")
 
 
+def broadcast(message: str, discord_msg: bool = True) -> str:
+    if message == "":
+        return None
+    if discord_msg:
+        send_to_discord(message)
+    return _rcon_cmd(f"broadcast {message}")
+
+
 def save_world() -> bool:
     res = _rcon_cmd("saveworld")
     if res == "World Saved":

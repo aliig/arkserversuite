@@ -1,10 +1,10 @@
 import os
+import shutil
 import sys
 import time
+import zipfile
 from datetime import datetime
 from typing import Callable, TypeVar
-import zipfile
-import shutil
 
 import requests
 

@@ -9,8 +9,8 @@ import requests
 from dotenv import load_dotenv
 
 from config import CONFIG
-from logger import get_logger
 from crypto_script import decrypt_data
+from logger import get_logger
 from utils import resource_path
 
 logger = get_logger(__name__)

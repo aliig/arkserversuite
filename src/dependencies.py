@@ -7,7 +7,7 @@ from config import CONFIG
 from logger import get_logger
 from shell_operations import run_shell_cmd
 from steamcmd import check_and_download_steamcmd
-from utils import resource_path, download_file
+from utils import download_file, resource_path
 
 logger = get_logger(__name__)
 

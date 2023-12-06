@@ -11,7 +11,15 @@ from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from mods import delete_mods_folder
-from rcon import save_world, send_message
+from rcon import broadcast, save_world
+from serverapi import (
+    install_serverapi,
+    is_server_api_ready,
+    is_server_api_running,
+    serverapi_needs_update,
+    set_log_filenames,
+    use_serverapi,
+)
 from shell_operations import (
     generate_batch_file,
     is_server_running,
@@ -31,14 +39,6 @@ from tasks import (
 )
 from update import does_server_need_update, is_server_installed
 from utils import wait_until
-from serverapi import (
-    install_serverapi,
-    use_serverapi,
-    serverapi_needs_update,
-    is_server_api_ready,
-    is_server_api_running,
-    set_log_filenames,
-)
 
 logger = get_logger(__name__)
 
@@ -172,7 +172,7 @@ class ArkServer:
 
     def restart(self, reason: str = "other") -> None:
         if is_server_running():
-            send_message(f"Server is restarting for {reason}.")
+            broadcast(f"Server is restarting for {reason}.")
             time.sleep(5)
             self.stop()
             time.sleep(5)

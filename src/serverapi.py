@@ -1,14 +1,14 @@
 import os
-import zipfile
 import shutil
+import time
+import zipfile
 
 import requests
-import time
 
 from config import CONFIG, OUTDIR
-from utils import download_file
 from logger import get_logger
 from shell_operations import run_shell_cmd
+from utils import download_file
 
 logger = get_logger(__name__)
 

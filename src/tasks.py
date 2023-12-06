@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING
 
 from config import CONFIG
 from mods import Mod, mods_needing_update
-from rcon import destroy_wild_dinos, get_active_players, send_message
+from rcon import broadcast, destroy_wild_dinos, get_active_players
+from serverapi import serverapi_needs_update, use_serverapi
 from time_tracker import TimeTracker
 from update import does_server_need_update
-from serverapi import use_serverapi, serverapi_needs_update
 
 if TYPE_CHECKING:
     from main import ArkServer
@@ -53,7 +53,7 @@ class Task:
                 if extra:
                     msg += f", ({extra})"
                 msg += "."
-                send_message(msg)
+                broadcast(msg)
 
     def _warn_then_wait(self, extra: str = ""):
         for cnt, warning_minute in enumerate(self.warning_times):
@@ -61,7 +61,7 @@ class Task:
             if extra:
                 msg += f", ({extra})"
             msg += "."
-            send_message(msg)
+            broadcast(msg)
             if cnt < len(self.warning_times) - 1:
                 time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)
             else:
@@ -101,10 +101,10 @@ class SendAnnouncement(Task):
 
     def _run_task(self) -> bool:
         # general announcement
-        send_message(self.description, discord_msg=False)
+        broadcast(self.description, discord_msg=False)
         # announce next expected dino wipe
         next_wipe = self.server.tasks["destroy_wild_dinos"].time.display_next_time()
-        send_message(f"Next dino wipe: {next_wipe}", discord_msg=False)
+        broadcast(f"Next dino wipe: {next_wipe}", discord_msg=False)
 
         return False  # Always return False so that the other tasks run
 
