@@ -13,7 +13,7 @@ class ScrollableFrame(ttk.Frame):
         self.scrollbar.pack(side="right", fill="y", expand=False)
 
         self.canvas = ttk.Canvas(self, yscrollcommand=self.scrollbar.set)
-        self.canvas.pack(side="left", fill="both", expand=True)
+        self.canvas.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
         self.scrollbar.config(command=self.canvas.yview)
 

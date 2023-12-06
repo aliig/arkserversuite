@@ -1,6 +1,8 @@
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
 
+from .widgets.tooltip import ToolTip
+
 
 class HeaderPanel(ttk.Frame):
     """
@@ -23,7 +25,6 @@ class HeaderPanel(ttk.Frame):
         Sets up the user interface components for the header panel.
         """
         # Label displaying the title of the program
-        self.title_label = ttk.Label(self, text=self.title, bootstyle=PRIMARY)
+        self.title_label = ttk.Label(self, text=self.title)
         self.title_label.pack(side="left", padx=10, pady=10)
-
-        # You can add more header-related widgets here later if needed
+        ToolTip(self.title_label, "Hello there")

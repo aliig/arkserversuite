@@ -1,9 +1,11 @@
 import re
 import tkinter as tk
+from tkinter import messagebox
+
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+
 from .base import BaseDialog
-from tkinter import messagebox
 
 
 class AddServerDialog(BaseDialog):
@@ -11,9 +13,9 @@ class AddServerDialog(BaseDialog):
     Dialog to prompt user to name the server.
     """
 
-    def __init__(self, parent, existing_server_names):
+    def __init__(self, parent):
         super().__init__(parent, "Add Server")
-        self.existing_server_names = existing_server_names
+        self.existing_server_names: set = parent.server_slots
         self.server_name = None
 
         self.label = ttk.Label(self, text="Enter Server Name:")

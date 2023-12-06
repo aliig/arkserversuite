@@ -31,7 +31,7 @@ class SummaryTab(ScrollableFrame):
             self.inner_frame,
             text=f"Status: {self.server_data.get('status', 'Unknown')}",
         )
-        self.status_label.pack(pady=10)
+        self.status_label.pack()
 
         # Example frame for server statistics
         self.stats_frame = ttk.Frame(self.inner_frame)

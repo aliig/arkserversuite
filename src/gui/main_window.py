@@ -17,7 +17,7 @@ class MainWindow(ttk.Window):
         """
         super().__init__(*args, **kwargs)
         self.title("Ark Cluster Manager")
-        self.geometry("800x600")
+        self.geometry("1040x700")
         self.setup_ui()
 
     def setup_ui(self) -> None:
@@ -28,28 +28,44 @@ class MainWindow(ttk.Window):
         self.header_panel = HeaderPanel(self)
         self.header_panel.pack(side="top", fill="x")
 
-        # Main Content Frame
-        self.main_content_frame = ttk.Frame(self)
-        self.main_content_frame.pack(side="bottom", fill="both", expand=True)
+        # Separator
+        separator = ttk.Separator(self, orient="horizontal")
+        separator.pack(
+            side="top", fill="x", pady=10
+        )  # Add some padding for visual spacing
+
+        # PanedWindow for Main Content
+        self.main_content_paned = ttk.Panedwindow(self, orient="horizontal")
+        self.main_content_paned.pack(
+            side="top", fill="both", expand=True, padx=10, pady=(0, 10)
+        )  # Changed from 'bottom' to 'top'
 
         # Server List Panel
-        self.server_list_panel = ServerListPanel(self.main_content_frame)
-        self.server_list_panel.pack(side="left", fill="y")
+        self.server_list_panel = ServerListPanel(self.main_content_paned)
+        self.main_content_paned.add(self.server_list_panel)
 
         # Right-side Frame
-        self.right_side_frame = ttk.Frame(self.main_content_frame)
-        self.right_side_frame.pack(side="right", fill="both", expand=True)
+        self.right_side_frame = ttk.Frame(self.main_content_paned)
+        self.main_content_paned.add(self.right_side_frame)
+
+        # Right-side PanedWindow
+        self.right_side_paned = ttk.Panedwindow(
+            self.right_side_frame, orient="vertical"
+        )
+        self.right_side_paned.pack(fill="both", expand=True, padx=(10, 0))
 
         # Server Panel
         server_config = {}  # Placeholder for server configuration data
-        self.server_panel = ServerPanel(self.right_side_frame, server_config)
-        self.server_panel.pack(side="top", fill="both", expand=True)
+        self.server_panel = ServerPanel(self.right_side_paned, server_config)
+        # Give ServerPanel more priority in filling space
+        self.right_side_paned.add(self.server_panel, weight=2)
 
         # Log Panel
-        self.log_panel = LogPanel(self.right_side_frame)
-        self.log_panel.pack(side="bottom", fill="x")
+        self.log_panel = LogPanel(self.right_side_paned)
+        # Set a smaller weight for LogPanel, so it takes less priority
+        self.right_side_paned.add(self.log_panel, weight=1)
 
 
 if __name__ == "__main__":
-    app = MainWindow(themename="superhero")
+    app = MainWindow()
     app.mainloop()

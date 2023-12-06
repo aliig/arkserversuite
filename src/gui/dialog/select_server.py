@@ -1,6 +1,8 @@
 import tkinter as tk
+
 import ttkbootstrap as ttk
 from ttkbootstrap.constants import *
+
 from .base import BaseDialog
 
 
@@ -9,7 +11,7 @@ class SelectServerDialog(BaseDialog):
     Dialog to select a server from a dropdown list.
     """
 
-    def __init__(self, parent, server_names):
+    def __init__(self, parent):
         super().__init__(parent, "Select Server")
 
         self.selected_server = None
@@ -18,7 +20,7 @@ class SelectServerDialog(BaseDialog):
         self.label.pack(pady=10)
 
         self.server_var = tk.StringVar(self)
-        self.dropdown = ttk.OptionMenu(self, self.server_var, *server_names)
+        self.dropdown = ttk.OptionMenu(self, self.server_var, *parent.server_slots)
         self.dropdown.pack(pady=10)
         self.dropdown.focus_set()
 

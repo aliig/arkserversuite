@@ -10,7 +10,7 @@ def main() -> None:
     """
     # Create an instance of the main window with a specific ttkbootstrap theme
 
-    app = MainWindow(themename="superhero")
+    app = MainWindow(themename="darkly")
     app.mainloop()  # Start the application loop
 
 

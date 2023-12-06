@@ -20,15 +20,19 @@ class LogPanel(ttk.Frame):
         """
         Sets up the user interface components for the log panel.
         """
-        # Create a scrollbar
-        self.scrollbar = ttk.Scrollbar(self)
+        # Create an inner frame with padding
+        inner_frame = ttk.Frame(self)
+        inner_frame.pack(fill="both", expand=True, pady=(10, 0))
+
+        # Create a scrollbar in the inner frame
+        self.scrollbar = ttk.Scrollbar(inner_frame)
         self.scrollbar.pack(side="right", fill="y")
 
-        # Create the text widget with a scrollbar
+        # Create the text widget with a scrollbar in the inner frame
         self.log_text = ttk.Text(
-            self, state="disabled", yscrollcommand=self.scrollbar.set
+            inner_frame, state="disabled", yscrollcommand=self.scrollbar.set, height=6
         )
-        self.log_text.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        self.log_text.pack(side="left", fill="both", expand=True)
 
         # Link the scrollbar to the text widget
         self.scrollbar.config(command=self.log_text.yview)

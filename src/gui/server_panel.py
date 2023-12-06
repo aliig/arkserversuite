@@ -29,7 +29,7 @@ class ServerPanel(ttk.Frame):
         Sets up the user interface components for the server panel.
         """
         self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill="both", expand=True)
+        self.notebook.pack(fill="both", expand=True, pady=(0, 10))
 
         # Initialize tabs with server configuration
         self.summary_tab = SummaryTab(self.notebook)
