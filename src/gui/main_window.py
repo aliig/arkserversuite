@@ -1,111 +1,55 @@
 import ttkbootstrap as ttk
-from ttkbootstrap.constants import *
-from .server_tab import ServerTab
-from .dialog.add_server import AddServerDialog
-from .dialog.copy_settings import CopySettingsDialog
-from .dialog.select_server import SelectServerDialog
-from typing import Dict
+
+from .header_panel import HeaderPanel
+from .log_panel import LogPanel
+from .server_list_panel import ServerListPanel
+from .server_panel import ServerPanel
 
 
 class MainWindow(ttk.Window):
     """
-    Main window of the application, hosting the server tabs and other controls.
+    The main application window that contains all the panels and frames.
     """
 
     def __init__(self, *args, **kwargs) -> None:
         """
-        Initialize the main window with necessary components.
+        Initialize the main window of the application.
         """
         super().__init__(*args, **kwargs)
         self.title("Ark Cluster Manager")
         self.geometry("800x600")
+        self.setup_ui()
 
-        self.server_tabs: Dict[str, ServerTab] = {}
-        self.tab_control = ttk.Notebook(self)  # ttk.Notebook for tab control
-        self.tab_control.pack(expand=True, fill="both", padx=20, pady=20)
-
-        self.add_server_button = ttk.Button(
-            self, text="Add Server", command=self.prompt_new_server, bootstyle=PRIMARY
-        )
-        self.add_server_button.pack(pady=10)
-
-    def prompt_new_server(self) -> None:
+    def setup_ui(self) -> None:
         """
-        Prompts the user to add a new server.
+        Sets up the user interface components for the main window.
         """
-        existing_server_names = list(self.server_tabs.keys())
-        add_server_dialog = AddServerDialog(self, existing_server_names)
-        self.wait_window(add_server_dialog)
+        # Header Panel
+        self.header_panel = HeaderPanel(self)
+        self.header_panel.pack(side="top", fill="x")
 
-        server_name = add_server_dialog.get_server_name()
-        if server_name:
-            print(f"Adding new server '{server_name}'.")
-            if len(self.server_tabs) > 0:
-                self.prompt_copy_settings(server_name)
-            else:
-                self.add_server_tab(server_name, {"config": "new_server_config"})
+        # Main Content Frame
+        self.main_content_frame = ttk.Frame(self)
+        self.main_content_frame.pack(side="bottom", fill="both", expand=True)
 
-    def prompt_copy_settings(self, new_server_name: str) -> None:
-        """
-        Prompts the user whether to copy settings from another server.
-        """
-        copy_settings_dialog = CopySettingsDialog(self)
-        self.wait_window(copy_settings_dialog)
+        # Server List Panel
+        self.server_list_panel = ServerListPanel(self.main_content_frame)
+        self.server_list_panel.pack(side="left", fill="y")
 
-        if copy_settings_dialog.should_copy_settings():
-            self.prompt_select_server(new_server_name)
-        else:
-            self.add_server_tab(new_server_name, {"config": "new_server_config"})
+        # Right-side Frame
+        self.right_side_frame = ttk.Frame(self.main_content_frame)
+        self.right_side_frame.pack(side="right", fill="both", expand=True)
 
-    def prompt_select_server(self, new_server_name: str) -> None:
-        """
-        Prompts the user to select a server to copy settings from.
-        """
-        existing_server_names = list(self.server_tabs.keys())
-        select_server_dialog = SelectServerDialog(self, existing_server_names)
-        self.wait_window(select_server_dialog)
+        # Server Panel
+        server_config = {}  # Placeholder for server configuration data
+        self.server_panel = ServerPanel(self.right_side_frame, server_config)
+        self.server_panel.pack(side="top", fill="both", expand=True)
 
-        selected_server = select_server_dialog.get_selected_server()
-        if selected_server:
-            # Here you would copy the settings from the selected server
-            # For now, we just add the new server tab
-            self.add_server_tab(
-                new_server_name, {"config": f"copied_from_{selected_server}"}
-            )
+        # Log Panel
+        self.log_panel = LogPanel(self.right_side_frame)
+        self.log_panel.pack(side="bottom", fill="x")
 
-    def add_server_tab(self, server_name: str, server_config: Dict) -> None:
-        """
-        Adds a new tab for a server instance.
-        """
-        if server_name not in self.server_tabs:
-            # Create a new ServerTab instance
-            new_tab = ServerTab(self.tab_control, server_config)
 
-            # Add the new tab to the Notebook widget
-            self.tab_control.add(new_tab, text=server_name)
-
-            # Keep track of the new tab in the server_tabs dictionary
-            self.server_tabs[server_name] = new_tab
-
-    def delete_server_tab(self, server_name: str) -> None:
-        """
-        Deletes a tab for a server instance.
-
-        :param server_name: The name of the server instance to delete.
-        """
-        if server_name in self.server_tabs:
-            self.tab_control.delete(server_name)
-            del self.server_tabs[server_name]
-
-    def rename_server_tab(self, old_name: str, new_name: str) -> None:
-        """
-        Renames a tab for a server instance.
-
-        :param old_name: The current name of the server instance.
-        :param new_name: The new name for the server instance.
-        """
-        if old_name in self.server_tabs and new_name not in self.server_tabs:
-            self.tab_control.rename(old_name, new_name)
-            self.server_tabs[new_name] = self.server_tabs.pop(old_name)
-
-    # Additional methods for other tab management functionalities can be added here
+if __name__ == "__main__":
+    app = MainWindow(themename="superhero")
+    app.mainloop()

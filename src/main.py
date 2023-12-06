@@ -1,4 +1,5 @@
 import ttkbootstrap as ttk
+
 from gui.main_window import MainWindow
 
 

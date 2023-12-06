@@ -1,9 +1,10 @@
 import socket
 import struct
 
-from config import CONFIG
 from logger import get_logger
 from utils import send_to_discord, time_as_string
+
+from config import CONFIG
 
 logger = get_logger(__name__)
 

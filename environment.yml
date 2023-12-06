@@ -14,4 +14,4 @@ dependencies:
     - colorlog
     - tzlocal
     - cryptography
-    - ttkbootstrap
+    - git+https://github.com/israel-dryer/ttkbootstrap.git#egg=ttkbootstrap
