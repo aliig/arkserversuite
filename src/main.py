@@ -1,5 +1,6 @@
 import ttkbootstrap as ttk
 
+from global_context import global_context
 from gui.main_window import MainWindow
 
 
@@ -8,7 +9,8 @@ def main() -> None:
     Entry point for the application.
     Initializes the GUI and starts the application loop.
     """
-    # Create an instance of the main window with a specific ttkbootstrap theme
+
+    global_context.setup_database("output/aacm.db")
 
     app = MainWindow(themename="darkly")
     app.mainloop()  # Start the application loop

@@ -3,6 +3,8 @@ from typing import Callable, Dict
 
 import ttkbootstrap as ttk
 
+from global_context import global_context
+
 from .dialog.add_server import AddServerDialog
 from .dialog.copy_settings import CopySettingsDialog
 from .dialog.select_server import SelectServerDialog
@@ -23,6 +25,8 @@ class ServerListPanel(ttk.Frame):
         super().__init__(parent)
         self.setup_ui()
         self.server_slots: set = set()
+        self.database_manager = global_context.database_manager
+        self.initialize_servers()
 
     def setup_ui(self) -> None:
         """
@@ -41,6 +45,12 @@ class ServerListPanel(ttk.Frame):
             width=30,
         )
         self.add_server_button.pack(padx=(0, 10))
+
+    def initialize_servers(self):
+        # Fetch existing servers from the database and create buttons
+        existing_servers = self.database_manager.get_servers()
+        for server in existing_servers:
+            self.add_server_slot(server[0])  # Assuming server is a tuple
 
     def prompt_new_server(self) -> None:
         """
@@ -62,8 +72,12 @@ class ServerListPanel(ttk.Frame):
         Adds a new slot for a server instance.
         """
         if server_name not in self.server_slots:
-            self.server_slots.add(server_name)
-            self.create_server_button(server_name)
+            try:
+                self.database_manager.add_server(server_name)
+                self.server_slots.add(server_name)
+                self.create_server_button(server_name)
+            except Exception as e:
+                print(f"Error adding server: {e}")
 
     def create_server_button(self, server_name: str) -> None:
         """
@@ -105,6 +119,10 @@ class ServerListPanel(ttk.Frame):
 
         selected_server = select_server_dialog.get_selected_server()
         if selected_server:
-            # Here you would copy the settings from the selected server
-            # For now, we just add the new server tab
-            self.add_server_slot(new_server_name)
+            try:
+                self.database_manager.copy_server_settings(
+                    selected_server, new_server_name
+                )
+                self.add_server_slot(new_server_name)
+            except Exception as e:
+                print(f"Error copying server settings: {e}")
