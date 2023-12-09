@@ -4,3 +4,4 @@ config/custom.yml
 dist
 .env
 dist/
+src/old/
