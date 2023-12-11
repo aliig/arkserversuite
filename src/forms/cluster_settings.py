@@ -5,11 +5,6 @@ from utils.networking import get_internal_ip
 
 from .base import FieldType, FormField
 
-
-def get_local_timezone():
-    return datetime.datetime.now(datetime.timezone.utc).astimezone().tzinfo
-
-
 CLUSTER_SETTINGS = [
     FormField(
         field_name="Private IP address",
@@ -17,7 +12,10 @@ CLUSTER_SETTINGS = [
         required=True,
         default_value=get_internal_ip(),
         tooltip="The internal IP address of the server.",
-        validation_func=lambda x: ipaddress.ip_address(x),
+        validation_func=lambda x: isinstance(
+            ipaddress.ip_address(x), ipaddress.IPv4Address
+        )
+        or isinstance(ipaddress.ip_address(x), ipaddress.IPv6Address),
     ),
     FormField(
         field_name="Timezone",

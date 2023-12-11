@@ -1,0 +1,75 @@
+from .base import FieldType, FormField, is_comma_delimited_integers, is_integer
+
+SERVER_SETTINGS = [
+    FormField(
+        field_name="Server name",
+        field_type=FieldType.TEXT,
+        required=True,
+        tooltip="The server name that will appear on the Steam server list",
+    ),
+    FormField(
+        field_name="Game port",
+        field_type=FieldType.TEXT,
+        required=True,
+        tooltip="The port that the server will use to communicate with the game client",
+        default_value="7777",
+        validation_func=is_integer,
+    ),
+    FormField(
+        field_name="Query port",
+        field_type=FieldType.TEXT,
+        required=True,
+        tooltip="The port that the server will use to communicate with the Steam server list",
+        default_value="27015",
+        validation_func=is_integer,
+    ),
+    FormField(
+        field_name="RCON port",
+        field_type=FieldType.TEXT,
+        required=True,
+        tooltip="The port that the server will use to communicate with the RCON client",
+        default_value="32330",
+        validation_func=is_integer,
+    ),
+    FormField(
+        field_name="Max players",
+        field_type=FieldType.TEXT,
+        required=True,
+        tooltip="The maximum number of players that can join the server",
+        default_value="26",
+        validation_func=is_integer,
+    ),
+    FormField(
+        field_name="Server password",
+        field_type=FieldType.TEXT,
+        required=False,
+        tooltip="Server password for private access (if needed)",
+    ),
+    FormField(
+        field_name="Map",
+        field_type=FieldType.TEXT,
+        required=True,
+        tooltip="The map that the server will load",
+        default_value="TheIsland_WP",
+    ),
+    FormField(
+        field_name="Admin password",
+        field_type=FieldType.TEXT,
+        required=False,
+        tooltip="Password for admin privileges",
+    ),
+    FormField(
+        field_name="Admin ID list",
+        field_type=FieldType.TEXT,
+        required=False,
+        tooltip="List of Steam IDs for server admins (comma delimited). Check with `whoami` or `cheat listplayers`",
+        validation_func=is_comma_delimited_integers,
+    ),
+    FormField(
+        field_name="Use Server API",
+        field_type=FieldType.CHECKBOX,
+        required=False,
+        default_value="False",
+        tooltip="Set to True to use the Ark Server API to enable plugins. https://gameservershub.com/forums/resources/ark-survival-ascended-serverapi-crossplay-supported.683/",
+    ),
+]
