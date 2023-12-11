@@ -229,15 +229,17 @@ class LogMonitor:
 
         new_entries = []
         try:
-            with open(self.filepath, "r") as file:
+            with open(self.filepath, "r", encoding="utf-8") as file:
                 file.seek(self.last_size)
                 new_entries = file.readlines()
                 self.last_size = current_size
         except FileNotFoundError:
             logger.error(f"Log file does not exist: {self.filepath}")
-            # You might want to handle this differently if the file disappears mid-operation
+            # Handle file disappearance mid-operation if needed
         except OSError as e:
             logger.error(f"Error reading log file: {e}")
+        except UnicodeDecodeError as e:
+            logger.error(f"Error decoding log file: {e}")
 
         log_events = [LogEventFactory.create(line) for line in new_entries]
         return log_events
