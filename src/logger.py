@@ -2,6 +2,8 @@ import logging
 import os
 import sys
 
+sys.stdout.reconfigure(encoding="utf-8")
+
 import colorlog
 
 from config import CONFIG, OUTDIR
@@ -29,7 +31,7 @@ formatter = colorlog.ColoredFormatter(
 )
 
 # Create handlers for file and console
-file_handler = logging.FileHandler(log_path)
+file_handler = logging.FileHandler(log_path, encoding="utf-8")  # specify encoding here
 console_handler = colorlog.StreamHandler(sys.stdout)
 console_handler.setFormatter(formatter)
 
