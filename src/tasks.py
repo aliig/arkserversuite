@@ -53,7 +53,7 @@ class Task:
                 if extra:
                     msg += f", ({extra})"
                 msg += "."
-                # broadcast(msg)
+                broadcast(msg)
                 send_message(msg)
 
     def _warn_then_wait(self, extra: str = ""):
@@ -62,7 +62,7 @@ class Task:
             if extra:
                 msg += f", ({extra})"
             msg += "."
-            # broadcast(msg)
+            broadcast(msg)
             send_message(msg)
             if cnt < len(self.warning_times) - 1:
                 time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)
@@ -103,9 +103,8 @@ class SendAnnouncement(Task):
 
     def _run_task(self) -> bool:
         # general announcement
-        # announce next expected dino wipe
         send_message(self.description, discord_msg=False)
-        # broadcast(self.description, discord_msg=False)
+        broadcast(self.description, discord_msg=False)
         # next_wipe = self.server.tasks["destroy_wild_dinos"].time.display_next_time()
         # broadcast(f"Next dino wipe: {next_wipe}", discord_msg=False)
 
