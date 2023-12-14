@@ -26,13 +26,9 @@ launch_options:
   # Options prefixed with a hyphen
   hyphen:
     - EnableIdlePlayerKick
-    - NoBattlEye
     - servergamelog
     - servergamelogincludetribelogs
     - ServerRCONOutputTribeLogs
-    - nosteamclient
-    - server
-    - log
   # List of mods to include on the server
   mods:
     - 928988 # Mod ID
