@@ -94,7 +94,6 @@ def generate_batch_file() -> str:
     )
     question_mark_options_list = [
         CONFIG["server"]["map"],
-        "listen",
         _server_config_option("ip_address", "MultiHome={}"),
         # _server_config_option('name', "SessionName=\"{}\""),
         _server_config_option("port", "Port={}"),
