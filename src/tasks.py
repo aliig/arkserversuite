@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from config import CONFIG
 from mods import Mod, mods_needing_update
-from rcon import broadcast, destroy_wild_dinos, get_active_players
+from rcon import broadcast, destroy_wild_dinos, get_active_players, send_message
 from serverapi import serverapi_needs_update, use_serverapi
 from time_tracker import TimeTracker
 from update import does_server_need_update
@@ -53,7 +53,8 @@ class Task:
                 if extra:
                     msg += f", ({extra})"
                 msg += "."
-                broadcast(msg)
+                # broadcast(msg)
+                send_message(msg)
 
     def _warn_then_wait(self, extra: str = ""):
         for cnt, warning_minute in enumerate(self.warning_times):
@@ -61,7 +62,8 @@ class Task:
             if extra:
                 msg += f", ({extra})"
             msg += "."
-            broadcast(msg)
+            # broadcast(msg)
+            send_message(msg)
             if cnt < len(self.warning_times) - 1:
                 time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)
             else:
@@ -102,7 +104,8 @@ class SendAnnouncement(Task):
     def _run_task(self) -> bool:
         # general announcement
         # announce next expected dino wipe
-        broadcast(self.description, discord_msg=False)
+        send_message(self.description, discord_msg=False)
+        # broadcast(self.description, discord_msg=False)
         # next_wipe = self.server.tasks["destroy_wild_dinos"].time.display_next_time()
         # broadcast(f"Next dino wipe: {next_wipe}", discord_msg=False)
 

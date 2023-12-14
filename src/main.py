@@ -11,7 +11,7 @@ from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from mods import delete_mods_folder
-from rcon import broadcast, save_world
+from rcon import broadcast, save_world, send_message
 from serverapi import (
     install_serverapi,
     is_server_api_ready,
@@ -172,7 +172,8 @@ class ArkServer:
 
     def restart(self, reason: str = "other") -> None:
         if is_server_running():
-            broadcast(f"Server is restarting for {reason}.")
+            send_message(f"Server is restarting for {reason}.")
+            # broadcast(f"Server is restarting for {reason}.")
             time.sleep(5)
             self.stop()
             time.sleep(5)
