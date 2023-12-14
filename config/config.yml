@@ -22,10 +22,11 @@ server:
 launch_options:
   # Options prefixed with a question mark
   question_mark:
-    - AllowCrateSpawnsOnTopOfStructures=True # Allows crates to spawn on top of structures
+    # - AllowCrateSpawnsOnTopOfStructures=True # Allows crates to spawn on top of structures
   # Options prefixed with a hyphen
   hyphen:
     - EnableIdlePlayerKick
+    - NoBattlEye
     - servergamelog
     - servergamelogincludetribelogs
     - ServerRCONOutputTribeLogs
