@@ -32,7 +32,7 @@ launch_options:
     - ServerRCONOutputTribeLogs
   # List of mods to include on the server
   mods:
-    - 928988 # Mod ID
+    # - 928988 # Mod ID
 
 # Discord integration settings
 discord:
