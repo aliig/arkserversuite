@@ -118,7 +118,9 @@ def generate_batch_file() -> str:
         :return: The question mark options string.
         """
         options = [CONFIG["server"]["map"]]
-        options.extend(CONFIG["launch_options"].get("question_mark", []))
+        question_mark_options = CONFIG["launch_options"].get("question_mark", [])
+        if question_mark_options:
+            options.extend(question_mark_options)
         return "?".join(filter(None, options))
 
     def _construct_hyphen_options() -> str:
@@ -127,9 +129,8 @@ def generate_batch_file() -> str:
 
         :return: The hyphen options string.
         """
-        options = [
-            f"-{opt}" for opt in CONFIG["launch_options"].get("hyphen", []) if opt
-        ]
+        hyphen_options = CONFIG["launch_options"].get("hyphen", [])
+        options = [f"-{opt}" for opt in hyphen_options if opt]
         mods = CONFIG["launch_options"].get("mods")
         if mods:
             options.append(f"-mods={','.join(map(str, mods))}")

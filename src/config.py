@@ -135,4 +135,4 @@ CONFIG = ConfigLoader().merged_config
 OUTDIR = CONFIG["advanced"].get("output_directory", "output")
 os.makedirs(OUTDIR, exist_ok=True)
 
-print(CONFIG)
+# print(CONFIG)
