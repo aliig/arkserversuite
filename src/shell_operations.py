@@ -94,14 +94,14 @@ def generate_batch_file() -> str:
     )
     question_mark_options_list = [
         CONFIG["server"]["map"],
-        _server_config_option("ip_address", "MultiHome={}"),
+        # _server_config_option("ip_address", "MultiHome={}"),
         # _server_config_option('name', "SessionName=\"{}\""),
-        _server_config_option("port", "Port={}"),
-        _server_config_option("query_port", "QueryPort={}"),
+        # _server_config_option("port", "Port={}"),
+        # _server_config_option("query_port", "QueryPort={}"),
         # _server_config_option("password", "Password={}"),
         # _server_config_option("max_players", "MaxPlayers={}"),
         # _server_config_option("admin_password", "ServerAdminPassword={}"),
-        "RCONEnabled=True",
+        # "RCONEnabled=True",
         *CONFIG["launch_options"]["question_mark"],
     ]
 
