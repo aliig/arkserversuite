@@ -102,7 +102,7 @@ def generate_batch_file() -> str:
         # _server_config_option("max_players", "MaxPlayers={}"),
         # _server_config_option("admin_password", "ServerAdminPassword={}"),
         # "RCONEnabled=True",
-        *CONFIG["launch_options"]["question_mark"],
+        *CONFIG["launch_options"].get("question_mark", []),
     ]
 
     question_mark_options = "?".join(filter(None, question_mark_options_list))
