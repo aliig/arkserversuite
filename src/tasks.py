@@ -53,7 +53,7 @@ class Task:
                 if extra:
                     msg += f", ({extra})"
                 msg += "."
-                broadcast(msg)
+                broadcast(msg, discord_msg=False)
                 send_message(msg)
 
     def _warn_then_wait(self, extra: str = ""):
@@ -62,7 +62,7 @@ class Task:
             if extra:
                 msg += f", ({extra})"
             msg += "."
-            broadcast(msg)
+            broadcast(msg, discord_msg=False)
             send_message(msg)
             if cnt < len(self.warning_times) - 1:
                 time.sleep((warning_minute - self.warning_times[cnt + 1]) * 60)

@@ -91,6 +91,7 @@ tasks:
     interval: 24 # Frequency of server API update checks in hours
     warnings: [10, 5, 1] # Warnings before restart for server API update at these minute intervals
 
+send_welcome_message: True # Sends a welcome message to players on joining the server based on announcement message above
 
 # Configuration ini file overrides for game settings
 # config_overrides:

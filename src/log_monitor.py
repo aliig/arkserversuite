@@ -59,10 +59,11 @@ class PlayerConnectEvent(LogEvent):
 
     def _post_classification(self):
         if self.event_type == "joined":
-            send_message_to_player(
-                self.player_name,
-                f'Welcome {self.player_name}! {CONFIG["tasks"]["announcement"]["description"]}',
-            )
+            if "send_welcome_message" in CONFIG and CONFIG["send_welcome_message"]:
+                send_message_to_player(
+                    self.player_name,
+                    f'Welcome {self.player_name}! {CONFIG["tasks"]["announcement"]["description"]}',
+                )
         elif self.event_type == "left":
             pass
         else:

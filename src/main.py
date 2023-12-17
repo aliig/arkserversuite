@@ -173,7 +173,7 @@ class ArkServer:
     def restart(self, reason: str = "other") -> None:
         if is_server_running():
             send_message(f"Server is restarting for {reason}.")
-            broadcast(f"Server is restarting for {reason}.")
+            broadcast(f"Server is restarting for {reason}.", discord_msg=False)
             time.sleep(5)
             self.stop()
             time.sleep(5)
