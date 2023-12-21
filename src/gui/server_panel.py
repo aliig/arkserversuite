@@ -12,15 +12,14 @@ class ServerPanel(ttk.Frame):
     GUI component representing the panel that contains all the server-specific tabs.
     """
 
-    def __init__(self, parent, server_config: dict) -> None:
+    def __init__(self, parent, server_name: str = None) -> None:
         """
         Initialize the server panel with specific server configuration.
 
         :param parent: The parent widget.
-        :param server_config: Configuration details for the server.
         """
         super().__init__(parent)
-        self.server_config = server_config
+        self.server_name = server_name
 
         self.setup_ui()
 
@@ -28,6 +27,8 @@ class ServerPanel(ttk.Frame):
         """
         Sets up the user interface components for the server panel.
         """
+        if self.server_name is None:
+            return
         self.notebook = ttk.Notebook(self)
         self.notebook.pack(fill="both", expand=True, pady=(0, 10))
 

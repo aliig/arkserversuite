@@ -15,15 +15,16 @@ class ServerListPanel(ttk.Frame):
     GUI component representing the list of servers and the server add button.
     """
 
-    def __init__(self, parent) -> None:
+    def __init__(self, parent, on_server_selected: Callable) -> None:
         """
-        Initialize the server list panel.
+        Initialize the ServerListPanel.
 
         :param parent: The parent widget.
-        :param add_server_callback: The callback function to execute when the add server button is clicked.
+        :param on_server_selected: Callback function to be called when a server is selected.
         """
         super().__init__(parent)
         self.setup_ui()
+        self.on_server_selected = on_server_selected
         self.server_slots: set = set()
         self.database_manager = global_context.database_manager
         self.initialize_servers()
@@ -96,7 +97,8 @@ class ServerListPanel(ttk.Frame):
         Handles the event when a server button is clicked.
         """
         print(f"Server button for '{server_name}' clicked.")
-        # Here you can define what should happen when a server button is clicked
+        if self.on_server_selected:
+            self.on_server_selected(server_name)
 
     def prompt_copy_settings(self, new_server_name: str) -> None:
         """

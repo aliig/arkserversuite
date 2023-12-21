@@ -1,9 +1,12 @@
 import json
 import sqlite3
+import os
+from typing import Any
 
 
 class DatabaseManager:
     def __init__(self, db_path):
+        os.makedirs(os.path.dirname(db_path), exist_ok=True)
         self.conn = sqlite3.connect(db_path)
         self.create_tables()
 
@@ -82,6 +85,40 @@ class DatabaseManager:
                 "SELECT setting_value FROM cluster_settings WHERE setting_key = ?",
                 (key,),
             ).fetchone()
+
+    def get_server_value(self, server_name: str, setting_key: str) -> Any | None:
+        """
+        Fetches a setting value for a specified server based on the provided setting key.
+
+        :param server_name: The name of the server to fetch settings from.
+        :param setting_key: The key of the setting to query.
+        :return: The value associated with the setting key for the specified server, or None if not found.
+        """
+        with self.conn:
+            result = self.conn.execute(
+                "SELECT setting_value FROM servers WHERE server_name = ? AND setting_key = ?",
+                (server_name, setting_key),
+            ).fetchone()
+            return result[0] if result else None
+
+    def update_server_value(
+        self, server_name: str, setting_key: str, setting_value: str
+    ):
+        """
+        Updates or inserts a setting value for a specified server.
+
+        :param server_name: The name of the server for which to update or insert the setting.
+        :param setting_key: The key of the setting to be updated or inserted.
+        :param setting_value: The value to be set for the key.
+        """
+        with self.conn:
+            self.conn.execute(
+                """INSERT INTO servers (server_name, setting_key, setting_value)
+                   VALUES (?, ?, ?)
+                   ON CONFLICT(server_name, setting_key)
+                   DO UPDATE SET setting_value = excluded.setting_value""",
+                (server_name, setting_key, setting_value),
+            )
 
     def print_all_data(self):
         print("Servers:")
