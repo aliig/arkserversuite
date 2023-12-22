@@ -45,11 +45,17 @@ logger = get_logger(__name__)
 
 
 class ArkServerStartError(Exception):
-    pass
+    if "install_path" in CONFIG["server"]:
+        logger.error(
+            f"Check the server log at {CONFIG['server']['install_path']}/ShooterGame/Saved/Logs"
+        )
 
 
 class ArkServerStopError(Exception):
-    pass
+    if "install_path" in CONFIG["server"]:
+        logger.error(
+            f"Check the server log at {CONFIG['server']['install_path']}/ShooterGame/Saved/Logs"
+        )
 
 
 class ArkServer:
@@ -135,9 +141,9 @@ class ArkServer:
                     logger.info("Ark server API ready")
 
             # wait for ark server process to start
-            _, success = wait_until(
+            res, success = wait_until(
                 is_server_running,
-                lambda x: bool(x),
+                lambda x: x,
                 timeout=self.server_timeout,
                 sleep_interval=3,
             )
@@ -146,6 +152,7 @@ class ArkServer:
                 raise ArkServerStartError("Failed to start the Ark server.")
             else:
                 logger.info(f"Ark server started")
+                self.ark_pid = res
                 logger.debug(f"Ark server PID: {self.ark_pid}")
                 if use_serverapi:
                     self.api_pid = get_parent_pid_from_child(self.ark_pid)
@@ -226,7 +233,7 @@ class ArkServer:
 
         while self.running:
             if not is_server_running():
-                logger.info("Server is not running. Attempting to restart...")
+                logger.warning("Server is not running. Attempting to restart...")
                 self.start()
 
             for _, task in self.tasks.items():

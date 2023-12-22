@@ -39,17 +39,20 @@ def kill_server_by_pids(pids: list[int]) -> None:
 
 def get_pid_from_port(expected_port: int) -> int | None:
     """
-    Retrieves the process ID that is using the specified port.
+    Retrieves the process ID and name that is using the specified port.
 
     :param expected_port: The port number to check.
-    :return: The process ID if found, otherwise None.
+    :return: The process ID and name if found, otherwise None.
     """
     for conn in psutil.net_connections(kind="inet"):
         if conn.laddr.port == expected_port:
             res = conn.pid
-            logger.debug(f"Process id on port {expected_port} found: {res}")
+            process_name = psutil.Process(res).name()
+            logger.debug(
+                f"Process {process_name} on port {expected_port} found: PID={res}"
+            )
             return res
-    logger.debug(f"Process id on port {expected_port} not found")
+    logger.debug(f"No process found on port {expected_port}")
     return None
 
 
