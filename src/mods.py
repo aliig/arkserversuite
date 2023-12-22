@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timedelta
 from functools import cache
 
 import requests
@@ -95,24 +95,47 @@ def _get_installed_mod_timestamp(mod_id: int) -> tuple[str, datetime | None]:
     return "", None
 
 
-def _get_latest_mods_timestamps(mod_ids: list[int]) -> dict[int, tuple[str, datetime]]:
+def _fetch_mod_data(mod_ids: int | list[int]) -> dict:
+    """
+    Fetches mod data from the CurseForge API based on the provided mod IDs.
+
+    :param mod_ids: A single mod ID or a list of mod IDs to query.
+    :return: A dictionary containing the response data from the API.
+    """
     try:
-        date_format = "%Y-%m-%dT%H:%M"
+        # Convert a single integer to a list
+        if isinstance(mod_ids, int):
+            mod_ids = [mod_ids]
+
         headers = {
             "Content-Type": "application/json",
             "Accept": "application/json",
             "x-api-key": _get_api_key(),
         }
         payload = {"modIds": mod_ids, "filterPcOnly": True}
-
-        r = requests.post(
+        response = requests.post(
             "https://api.curseforge.com/v1/mods", headers=headers, json=payload
         )
-        r.raise_for_status()
+        response.raise_for_status()
+        return response.json()
+    except Exception as e:
+        logger.error(e)
+        return {}
 
-        response_data = r.json()
+
+def _get_latest_mods_timestamps(mod_ids: list[int]) -> dict[int, tuple[str, datetime]]:
+    """
+    Fetches the latest timestamps for mods based on provided mod IDs.
+
+    :param mod_ids: A list of mod IDs to query.
+    :return: A dictionary mapping mod IDs to a tuple of mod name and its latest timestamp.
+    """
+    try:
+        date_format = "%Y-%m-%dT%H:%M"
+        response_data = _fetch_mod_data(mod_ids)
+
         latest_timestamps = {}
-        for mod in response_data["data"]:
+        for mod in response_data.get("data", []):
             mod_id = int(mod["id"])
             mod_name = mod["name"]
             date_string = mod["dateReleased"]
@@ -120,7 +143,7 @@ def _get_latest_mods_timestamps(mod_ids: list[int]) -> dict[int, tuple[str, date
             new_string = date_string[:last_colon_pos]
             timestamp = datetime.strptime(new_string, date_format)
             latest_timestamps[mod_id] = (mod_name, timestamp)
-            logger.debug(f"{mod['name']} latest timestamp: {timestamp}")
+            logger.debug(f"{mod_name} latest timestamp: {timestamp}")
 
         return latest_timestamps
     except Exception as e:
@@ -150,9 +173,10 @@ def get_all_mods() -> list[Mod]:
 
 def mods_needing_update() -> list[Mod]:
     mods_update_list = []
+    time_diff = CONFIG["advanced"].get("mod_update_timestamp_threshold", 60)
     for mod in get_all_mods():
         if mod.installed_dt and mod.latest_dt:
-            if mod.installed_dt < mod.latest_dt:
+            if mod.installed_dt + timedelta(minutes=time_diff) < mod.latest_dt:
                 mods_update_list.append(mod)
 
     return mods_update_list
@@ -180,4 +204,15 @@ def delete_mods_folder() -> None:
 
 
 if __name__ == "__main__":
-    print(mods_needing_update())
+    mods_update_list = mods_needing_update()
+    mod_data = _fetch_mod_data(927090)
+
+    # Write mod data to JSON file
+    output_dir = os.path.join(os.getcwd(), "output")
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, "mod_data.json")
+
+    with open(output_file, "w") as f:
+        json.dump(mod_data, f, indent=4)  # Pretty print with indent=4
+
+    print(mods_update_list)
