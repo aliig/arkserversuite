@@ -107,6 +107,7 @@ advanced:
   server_api_timeout: 1800  # seconds to wait for server API to start or stop before exiting
   output_directory: "output"
   log_check_rate: 2  # seconds to wait between log file checks
+  mod_update_timestamp_threshold: 60 # number of minutes between installed and latest mod update timestamps before mod is considered needing an update
   download_url:
     steamcmd: "https://steamcdn-a.akamaihd.net/client/installer/steamcmd.zip"
     vc_redist: "https://aka.ms/vs/17/release/vc_redist.x64.exe"
