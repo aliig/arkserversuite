@@ -136,7 +136,7 @@ class ArkServer:
                 logger.info(f"Ark server started")
                 self.ark_pid = res
                 logger.debug(f"Ark server PID: {self.ark_pid}")
-                if use_serverapi:
+                if use_serverapi():
                     self.api_pid = get_parent_pid_from_child(self.ark_pid)
                     logger.debug(f"Ark server API PID: {self.api_pid}")
                 self._reset_states()
