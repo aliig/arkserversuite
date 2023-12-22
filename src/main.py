@@ -7,16 +7,12 @@ from dependencies import (
     install_certificates,
     install_prerequisites,
 )
+from errors import ArkServerStartError, ArkServerStopError
 from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from mods import delete_mods_folder
-from processes import (
-    get_parent_pid_from_child,
-    is_server_running,
-    kill_server,
-    kill_server_by_pids,
-)
+from processes import get_parent_pid_from_child, is_server_running, kill_server_by_pids
 from rcon import broadcast, save_world, send_message
 from serverapi import (
     install_serverapi,
@@ -42,26 +38,6 @@ from update import does_server_need_update, is_server_installed
 from utils import wait_until
 
 logger = get_logger(__name__)
-
-
-class ArkServerException(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.log_error()
-
-    def log_error(self):
-        if "install_path" in CONFIG["server"]:
-            logger.error(
-                f"Check the server log at {CONFIG['server']['install_path']}/ShooterGame/Saved/Logs"
-            )
-
-
-class ArkServerStartError(ArkServerException):
-    pass
-
-
-class ArkServerStopError(ArkServerException):
-    pass
 
 
 class ArkServer:
