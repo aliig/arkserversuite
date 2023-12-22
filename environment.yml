@@ -14,3 +14,4 @@ dependencies:
     - colorlog
     - tzlocal
     - cryptography
+    - psutil
