@@ -7,10 +7,12 @@ from dependencies import (
     install_certificates,
     install_prerequisites,
 )
+from errors import ArkServerStartError, ArkServerStopError
 from ini_parser import update_ark_configs
 from log_monitor import LogMonitor
 from logger import get_logger
 from mods import delete_mods_folder
+from processes import get_parent_pid_from_child, is_server_running, kill_server_by_pids
 from rcon import broadcast, save_world, send_message
 from serverapi import (
     install_serverapi,
@@ -20,12 +22,7 @@ from serverapi import (
     set_log_filenames,
     use_serverapi,
 )
-from shell_operations import (
-    generate_batch_file,
-    is_server_running,
-    kill_server,
-    run_shell_cmd,
-)
+from shell_operations import generate_batch_file, run_shell_cmd
 from steamcmd import update_server
 from tasks import (
     CheckForArkUpdatesAndRestart,
@@ -43,14 +40,6 @@ from utils import wait_until
 logger = get_logger(__name__)
 
 
-class ArkServerStartError(Exception):
-    pass
-
-
-class ArkServerStopError(Exception):
-    pass
-
-
 class ArkServer:
     def __init__(self):
         self.tasks: dict[str, Task] = self.initialize_tasks()
@@ -60,6 +49,8 @@ class ArkServer:
         self.sleep_time = CONFIG["advanced"].get("sleep_time", 60)
         self.log_check_rate = CONFIG["advanced"].get("log_check_rate", 5)
         self.need_certificates = not check_certificate_windows()
+        self.ark_pid = None
+        self.api_pid = None
 
     def need_admin_privileges(self) -> bool:
         return self.need_certificates
@@ -86,7 +77,8 @@ class ArkServer:
         return tasks
 
     def start(self) -> bool:
-        if not is_server_running():
+        self.ark_pid = is_server_running()
+        if not self.ark_pid:
             if does_server_need_update():
                 update_server()
 
@@ -131,7 +123,7 @@ class ArkServer:
                     logger.info("Ark server API ready")
 
             # wait for ark server process to start
-            _, success = wait_until(
+            res, success = wait_until(
                 is_server_running,
                 lambda x: x,
                 timeout=self.server_timeout,
@@ -141,7 +133,12 @@ class ArkServer:
                 logger.error("Failed to start the Ark server")
                 raise ArkServerStartError("Failed to start the Ark server.")
             else:
-                logger.info("Ark server started")
+                logger.info(f"Ark server started")
+                self.ark_pid = res
+                logger.debug(f"Ark server PID: {self.ark_pid}")
+                if use_serverapi:
+                    self.api_pid = get_parent_pid_from_child(self.ark_pid)
+                    logger.debug(f"Ark server API PID: {self.api_pid}")
                 self._reset_states()
             return success
         else:
@@ -149,19 +146,24 @@ class ArkServer:
         return True
 
     def stop(self) -> bool:
-        if is_server_running():
+        self.ark_pid = is_server_running()
+        if self.ark_pid:
             logger.info("Stopping the Ark server...")
             save_world()
             time.sleep(5)
-            kill_server()
+            if use_serverapi():
+                self.api_pid = get_parent_pid_from_child(self.ark_pid)
+            pids = [pid for pid in [self.ark_pid, self.api_pid] if pid is not None]
+            kill_server_by_pids(pids)
             _, success = wait_until(
                 is_server_running,
-                lambda x: not x,
+                lambda x: not bool(x),
                 timeout=self.server_timeout,
                 sleep_interval=3,
             )
             if success:
                 logger.info("Ark server stopped")
+                self.api_pid = self.ark_pid = None
             else:
                 logger.error("Failed to stop the Ark server")
                 raise ArkServerStopError("Failed to stop the Ark server.")
@@ -213,7 +215,7 @@ class ArkServer:
 
         while self.running:
             if not is_server_running():
-                logger.info("Server is not running. Attempting to restart...")
+                logger.warning("Server is not running. Attempting to restart...")
                 self.start()
 
             for _, task in self.tasks.items():
