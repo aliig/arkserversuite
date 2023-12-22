@@ -37,7 +37,7 @@ def kill_server_by_pids(pids: list[int]) -> None:
                 logger.error(f"Failed to terminate process: {e}")
 
 
-def get_process_from_port(expected_port: int) -> int | None:
+def get_pid_from_port(expected_port: int) -> int | None:
     """
     Retrieves the process ID that is using the specified port.
 
@@ -60,7 +60,7 @@ def is_server_running(ark_port: int = CONFIG["server"]["port"]) -> int | bool:
     :param ark_port: The port number to check.
     :return: The process ID if the server is running, False otherwise.
     """
-    pid = get_process_from_port(ark_port)
+    pid = get_pid_from_port(ark_port)
     if pid is None:
         return False
     try:
