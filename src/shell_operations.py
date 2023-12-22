@@ -118,9 +118,21 @@ def generate_batch_file() -> str:
         :return: The question mark options string.
         """
         options = [CONFIG["server"]["map"]]
-        question_mark_options = CONFIG["launch_options"].get("question_mark", [])
-        if question_mark_options:
-            options.extend(question_mark_options)
+        question_mark_options_list = [
+            _server_config_option("ip_address", "MultiHome={}"),
+            # _server_config_option('name', "SessionName=\"{}\""),
+            _server_config_option("port", "Port={}"),
+            _server_config_option("query_port", "QueryPort={}"),
+            # _server_config_option("password", "Password={}"),
+            _server_config_option("max_players", "MaxPlayers={}"),
+            # _server_config_option("admin_password", "ServerAdminPassword={}"),
+            "RCONEnabled=True",
+        ]
+        options.extend(filter(None, question_mark_options_list))
+
+        question_mark_config_options = CONFIG["launch_options"].get("question_mark", [])
+        if question_mark_config_options:
+            options.extend(question_mark_config_options)
         return "?".join(filter(None, options))
 
     def _construct_hyphen_options() -> str:
