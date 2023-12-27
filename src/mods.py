@@ -93,6 +93,8 @@ def _get_installed_mod_timestamp(mod_id: int) -> tuple[str, datetime | None]:
                 return mod_name, timestamp
     except Exception as e:
         logger.error(e)
+        # pretty print the local_mod_data as json
+        print(json.dumps(local_mod_data, indent=4))
     return "", None
 
 
