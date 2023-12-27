@@ -164,7 +164,9 @@ def _get_remote_mod_info(
                     )
                     break
             latest_timestamps[mod_id] = (mod_name, timestamp, is_approved)
-            logger.debug(f"{mod_name} latest timestamp: {timestamp}")
+            logger.debug(
+                f"{mod_name} latest timestamp: {timestamp}, approved: {is_approved}"
+            )
 
         return latest_timestamps
 
