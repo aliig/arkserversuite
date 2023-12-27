@@ -164,6 +164,8 @@ def _get_remote_mod_info(
         return latest_timestamps
     except Exception as e:
         logger.error(e)
+        print("Response data:")
+        print(json.dumps(response_data, indent=4))
         return {}
 
 
