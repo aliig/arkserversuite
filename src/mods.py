@@ -154,14 +154,20 @@ def _get_remote_mod_info(
             last_colon_pos = date_string.rfind(":")
             new_string = date_string[:last_colon_pos]
             timestamp = datetime.strptime(new_string, date_format)
-            is_approved = (
-                mod["latestFiles"]["isAvailable"] == True
-                and int(mod["latestFiles"]["fileStatus"]) == 4
-            )
+
+            # get latest file info to determine whether the mod is approved
+            is_approved = False
+            for file in mod["latestFiles"]:
+                if file["id"] == mod["mainFileId"]:
+                    is_approved = (
+                        file["isAvailable"] == True and int(file["fileStatus"]) == 4
+                    )
+                    break
             latest_timestamps[mod_id] = (mod_name, timestamp, is_approved)
             logger.debug(f"{mod_name} latest timestamp: {timestamp}")
 
         return latest_timestamps
+
     except Exception as e:
         logger.error(f"_get_remote_mod_info {e}")
         print(json.dumps(response_data, indent=4))
