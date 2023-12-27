@@ -2,7 +2,7 @@ import json
 import os
 import shutil
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import cache
 
 import requests
@@ -172,7 +172,9 @@ def get_all_mods() -> list[Mod]:
     all_mods = []
     for mod_id in mod_list:
         installed_name, installed_timestamp = _get_installed_mod_timestamp(mod_id)
-        _, latest_timestamp, is_approved = remote_mod_info.get(mod_id, ("", None))
+        _, latest_timestamp, is_approved = remote_mod_info.get(
+            mod_id, ("", None, False)
+        )
 
         all_mods.append(
             Mod(
