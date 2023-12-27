@@ -2,13 +2,13 @@ import json
 import os
 import shutil
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from functools import cache
 
 import requests
 from dotenv import load_dotenv
 
-from config import CONFIG
+from config import CONFIG, OUTDIR
 from crypto_script import decrypt_data
 from logger import get_logger
 from utils import resource_path
@@ -23,6 +23,7 @@ class Mod:
     name: str
     installed_dt: datetime | None
     latest_dt: datetime | None
+    is_approved: bool = False
 
 
 @cache
@@ -91,7 +92,9 @@ def _get_installed_mod_timestamp(mod_id: int) -> tuple[str, datetime | None]:
 
                 return mod_name, timestamp
     except Exception as e:
-        logger.error(e)
+        logger.error(f"_get_installed_mod_timestamp: {e}")
+        # pretty print the local_mod_data as json
+        print(json.dumps(local_mod_data, indent=4))
     return "", None
 
 
@@ -119,20 +122,29 @@ def _fetch_mod_data(mod_ids: int | list[int]) -> dict:
         response.raise_for_status()
         return response.json()
     except Exception as e:
-        logger.error(e)
+        logger.error(f"_fetch_mod_data: {e}")
         return {}
 
 
-def _get_latest_mods_timestamps(mod_ids: list[int]) -> dict[int, tuple[str, datetime]]:
+def _get_remote_mod_info(
+    mod_ids: list[int],
+) -> dict[int, tuple[str, datetime, bool]]:
     """
-    Fetches the latest timestamps for mods based on provided mod IDs.
+    Fetches the latest info for mods based on provided mod IDs.
 
     :param mod_ids: A list of mod IDs to query.
-    :return: A dictionary mapping mod IDs to a tuple of mod name and its latest timestamp.
+    :return: A dictionary mapping mod IDs to a tuple of mod name, latest timestamp, and approval status.
     """
     try:
         date_format = "%Y-%m-%dT%H:%M"
         response_data = _fetch_mod_data(mod_ids)
+        if CONFIG["advanced"]["log_level"] == "debug":
+            timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+            outdir = os.path.join(OUTDIR, "mods")
+            os.makedirs(outdir, exist_ok=True)
+            filepath = os.path.join(outdir, f"{timestamp}_mods.json")
+            with open(filepath, "w") as f:
+                json.dump(response_data, f, indent=4)
 
         latest_timestamps = {}
         for mod in response_data.get("data", []):
@@ -142,29 +154,45 @@ def _get_latest_mods_timestamps(mod_ids: list[int]) -> dict[int, tuple[str, date
             last_colon_pos = date_string.rfind(":")
             new_string = date_string[:last_colon_pos]
             timestamp = datetime.strptime(new_string, date_format)
-            latest_timestamps[mod_id] = (mod_name, timestamp)
-            logger.debug(f"{mod_name} latest timestamp: {timestamp}")
+
+            # get latest file info to determine whether the mod is approved
+            is_approved = False
+            for file in mod["latestFiles"]:
+                if file["id"] == mod["mainFileId"]:
+                    is_approved = (
+                        file["isAvailable"] == True and int(file["fileStatus"]) == 4
+                    )
+                    break
+            latest_timestamps[mod_id] = (mod_name, timestamp, is_approved)
+            logger.debug(
+                f"{mod_name} latest timestamp: {timestamp}, approved: {is_approved}"
+            )
 
         return latest_timestamps
+
     except Exception as e:
-        logger.error(e)
+        logger.error(f"_get_remote_mod_info {e}")
+        print(json.dumps(response_data, indent=4))
         return {}
 
 
 def get_all_mods() -> list[Mod]:
     mod_list = list(_get_installed_mods())
-    latest_timestamp_data = _get_latest_mods_timestamps(mod_list)
+    remote_mod_info = _get_remote_mod_info(mod_list)
 
     all_mods = []
     for mod_id in mod_list:
         installed_name, installed_timestamp = _get_installed_mod_timestamp(mod_id)
-        _, latest_timestamp = latest_timestamp_data.get(mod_id, ("", None))
+        _, latest_timestamp, is_approved = remote_mod_info.get(
+            mod_id, ("", None, False)
+        )
 
         all_mods.append(
             Mod(
                 name=installed_name,
                 installed_dt=installed_timestamp,
                 latest_dt=latest_timestamp,
+                is_approved=is_approved,
             )
         )
 
@@ -176,8 +204,13 @@ def mods_needing_update() -> list[Mod]:
     time_diff = CONFIG["advanced"].get("mod_update_timestamp_threshold", 60)
     for mod in get_all_mods():
         if mod.installed_dt and mod.latest_dt:
-            if mod.installed_dt + timedelta(minutes=time_diff) < mod.latest_dt:
-                mods_update_list.append(mod)
+            if abs((mod.latest_dt - mod.installed_dt).total_seconds()) > time_diff * 60:
+                if mod.is_approved:
+                    mods_update_list.append(mod)
+                else:
+                    logger.info(
+                        f"{mod.name} has a newer version that is not yet approved or available, skipping update"
+                    )
 
     return mods_update_list
 
@@ -200,11 +233,16 @@ def delete_mods_folder() -> None:
     except FileNotFoundError:
         logger.warning("Mods folder not found, skipping deletion")
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.error(f"delete_mods_folder: {e}")
 
 
 if __name__ == "__main__":
-    mods_update_list = mods_needing_update()
+    try:
+        mods_update_list = mods_needing_update()
+        print(mods_update_list)
+    except Exception as e:
+        logger.error(e)
+
     mod_data = _fetch_mod_data(927090)
 
     # Write mod data to JSON file
@@ -214,5 +252,3 @@ if __name__ == "__main__":
 
     with open(output_file, "w") as f:
         json.dump(mod_data, f, indent=4)  # Pretty print with indent=4
-
-    print(mods_update_list)
