@@ -92,7 +92,7 @@ def _get_installed_mod_timestamp(mod_id: int) -> tuple[str, datetime | None]:
 
                 return mod_name, timestamp
     except Exception as e:
-        logger.error(e)
+        logger.error(f"_get_installed_mod_timestamp: {e}")
         # pretty print the local_mod_data as json
         print(json.dumps(local_mod_data, indent=4))
     return "", None
@@ -122,7 +122,7 @@ def _fetch_mod_data(mod_ids: int | list[int]) -> dict:
         response.raise_for_status()
         return response.json()
     except Exception as e:
-        logger.error(e)
+        logger.error(f"_fetch_mod_data: {e}")
         return {}
 
 
@@ -163,8 +163,7 @@ def _get_remote_mod_info(
 
         return latest_timestamps
     except Exception as e:
-        logger.error(e)
-        print("Response data:")
+        logger.error(f"_get_remote_mod_info {e}")
         print(json.dumps(response_data, indent=4))
         return {}
 
@@ -226,7 +225,7 @@ def delete_mods_folder() -> None:
     except FileNotFoundError:
         logger.warning("Mods folder not found, skipping deletion")
     except Exception as e:
-        logger.error(f"An error occurred: {e}")
+        logger.error(f"delete_mods_folder: {e}")
 
 
 if __name__ == "__main__":
