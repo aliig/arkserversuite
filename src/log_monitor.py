@@ -45,13 +45,19 @@ class LogEvent:
 
 
 class PlayerConnectEvent(LogEvent):
-    regexp_pattern = re.compile(r": (.*?) (joined|left) this ARK!")
+    regexp_pattern = re.compile(r": (.*?) ID \d+ (joined|left) this ARK!")
 
-    def __init__(self, line):
+    def __init__(self, line: str):
         self.player_name, self.event_type = self._get_player_info(line)
         super().__init__(line)
 
-    def _get_player_info(self, line):
+    def _get_player_info(self, line: str) -> tuple[str, str]:
+        """
+        Extracts the player name and event type from the log line.
+
+        :param line: The log line to parse.
+        :return: A tuple containing the player name and event type.
+        """
         match = self.regexp_pattern.search(line)
         if match:
             return match.group(1), match.group(2)
