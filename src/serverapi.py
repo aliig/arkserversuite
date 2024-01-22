@@ -24,16 +24,28 @@ log_filenames = []
 
 
 def _extract_zip_and_move(zip_path: str, outdir: str):
+    """
+    Extracts files from a zip archive and moves them to a specified directory.
+    It excludes the 'config.json' file in the Permissions folder if it exists.
+
+    :param zip_path: The path to the zip file.
+    :param outdir: The output directory where files should be moved.
+    """
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         for file in zip_ref.namelist():
             # Construct the full path to where the file should be extracted
             destination = os.path.join(outdir, file)
 
             # Check if the file or directory should be skipped
-            if (file == "config.json" and os.path.exists(destination)) or (
+            skip_conditions = [
+                file == "config.json" and os.path.exists(destination),
                 file.startswith("Plugins/")
-                and os.path.exists(os.path.join(outdir, "Plugins"))
-            ):
+                and os.path.exists(os.path.join(outdir, "Plugins")),
+                file == "Plugins/Permissions/config.json"
+                and os.path.exists(destination),
+            ]
+
+            if any(skip_conditions):
                 logger.debug(f"Skipping {file} as it already exists.")
                 continue
 
